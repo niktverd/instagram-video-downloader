@@ -28,15 +28,24 @@ app.post('/webhooks', (req, res) => {
     }
 
     if (req.body?.entry?.length) {
-        const message = req.body.entry[0];
-        if (!message) {
+        const entry = req.body.entry[0];
+        if (!entry) {
             res.status(404);
             return;
         }
-        console.log('message', message);
 
-        const senderId = message.messaging?.sender?.id;
-        const attachments = message.messaging?.message?.attachments;
+        if (!entry.messaging) {
+            res.status(404);
+            return;
+        }
+
+        const [messaging] = entry.messaging;
+
+        console.log('messaging', messaging);
+
+        const senderId = messaging.sender?.id;
+
+        const attachments = messaging.message?.attachments;
         console.log({senderId, attachments});
     }
 
