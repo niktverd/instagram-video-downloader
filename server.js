@@ -24,12 +24,20 @@ app.post('/webhooks', (req, res) => {
 
     if (object !== 'instagram') {
         res.status(404);
+        return;
     }
 
     if (req.body?.entry?.length) {
-        console.log('req.body?.entry?.length', req.body?.entry?.length);
-    }
+        const message = req.body.entry[0];
+        if (!message) {
+            res.status(404);
+            return;
+        }
 
+        const senderId = message.messaging?.sender?.id;
+        const attachments = message.messaging?.message?.attachments;
+        console.log({senderId, attachments});
+    }
 
     res.status(200);
 });
