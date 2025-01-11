@@ -18,7 +18,18 @@ app.get('/webhooks', (req, res) => {
 
 app.post('/webhooks', (req, res) => {
     console.log(req.query);
-    console.log(JSON.stringify(req.body, null, 3));
+    console.log(JSON.stringify(req.body?.entry?.length, null, 3));
+
+    const {object, entry} = req.body;
+
+    if (object !== 'instagram') {
+        res.status(404);
+    }
+
+    if (req.body?.entry?.length) {
+        console.log('req.body?.entry?.length', req.body?.entry?.length);
+    }
+
 
     res.status(200);
 });
