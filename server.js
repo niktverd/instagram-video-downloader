@@ -1,13 +1,16 @@
 const express = require('express');
-var bodyParser = require('body-parser');
+var qs = require('qs');
 
 const app = new express();
-app.use(bodyParser.urlencoded());
-app.use(bodyParser.json());
+app.use(express.json()) // for parsing application/json
+app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+app.set('query parser', function (str) {
+    return qs.parse(str, { /* custom options */ })
+});
 
 app.get('/api/verification', (req, res) => {
-    console.log(req.params);
-    const hubChallenge = req.params['hub.challenge'];
+    console.log(req.query);
+    const hubChallenge = req.query['hub.challenge'];
 
     res.send(hubChallenge);
 });
