@@ -18,7 +18,7 @@ app.get('/webhooks', (req, res) => {
 
 app.post('/webhooks', (req, res) => {
     console.log(req.query);
-    console.log(req.body);
+    console.log(JSON.stringify(req.body, null, 3));
 
     res.status(200);
 });
