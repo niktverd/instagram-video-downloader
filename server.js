@@ -8,11 +8,12 @@ app.set('query parser', function (str) {
     return qs.parse(str, { /* custom options */ })
 });
 
-app.get('/api/verification', (req, res) => {
+app.get('/webhooks', (req, res) => {
     console.log(req.query);
     const hubChallenge = req.query['hub.challenge'];
+    console.log(hubChallenge);
 
-    res.send(hubChallenge);
+    res.status(200).send(hubChallenge);
 });
 
 const dynamicPort = Number(process.env.PORT);
