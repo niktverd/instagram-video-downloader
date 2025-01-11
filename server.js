@@ -1,5 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 var qs = require('qs');
+
+const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
 
 const app = new express();
 app.use(express.json()) // for parsing application/json
@@ -44,9 +47,21 @@ app.post('/webhooks', (req, res) => {
         console.log('messaging', messaging);
 
         const senderId = messaging.sender?.id;
+        if (!availableSenders.includes(senderId)) {
+            res.status(404);
+            return;
+        }
 
         const attachments = messaging.message?.attachments;
-        console.log({senderId, attachments});
+        if (!attachments.length) {
+            res.status(404);
+            return;
+        }
+
+        for (const attachment of attachments) {
+            const {type, payload} = attachment;
+            console.log({senderId, type, payload});
+        }
     }
 
     res.status(200);
