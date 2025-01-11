@@ -16,6 +16,13 @@ app.get('/webhooks', (req, res) => {
     res.status(200).send(hubChallenge);
 });
 
+app.post('/webhooks', (req, res) => {
+    console.log(req.query);
+    console.log(req.body);
+
+    res.status(200);
+});
+
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
 
