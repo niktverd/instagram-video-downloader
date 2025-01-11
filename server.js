@@ -33,6 +33,7 @@ app.post('/webhooks', (req, res) => {
             res.status(404);
             return;
         }
+        console.log('message', message);
 
         const senderId = message.messaging?.sender?.id;
         const attachments = message.messaging?.message?.attachments;
