@@ -33,7 +33,7 @@ app.post('/webhooks', async (req, res) => {
         return;
     }
 
-    if (req.body?.entry?.length) {
+    if (entry?.length) {
         const entry = req.body.entry[0];
         if (!entry) {
             res.status(404);
@@ -50,7 +50,8 @@ app.post('/webhooks', async (req, res) => {
         console.log('messaging', messaging);
 
         const senderId = messaging.sender?.id;
-        if (!availableSenders.includes(senderId)) {
+        if (!availableSenders.includes(senderId?.toString())) {
+            console.log({availableSenders, senderId})
             res.status(404);
             return;
         }
