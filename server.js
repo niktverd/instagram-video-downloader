@@ -1,6 +1,9 @@
 require('dotenv').config();
+
 const express = require('express');
 var qs = require('qs');
+const {collection, addDoc} = require('firebase/firestore/lite');
+const { firestore } = require('./config/firebase');
 
 const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
 
@@ -19,7 +22,7 @@ app.get('/webhooks', (req, res) => {
     res.status(200).send(hubChallenge);
 });
 
-app.post('/webhooks', (req, res) => {
+app.post('/webhooks', async (req, res) => {
     console.log(req.query);
     console.log(JSON.stringify(req.body?.entry?.length, null, 3));
 
@@ -61,6 +64,17 @@ app.post('/webhooks', (req, res) => {
         for (const attachment of attachments) {
             const {type, payload} = attachment;
             console.log({senderId, type, payload});
+            const {url} = payload;
+
+            const collectionRef = collection(firestore, 'media-post')
+            const firestoreDoc = await addDoc(collectionRef, {
+                createdAt: new Date(),
+                url,
+                senderId,
+                type,
+            });
+
+            console.log('firestoreDoc', firestoreDoc.id);
         }
     }
 
