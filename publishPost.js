@@ -1,10 +1,11 @@
-const { collection, doc, updateDoc } = require('firebase/firestore/lite');
+const { collection, doc, updateDoc, getDocs, deleteDoc } = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
 
 require('dotenv').config();
 
 // const IG_ID = process.env.IG_ID;
 const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+const SECONDS_IN_DAY = 48 * 60 * 60;
 
 // // Add this delay function
 // const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -112,17 +113,34 @@ async function publishInstagramPostContainer({containerId}) {
     }
 }
 
-module.exports = { createInstagramPostContainer, publishInstagramPostContainer };
+async function findUnpublishedContainer() {
+    const collectionRef = collection(firestore, 'media-post');
+    const docSnaps = await getDocs(
+        collectionRef
+    );
 
-// createInstagramPostContainer({
-//     caption: 'Caption text',
-//     videoUrl: 'https://firebasestorage.googleapis.com/v0/b/hullaballoo-ddd3f.appspot.com/o/i%2FAQPQ8w0uB3bAsNP2jn5fg7CBuVjFoBybBZOjF1C-PHxXiw3uUuqSwTnyNs65UAV_Gyb-t2MjZPNrpFTAd1hjY1-EUQp8CawdFG4i-II.mp4?alt=media&token=38aa5d83-a304-478b-9766-52dd0790fa67',
-// });
-// createInstagramPostContainer({
-//     caption: 'Caption text',
-//     videoUrl: 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/E7DdmiYxGq4Gg1cZBZ5a.mp4?alt=media&token=7c79758d-37cf-4805-b695-67dc85d93a79',
-// });
+    const documents = docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id}));
+    for (const document of documents) {
+        console.log(document);
+        const documentRef = doc(collectionRef, document.id);
 
-// publishInstagramPostContainer({containerId: '18036634136371390'});
-// publishInstagramPostContainer({containerId: '17999319563723384'});
-// publishInstagramPostContainer({containerId: '17940862262822683'});
+        if (document.mediaContainerId && document.status !== 'published') {
+            const result = await publishInstagramPostContainer({containerId: document.mediaContainerId});
+            if (result?.success) {
+                await updateDoc(documentRef, {status: 'published'});
+            }
+        }
+
+        const createdAt = document.createdAt;
+        const now = new Date();
+        const dateDiff = now.getTime() / 1000 - createdAt.seconds;
+
+        console.log({dateDiff, SECONDS_IN_DAY})
+        
+        if (dateDiff > SECONDS_IN_DAY) {
+            await deleteDoc(documentRef);
+        }
+    }
+}
+
+module.exports = { createInstagramPostContainer, publishInstagramPostContainer, findUnpublishedContainer };

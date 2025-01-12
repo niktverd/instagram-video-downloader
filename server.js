@@ -5,7 +5,8 @@ var qs = require('qs');
 const {collection, addDoc} = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
 const { uploadFileFromUrl } = require('./utils');
-const { createInstagramPostContainer } = require('./publishPost');
+const { createInstagramPostContainer, findUnpublishedContainer } = require('./publishPost');
+const cron = require('node-cron');
 
 const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
 
@@ -101,4 +102,9 @@ const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
 
 app.listen(appPort, () => {
   console.log(`Example app listening on port ${appPort}`);
+});
+
+cron.schedule('*/5 * * * *', () => {
+    console.log('Running bot task...');
+    findUnpublishedContainer();
 });
