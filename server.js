@@ -4,6 +4,8 @@ const express = require('express');
 var qs = require('qs');
 const {collection, addDoc} = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
+const { uploadFileFromUrl } = require('./utils');
+const { createInstagramPostContainer } = require('./publishPost');
 
 const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
 
@@ -76,6 +78,18 @@ app.post('/webhooks', async (req, res) => {
             });
 
             console.log('firestoreDoc', firestoreDoc.id);
+
+            const urlToPublish = await uploadFileFromUrl({
+                url,
+                firebaseId: firestoreDoc.id,
+            });
+
+            await createInstagramPostContainer({
+                videoUrl: urlToPublish,
+                caption: 'post text',
+
+                firebaseId: firestoreDoc.id
+            })
         }
     }
 

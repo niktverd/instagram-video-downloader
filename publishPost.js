@@ -1,3 +1,6 @@
+const { collection, doc, updateDoc } = require('firebase/firestore/lite');
+const { firestore } = require('./config/firebase');
+
 require('dotenv').config();
 
 // const IG_ID = process.env.IG_ID;
@@ -6,7 +9,7 @@ const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
 // // Add this delay function
 // const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function createInstagramPostContainer({imageUrl, caption, videoUrl}) {
+async function createInstagramPostContainer({imageUrl, caption, videoUrl, firebaseId}) {
     if (!accessToken) {
         return;
     }
@@ -39,6 +42,12 @@ async function createInstagramPostContainer({imageUrl, caption, videoUrl}) {
         console.log({createMediaResponseJson});
 
         const mediaId = createMediaResponseJson.id;
+
+        const collectionRef = collection(firestore, 'media-post');
+        const documentRef = doc(collectionRef, firebaseId);
+        await updateDoc(documentRef, {
+            mediaContainerId: mediaId,
+        });
 
         return {
             success: true,
@@ -109,7 +118,11 @@ module.exports = { createInstagramPostContainer, publishInstagramPostContainer }
 //     caption: 'Caption text',
 //     videoUrl: 'https://firebasestorage.googleapis.com/v0/b/hullaballoo-ddd3f.appspot.com/o/i%2FAQPQ8w0uB3bAsNP2jn5fg7CBuVjFoBybBZOjF1C-PHxXiw3uUuqSwTnyNs65UAV_Gyb-t2MjZPNrpFTAd1hjY1-EUQp8CawdFG4i-II.mp4?alt=media&token=38aa5d83-a304-478b-9766-52dd0790fa67',
 // });
+// createInstagramPostContainer({
+//     caption: 'Caption text',
+//     videoUrl: 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/E7DdmiYxGq4Gg1cZBZ5a.mp4?alt=media&token=7c79758d-37cf-4805-b695-67dc85d93a79',
+// });
 
-publishInstagramPostContainer({containerId: '17897253174124297'});
+// publishInstagramPostContainer({containerId: '18036634136371390'});
 // publishInstagramPostContainer({containerId: '17999319563723384'});
 // publishInstagramPostContainer({containerId: '17940862262822683'});
