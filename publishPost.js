@@ -120,7 +120,7 @@ async function findUnpublishedContainer() {
     const scheduleSnap = await getDoc(scheduleDocRef);
     if (scheduleSnap.exists()) {
         const schedule = scheduleSnap.data();
-        const now = new Date.getTime() / 1000;
+        const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
         console.log({schedule, now, diff});
 
