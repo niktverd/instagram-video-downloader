@@ -32,19 +32,19 @@ app.post('/webhooks', async (req, res) => {
     const {object, entry} = req.body;
 
     if (object !== 'instagram') {
-        res.status(404);
+        res.status(404).send('NotFound');
         return;
     }
 
     if (entry?.length) {
         const entry = req.body.entry[0];
         if (!entry) {
-            res.status(404);
+            res.status(404).send('NotFound');
             return;
         }
 
         if (!entry.messaging) {
-            res.status(404);
+            res.status(404).send('NotFound');
             return;
         }
 
@@ -55,13 +55,13 @@ app.post('/webhooks', async (req, res) => {
         const senderId = messaging.sender?.id;
         if (!availableSenders.includes(senderId?.toString())) {
             console.log({availableSenders, senderId})
-            res.status(404);
+            res.status(404).send('NotFound');
             return;
         }
 
         const attachments = messaging.message?.attachments;
         if (!attachments.length) {
-            res.status(404);
+            res.status(404).send('NotFound');
             return;
         }
 
@@ -94,7 +94,7 @@ app.post('/webhooks', async (req, res) => {
         }
     }
 
-    res.status(200);
+    res.status(200).send('NotFound');
 });
 
 const dynamicPort = Number(process.env.PORT);
