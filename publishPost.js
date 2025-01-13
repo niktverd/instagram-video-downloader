@@ -1,4 +1,4 @@
-const { collection, doc, updateDoc, getDocs, deleteDoc } = require('firebase/firestore/lite');
+const { collection, doc, updateDoc, getDocs, deleteDoc, getDoc, setDoc } = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
 
 require('dotenv').config();
@@ -6,6 +6,7 @@ require('dotenv').config();
 // const IG_ID = process.env.IG_ID;
 const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
 const SECONDS_IN_DAY = 48 * 60 * 60;
+THIRTY_MINUTES = 30 * 60;
 
 // // Add this delay function
 // const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -114,6 +115,20 @@ async function publishInstagramPostContainer({containerId}) {
 }
 
 async function findUnpublishedContainer() {
+    const systemCollectionRef = collection(firestore, 'system');
+    const scheduleDocRef = doc(systemCollectionRef, 'schedule');
+    const scheduleSnap = await getDoc(scheduleDocRef);
+    if (scheduleSnap.exists()) {
+        const schedule = scheduleSnap.data();
+        const now = new Date.getTime() / 1000;
+        const diff = now - schedule.lastPublishingTime.seconds;
+        console.log({schedule, now, diff});
+
+        if (diff < THIRTY_MINUTES) {
+            return;
+        }
+    }
+
     const collectionRef = collection(firestore, 'media-post');
     const docSnaps = await getDocs(
         collectionRef
@@ -128,6 +143,8 @@ async function findUnpublishedContainer() {
             const result = await publishInstagramPostContainer({containerId: document.mediaContainerId});
             if (result?.success) {
                 await updateDoc(documentRef, {status: 'published'});
+                await setDoc(scheduleDocRef, {lastPublishingTime: new Date()});
+                return;
             }
         }
 
