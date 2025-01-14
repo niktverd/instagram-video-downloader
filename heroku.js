@@ -10,6 +10,7 @@ async function stopHerokuApp() {
     await fetch(
         startUrl,
         {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${herokuApiKey}`,
