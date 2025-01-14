@@ -6,9 +6,10 @@ const {collection, addDoc} = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
 const { uploadFileFromUrl } = require('./utils');
 const { createInstagramPostContainer, findUnpublishedContainer } = require('./publishPost');
-const cron = require('node-cron');
+// const cron = require('node-cron');
 
 const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
+const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
 
 const app = new express();
 app.use(express.json()) // for parsing application/json
@@ -67,6 +68,8 @@ app.post('/webhooks', async (req, res) => {
             return;
         }
 
+        const accessTokenObject = accessTokensArray[Math.floor(Math.random() * accessTokensArray.length)];
+
         for (const attachment of attachments) {
             const {type, payload} = attachment;
             console.log({senderId, type, payload});
@@ -78,6 +81,7 @@ app.post('/webhooks', async (req, res) => {
                 url,
                 senderId,
                 type,
+                account: accessTokenObject.id,
             });
 
             console.log('firestoreDoc', firestoreDoc.id);
@@ -90,13 +94,21 @@ app.post('/webhooks', async (req, res) => {
             await createInstagramPostContainer({
                 videoUrl: urlToPublish,
                 caption: 'carcar.tech - оптовые цены на запчасти и расходники для авто для наших подписчиков (пока только в Астане). Пишите в директ, какая запчасть или какое масло вы ищите и мы предоставим вам лучшие цены с оптовых складов. Присылайте ссылку на свой профиль, чтобы мы убедились, что вы наш подписчик.',
-
+                accessToken: accessTokenObject.token,
                 firebaseId: firestoreDoc.id
             })
         }
     }
 
-    res.status(200).send('NotFound');
+    res.status(200).send('success');
+});
+
+app.get('/publish', async (req, res) => {
+    console.log(req.query);
+
+    await findUnpublishedContainer();
+
+    res.status(200).send('success');
 });
 
 const dynamicPort = Number(process.env.PORT);
@@ -106,7 +118,7 @@ app.listen(appPort, () => {
   console.log(`Example app listening on port ${appPort}`);
 });
 
-cron.schedule('*/5 * * * *', () => {
-    console.log('Running bot task...');
-    findUnpublishedContainer();
-});
+// cron.schedule('*/5 * * * *', () => {
+//     console.log('Running bot task...');
+//     findUnpublishedContainer();
+// });

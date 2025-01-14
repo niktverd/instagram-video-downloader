@@ -4,14 +4,14 @@ const { firestore } = require('./config/firebase');
 require('dotenv').config();
 
 // const IG_ID = process.env.IG_ID;
-const accessToken = process.env.INSTAGRAM_ACCESS_TOKEN;
+const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
 const SECONDS_IN_DAY = 48 * 60 * 60;
 THIRTY_MINUTES = 30 * 60;
 
 // // Add this delay function
 // const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function createInstagramPostContainer({imageUrl, caption, videoUrl, firebaseId}) {
+async function createInstagramPostContainer({imageUrl, caption, videoUrl, firebaseId, accessToken}) {
     if (!accessToken) {
         return;
     }
@@ -65,7 +65,7 @@ async function createInstagramPostContainer({imageUrl, caption, videoUrl, fireba
     }
 }
 
-async function publishInstagramPostContainer({containerId}) {
+async function publishInstagramPostContainer({containerId, accessToken}) {
     if (!accessToken || !containerId) {
         return;
     }
@@ -138,9 +138,11 @@ async function findUnpublishedContainer() {
     for (const document of documents) {
         console.log(document);
         const documentRef = doc(collectionRef, document.id);
-
+        
         if (document.mediaContainerId && document.status !== 'published') {
-            const result = await publishInstagramPostContainer({containerId: document.mediaContainerId});
+            const tokenObj = accessTokensArray.find(({id}) => id === document.account);
+            const accessToken = tokenObj?.token || accessTokensArray[0].token;
+            const result = await publishInstagramPostContainer({containerId: document.mediaContainerId, accessToken});
             if (result?.success) {
                 await updateDoc(documentRef, {status: 'published'});
                 await setDoc(scheduleDocRef, {lastPublishingTime: new Date()});
