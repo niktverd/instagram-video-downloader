@@ -6,10 +6,14 @@ const {collection, addDoc} = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
 const { uploadFileFromUrl } = require('./utils');
 const { createInstagramPostContainer, findUnpublishedContainer } = require('./publishPost');
+const { stopHerokuApp } = require('./heroku');
 // const cron = require('node-cron');
 
 const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
 const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
+
+// Add this delay function
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const app = new express();
 app.use(express.json()) // for parsing application/json
@@ -109,6 +113,9 @@ app.get('/publish', async (req, res) => {
     await findUnpublishedContainer();
 
     res.status(200).send('success');
+    await delay(1000);
+
+    await stopHerokuApp();
 });
 
 const dynamicPort = Number(process.env.PORT);

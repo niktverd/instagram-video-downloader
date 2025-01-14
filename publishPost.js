@@ -8,9 +8,6 @@ const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY ||
 const SECONDS_IN_DAY = 48 * 60 * 60;
 THIRTY_MINUTES = 30 * 60;
 
-// // Add this delay function
-// const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 async function createInstagramPostContainer({imageUrl, caption, videoUrl, firebaseId, accessToken}) {
     if (!accessToken) {
         return;
