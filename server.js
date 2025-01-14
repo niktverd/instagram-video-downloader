@@ -31,6 +31,8 @@ app.post('/webhooks', async (req, res) => {
 
     const {object, entry} = req.body;
 
+    console.log(JSON.stringify(req.body));
+
     if (object !== 'instagram') {
         res.status(404).send('NotFound');
         return;
@@ -87,7 +89,7 @@ app.post('/webhooks', async (req, res) => {
 
             await createInstagramPostContainer({
                 videoUrl: urlToPublish,
-                caption: 'post text',
+                caption: 'carcar.tech - оптовые цены на запчасти и расходники для авто для наших подписчиков (пока только в Астане). Пишите в директ, какая запчасть или какое масло вы ищите и мы предоставим вам лучшие цены с оптовых складов. Присылайте ссылку на свой профиль, чтобы мы убедились, что вы наш подписчик.',
 
                 firebaseId: firestoreDoc.id
             })
