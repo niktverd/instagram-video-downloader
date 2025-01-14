@@ -6,7 +6,7 @@ require('dotenv').config();
 // const IG_ID = process.env.IG_ID;
 const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
 const SECONDS_IN_DAY = 48 * 60 * 60;
-THIRTY_MINUTES = 30 * 60;
+const TEN_MINUTES = 10 * 60;
 
 async function createInstagramPostContainer({imageUrl, caption, videoUrl, firebaseId, accessToken}) {
     if (!accessToken) {
@@ -121,7 +121,7 @@ async function findUnpublishedContainer() {
         const diff = now - schedule.lastPublishingTime.seconds;
         console.log({schedule, now, diff});
 
-        if (diff < THIRTY_MINUTES) {
+        if (diff < TEN_MINUTES) {
             return;
         }
     }
