@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 var qs = require('qs');
-const {collection, addDoc} = require('firebase/firestore/lite');
+const {collection, addDoc, getDocs, doc, deleteDoc} = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
 const { uploadFileFromUrl } = require('./utils');
 const { createInstagramPostContainer, findUnpublishedContainer } = require('./publishPost');
@@ -21,6 +21,7 @@ app.use(express.urlencoded({ extended: true })) // for parsing application/x-www
 app.set('query parser', function (str) {
     return qs.parse(str, { /* custom options */ })
 });
+app.set('view engine', 'ejs');
 
 app.get('/webhooks', (req, res) => {
     console.log(req.query);
@@ -105,6 +106,31 @@ app.post('/webhooks', async (req, res) => {
     }
 
     res.status(200).send('success');
+});
+
+app.get('/report', async (_req, res) => {
+    const collectionRef = collection(firestore, 'media-post');
+    const snaps = await getDocs(collectionRef);
+    const docs = snaps.docs.map((docEnt) => ({...docEnt.data(), id: docEnt.id}));
+
+    const published = docs.filter(({status}) => status === 'published');
+    const notPublished = docs.filter(({status}) => status !== 'published');
+
+    res.render('index', {total: docs.length, published, notPublished});
+});
+
+app.post('/remove-post-by-id', async (req, res) => {
+    const { id } = req.body;
+    console.log(`Получен ID поста: ${id}`);
+    if (!id) {
+        res.status(200).send('ID получен успешно.');
+        return;
+    }
+    const collectionRef = collection(firestore, 'media-post');
+    const docRef = doc(collectionRef, id);
+    deleteDoc(docRef);
+    // Здесь можно добавить логику обработки, например, сохранить ID в базе данных
+    res.status(200).send('ID получен успешно.');
 });
 
 app.get('/publish', async (req, res) => {
