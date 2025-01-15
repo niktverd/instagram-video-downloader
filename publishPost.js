@@ -1,5 +1,6 @@
 const { collection, doc, updateDoc, getDocs, deleteDoc, getDoc, setDoc } = require('firebase/firestore/lite');
 const { firestore } = require('./config/firebase');
+const { shuffle } = require('lodash');
 
 require('dotenv').config();
 
@@ -131,7 +132,7 @@ async function findUnpublishedContainer() {
         collectionRef
     );
 
-    const documents = docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id}));
+    const documents = shuffle(docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id})));
     for (const document of documents) {
         console.log(document);
         const documentRef = doc(collectionRef, document.id);
