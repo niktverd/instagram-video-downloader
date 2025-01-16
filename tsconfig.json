@@ -6,7 +6,7 @@
     "target": "ES2019",
     "resolveJsonModule": true
   },
-  "include": ["app"],
+  "include": ["src", "index.ts"],
   "files": [],
   "exclude": ["node_modules"]
 }

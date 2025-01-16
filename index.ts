@@ -15,12 +15,12 @@ const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter
 const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
 
 // Add this delay function
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const app = express();
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
-app.set('query parser', function (str) {
+app.set('query parser', function (str: string) {
     return qs.parse(str, {
         /* custom options */
     });

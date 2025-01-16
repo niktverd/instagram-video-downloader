@@ -3,7 +3,12 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 
 import {firestore, storage} from '../config/firebase';
 
-export async function uploadFileFromUrl({url, firebaseId}) {
+type UploadFileFromUrlArgs = {
+  url: string;
+  firebaseId: string;
+};
+
+export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs) {
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -12,7 +17,7 @@ export async function uploadFileFromUrl({url, firebaseId}) {
         } as any);
 
         const fileBuffer = await response.arrayBuffer();
-        const contentType = response.headers['content-type'];
+        const contentType = response.headers.get('content-type') || undefined;
 
         const fileRef = ref(storage, `${firebaseId}.mp4`);
 

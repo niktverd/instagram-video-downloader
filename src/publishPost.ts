@@ -17,7 +17,7 @@ import {MediaPostModel} from './types';
 dotenv.config();
 
 // const IG_ID = process.env.IG_ID;
-const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
+const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]') as Record<string, string>[];
 const SECONDS_IN_DAY = 48 * 60 * 60;
 const TEN_MINUTES = 10 * 60;
 
@@ -76,7 +76,7 @@ export async function createInstagramPostContainer({
             success: true,
             mediaId,
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
         return {
             success: false,
@@ -129,7 +129,7 @@ export async function publishInstagramPostContainer({
             success: true,
             postId: publishResponseJson.id,
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
         return {
             success: false,

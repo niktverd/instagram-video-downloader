@@ -4,8 +4,9 @@
   "description": "A React app to download user videos from instagram.",
   "main": "index.js",
   "scripts": {
+    "watch": "tsc-watch --onSuccess \"node dist/server --dev\"",
+    "watch:port": "tsc-watch --onSuccess \"node dist/server --dev --port 8080\"",
     "dev": "npm run clean && npm run watch",
-    "dev:port": "npm run clean && npm run watch:port",
     "start": "NODE_ENV=production node dist/server",
     "build:compile": "tsc",
     "build": "npm run clean && npm run build:compile",
