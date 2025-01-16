@@ -5,7 +5,7 @@ import qs from 'qs';
 
 import {firestore} from './config/firebase';
 import {stopHerokuApp} from './src/heroku';
-import {createInstagramPostContainer, findUnpublishedContainer} from './src/publishPost';
+import {createInstagramPostContainer, findUnpublishedContainer} from './src/instagram';
 import {MediaPostModel} from './src/types';
 import {uploadFileFromUrl} from './src/utils';
 // const cron = require('node-cron');

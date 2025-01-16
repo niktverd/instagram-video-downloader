@@ -166,7 +166,10 @@ export async function findUnpublishedContainer() {
         if (document.mediaContainerId && document.status !== 'published') {
             const tokenObj = accessTokensArray.find(({id}) => id === document.account);
             const accessToken = tokenObj?.token || accessTokensArray[0].token;
-            console.log(JSON.stringify({accessTokensArray, tokenObj, accessToken}));
+            console.log(JSON.stringify({accessTokensArray}));
+            console.log(JSON.stringify({tokenObj}));
+            console.log(JSON.stringify({'tokenObj?.token': tokenObj?.token}));
+            console.log(JSON.stringify({accessToken}));
             const result = await publishInstagramPostContainer({
                 containerId: document.mediaContainerId,
                 accessToken,
