@@ -73,13 +73,12 @@ async function publishInstagramPostContainer({containerId, accessToken}) {
         const statusResponse = await fetch(`https://graph.instagram.com/v21.0/${containerId}?fields=status_code,status&access_token=${accessToken}`);
 
         const statusResponseJson = await statusResponse.json();
-        console.log({statusResponseJson});
+        console.log(JSON.stringify({statusResponseJson}));
 
         if (statusResponseJson.status_code !== 'FINISHED') {
             return;
         }
 
-        console.log('after if');
 
         // Then publish the container
         const publishResponse = await fetch(
@@ -97,7 +96,7 @@ async function publishInstagramPostContainer({containerId, accessToken}) {
         );
 
         const publishResponseJson = await publishResponse.json();
-        console.log({publishResponseJson});
+        console.log(JSON.stringify({publishResponseJson}));
         return {
             success: true,
             postId: publishResponseJson.id
