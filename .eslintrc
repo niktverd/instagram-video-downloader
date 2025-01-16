@@ -1,0 +1,17 @@
+{
+    "extends": ["@gravity-ui/eslint-config", "@gravity-ui/eslint-config/prettier"],
+    "root": true,
+    "env": {
+        "node": true
+    },
+    "plugins": ["no-not-accumulator-reassign"],
+    "rules": {
+        "no-param-reassign": ["warn", {"props": false}],
+        "no-not-accumulator-reassign/no-not-accumulator-reassign": [
+            "warn",
+            ["reduce"],
+            {"props": true}
+        ],
+        "no-console": "off"
+    }
+}

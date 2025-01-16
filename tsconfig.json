@@ -1,0 +1,12 @@
+{
+  "extends": "@gravity-ui/tsconfig/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/server",
+    "sourceMap": true,
+    "target": "ES2019",
+    "resolveJsonModule": true
+  },
+  "include": ["app"],
+  "files": [],
+  "exclude": ["node_modules"]
+}
