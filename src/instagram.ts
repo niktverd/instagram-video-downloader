@@ -14,7 +14,7 @@ import {shuffle} from 'lodash';
 import {firestore, storage} from '../config/firebase';
 
 import {MediaPostModel} from './types';
-import {getBufferVideo, processAndConcatVideos} from './utils';
+import {processAndConcatVideos, saveFileToDisk} from './utils';
 
 dotenv.config();
 
@@ -100,12 +100,12 @@ export async function getMergedVideo({
 }) {
     // download video from instagram
     // download my video
-    const [buffer1, buffer2] = await Promise.all([
-        getBufferVideo(videoUrl),
-        getBufferVideo(finalVideoUrl),
+    const [tempFilePath1, tempFilePath2] = await Promise.all([
+        saveFileToDisk(videoUrl, 'first.mp4'),
+        saveFileToDisk(finalVideoUrl, 'second.mp4'),
     ]);
     // merge videos
-    const processedBuffer = await processAndConcatVideos(buffer1, buffer2);
+    const processedBuffer = await processAndConcatVideos(tempFilePath1, tempFilePath2);
     // upload final video to firebase strorage
     const fileRef = ref(storage, `${firebaseId}.mp4`);
     const contentType = 'video/mp4';

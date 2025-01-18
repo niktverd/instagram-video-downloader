@@ -1,10 +1,13 @@
-import {Readable, Writable} from 'stream';
+import {writeFileSync} from 'fs';
+import path from 'path';
+import {Writable} from 'stream';
 
 import {collection, doc, updateDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
 
 import {firestore, storage} from '../config/firebase';
+
 type UploadFileFromUrlArgs = {
     url: string;
     firebaseId: string;
@@ -53,25 +56,24 @@ export const getBufferVideo = async (url: string) => {
     return Buffer.from(fileBuffer1);
 };
 
+export const saveFileToDisk = async (url: string, fileName: string) => {
+    const response = await fetch(url, {
+        method: 'GET',
+        responseType: 'arraybuffer',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+    const fileBuffer = await response.arrayBuffer();
+    const tempFilePath = path.join(__dirname, fileName);
+    writeFileSync(tempFilePath, Buffer.from(fileBuffer));
+    return tempFilePath;
+};
+
 export const processAndConcatVideos = async (
-    firstVideo: Buffer,
-    secondVideo: Buffer,
+    firstVideoPath: string,
+    secondVideoPath: string,
 ): Promise<Buffer> => {
     return new Promise((resolve, reject) => {
         // Создаем потоки для чтения из Buffer
-        const readableStream1 = new Readable({
-            read() {
-                this.push(firstVideo);
-                this.push(null); // Сигнализируем конец данных
-            },
-        });
-
-        const readableStream2 = new Readable({
-            read() {
-                this.push(secondVideo);
-                this.push(null); // Сигнализируем конец данных
-            },
-        });
 
         const chunks: Buffer[] = [];
         const writableStream = new Writable({
@@ -83,8 +85,8 @@ export const processAndConcatVideos = async (
 
         // Обработка и склейка видео с ffmpeg
         ffmpeg()
-            .input(readableStream1)
-            .input(readableStream2)
+            .input(firstVideoPath)
+            .input(secondVideoPath)
             .complexFilter(
                 [
                     // Изменяем разрешение каждого видео до 1080x1920 (9:16)
