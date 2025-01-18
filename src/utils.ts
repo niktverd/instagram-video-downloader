@@ -1,6 +1,5 @@
 import {writeFileSync} from 'fs';
 import path from 'path';
-import {Writable} from 'stream';
 
 import {collection, doc, updateDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
@@ -71,19 +70,9 @@ export const saveFileToDisk = async (url: string, fileName: string) => {
 export const processAndConcatVideos = async (
     firstVideoPath: string,
     secondVideoPath: string,
-): Promise<Buffer> => {
+    outputFilePath: string,
+): Promise<void> => {
     return new Promise((resolve, reject) => {
-        // Создаем потоки для чтения из Buffer
-
-        const chunks: Buffer[] = [];
-        const writableStream = new Writable({
-            write(chunk, _encoding, callback) {
-                chunks.push(chunk);
-                callback();
-            },
-        });
-
-        // Обработка и склейка видео с ffmpeg
         ffmpeg()
             .input(firstVideoPath)
             .input(secondVideoPath)
@@ -99,16 +88,14 @@ export const processAndConcatVideos = async (
             )
             .outputOptions('-map [outv]') // Указываем выходной видеопоток
             .format('mp4') // Указываем формат выходного файла
+            .save(outputFilePath) // Сохраняем результат в файл
             .on('end', () => {
                 console.log('Обработка и склейка видео завершены.');
-                const processedBuffer = Buffer.concat(chunks);
-                resolve(processedBuffer);
+                resolve();
             })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('error', (err: any) => {
+            .on('error', (err) => {
                 console.error('Ошибка при обработке видео:', err);
                 reject(err);
-            })
-            .pipe(writableStream, {end: true}); // Перенаправляем вывод в writableStream
+            });
     });
 };

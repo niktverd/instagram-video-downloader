@@ -1,3 +1,6 @@
+import {readFileSync} from 'fs';
+import path from 'path';
+
 import dotenv from 'dotenv';
 import {
     collection,
@@ -105,8 +108,10 @@ export async function getMergedVideo({
         saveFileToDisk(finalVideoUrl, 'second.mp4'),
     ]);
     // merge videos
-    const processedBuffer = await processAndConcatVideos(tempFilePath1, tempFilePath2);
+    const outputFilePath = path.join(__dirname, `output.mp4`);
+    await processAndConcatVideos(tempFilePath1, tempFilePath2, outputFilePath);
     // upload final video to firebase strorage
+    const processedBuffer = readFileSync(outputFilePath);
     const fileRef = ref(storage, `${firebaseId}.mp4`);
     const contentType = 'video/mp4';
     const metadata = {contentType};
