@@ -5,14 +5,21 @@ import qs from 'qs';
 
 import {firestore} from './config/firebase';
 import {stopHerokuApp} from './src/heroku';
-import {createInstagramPostContainer, findUnpublishedContainer} from './src/instagram';
+import {
+    createInstagramPostContainer,
+    findUnpublishedContainer,
+    getMergedVideo,
+} from './src/instagram';
 import {MediaPostModel} from './src/types';
-import {uploadFileFromUrl} from './src/utils';
+// import {uploadFileFromUrl} from './src/utils';
 // const cron = require('node-cron');
 dotenv.config();
 
 const availableSenders = (process.env.ALLOWED_SENDER_ID || '').split(',').filter(Boolean);
 const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
+
+const SECOND_VIDEO =
+    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2F0116.mp4?alt=media&token=60b0b84c-cd07-4504-9a6f-a6a44ea73ec4';
 
 // Add this delay function
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -96,8 +103,9 @@ app.post('/webhooks', async (req, res) => {
 
             console.log('firestoreDoc', firestoreDoc.id);
 
-            const urlToPublish = await uploadFileFromUrl({
-                url,
+            const urlToPublish = await getMergedVideo({
+                videoUrl: url,
+                finalVideoUrl: SECOND_VIDEO,
                 firebaseId: firestoreDoc.id,
             });
 
