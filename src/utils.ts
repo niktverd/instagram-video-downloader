@@ -76,19 +76,22 @@ export const processAndConcatVideos = async (
         ffmpeg()
             .input(firstVideoPath)
             .input(secondVideoPath)
-            .complexFilter(
-                [
-                    // Изменяем разрешение каждого видео до 1080x1920 (9:16)
-                    '[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v0]',
-                    '[1:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1[v1]',
-                    // Склеиваем видео вертикально
-                    '[v0][v1]vstack=inputs=2[outv]',
-                ],
-                'outv',
-            )
-            .outputOptions('-map [outv]') // Указываем выходной видеопоток
-            .format('mp4') // Указываем формат выходного файла
-            .save(outputFilePath) // Сохраняем результат в файл
+            .complexFilter([
+                // Подготовка видео: приведение каждого видео к одному формату (если нужно)
+                '[0:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v0]',
+                '[1:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v1]',
+                // Конкатенация двух видео
+                '[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]',
+            ])
+            .outputOptions('-map [outv]') // Используем видеопоток из фильтра
+            .outputOptions('-map [outa]') // Используем аудиопоток из фильтра
+            .output(outputFilePath) // Указываем выходной файл
+            .on('start', (commandLine) => {
+                console.log('FFmpeg command: ' + commandLine);
+            })
+            .on('stderr', (stderrLine) => {
+                console.error('FFmpeg stderr:', stderrLine);
+            })
             .on('end', () => {
                 console.log('Обработка и склейка видео завершены.');
                 resolve();
@@ -96,6 +99,7 @@ export const processAndConcatVideos = async (
             .on('error', (err) => {
                 console.error('Ошибка при обработке видео:', err);
                 reject(err);
-            });
+            })
+            .run();
     });
 };

@@ -1,4 +1,4 @@
-import {readFileSync} from 'fs';
+import {existsSync, mkdirSync, readFileSync} from 'fs';
 import path from 'path';
 
 import dotenv from 'dotenv';
@@ -109,6 +109,10 @@ export async function getMergedVideo({
     ]);
     // merge videos
     const outputFilePath = path.join(__dirname, `output.mp4`);
+    const outputDir = path.dirname(outputFilePath);
+    if (!existsSync(outputDir)) {
+        mkdirSync(outputDir, {recursive: true});
+    }
     await processAndConcatVideos(tempFilePath1, tempFilePath2, outputFilePath);
     // upload final video to firebase strorage
     const processedBuffer = readFileSync(outputFilePath);
