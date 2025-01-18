@@ -8,16 +8,21 @@ import {
     setDoc,
     updateDoc,
 } from 'firebase/firestore/lite';
+import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
 
-import {firestore} from '../config/firebase';
+import {firestore, storage} from '../config/firebase';
 
 import {MediaPostModel} from './types';
+import {getBufferVideo, processAndConcatVideos} from './utils';
 
 dotenv.config();
 
 // const IG_ID = process.env.IG_ID;
-const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]') as Record<string, string>[];
+const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]') as Record<
+    string,
+    string
+>[];
 const SECONDS_IN_DAY = 48 * 60 * 60;
 const TEN_MINUTES = 10 * 60;
 
@@ -76,6 +81,7 @@ export async function createInstagramPostContainer({
             success: true,
             mediaId,
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error(error);
         return {
@@ -83,6 +89,42 @@ export async function createInstagramPostContainer({
             error: error.response?.data || error.message,
         };
     }
+}
+
+export async function getMergedVideo({
+    videoUrl,
+    finalVideoUrl,
+    firebaseId,
+}: Required<Omit<CreateInstagramPostContainerArgs, 'imageUrl' | 'accessToken' | 'caption'>> & {
+    finalVideoUrl: string;
+}) {
+    // download video from instagram
+    // download my video
+    const [buffer1, buffer2] = await Promise.all([
+        getBufferVideo(videoUrl),
+        getBufferVideo(finalVideoUrl),
+    ]);
+    // merge videos
+    const processedBuffer = await processAndConcatVideos(buffer1, buffer2);
+    // upload final video to firebase strorage
+    const fileRef = ref(storage, `${firebaseId}.mp4`);
+    const contentType = 'video/mp4';
+    const metadata = {contentType};
+    await uploadBytes(fileRef, processedBuffer, metadata);
+
+    const downloadURL = await getDownloadURL(fileRef);
+
+    console.log('Файл успешно загружен:', downloadURL);
+
+    // // update firestore record
+    // const collectionRef = collection(firestore, 'media-post');
+    // const documentRef = doc(collectionRef, firebaseId);
+    // await updateDoc(documentRef, {
+    //     firebaseUrl: downloadURL,
+    // });
+
+    // create media container
+    return downloadURL;
 }
 
 type CublishInstagramPostContainerArgs = {
@@ -129,6 +171,7 @@ export async function publishInstagramPostContainer({
             success: true,
             postId: publishResponseJson.id,
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
         console.error(error);
         return {
