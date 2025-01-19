@@ -92,7 +92,7 @@ app.post('/webhooks', async (req, res) => {
             const {type, payload} = attachment;
             console.log({senderId, type, payload});
             const {url, title} = payload;
-            const originalHashtags: string[] = title.match(/#\w+/g) || [];
+            const originalHashtags: string[] = title?.match(/#\w+/g) || [];
 
             console.log(originalHashtags);
             const caption = preparePostText(originalHashtags);
