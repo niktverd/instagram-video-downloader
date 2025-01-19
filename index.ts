@@ -90,7 +90,7 @@ app.post('/webhooks', async (req, res) => {
         for (const attachment of attachments) {
             const {type, payload} = attachment;
             console.log({senderId, type, payload});
-            const {url} = payload;
+            const {url, reel_video_id: reelVideoId} = payload;
 
             const collectionRef = collection(firestore, 'media-post');
             const firestoreDoc = await addDoc(collectionRef, {
@@ -107,8 +107,11 @@ app.post('/webhooks', async (req, res) => {
                 videoUrl: url,
                 finalVideoUrl: SECOND_VIDEO,
                 firebaseId: firestoreDoc.id,
+                reelVideoId,
+                accessToken: accessTokenObject.token,
             });
 
+            throw new Error('Temp error');
             await createInstagramPostContainer({
                 videoUrl: urlToPublish,
                 caption:
