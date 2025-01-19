@@ -15,6 +15,7 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
 
 import {firestore, storage} from '../config/firebase';
+import locations from '../config/instagram.places.json';
 
 import {MediaPostModel} from './types';
 import {processAndConcatVideos, saveFileToDisk} from './utils';
@@ -48,8 +49,28 @@ export async function createInstagramPostContainer({
         if (!accessToken) {
             throw new Error('Access token not found');
         }
+
+        const locationId = locations[Math.floor(Math.random() * locations.length)].external_id;
         // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        const postData: any = {caption, access_token: accessToken};
+        const postData: any = {
+            caption,
+            access_token: accessToken,
+            location_id: locationId,
+            share_to_feed: true,
+            audio_name: 'Автозапчасти по выгодным ценам',
+        };
+        // ?media_type=REELS
+        // &video_url=<REEL_URL>
+        // &caption=<IMAGE_CAPTION>
+        // &share_to_feed=<TRUE_OR_FALSE>
+        // &collaborators=<COLLABORATOR_USERNAMES>
+        // &cover_url=<COVER_URL>
+        // &audio_name=<AUDIO_NAME>
+        // &user_tags=<ARRAY_OF_USERS_FOR_TAGGING>>
+        // &location_id=<LOCATION_PAGE_ID>
+        // &thumb_offset=<THUMB_OFFSET>
+        // &share_to_feed=<TRUE_OR_FALSE>
+        // &access_token=<USER_ACCESS_TOKEN>
 
         if (videoUrl) {
             postData.media_type = 'REELS';
