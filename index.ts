@@ -4,6 +4,7 @@ import {addDoc, collection, deleteDoc, doc, getDocs} from 'firebase/firestore/li
 import qs from 'qs';
 
 import {firestore} from './src/config/firebase';
+import {removePublished} from './src/firebase';
 import {stopHerokuApp} from './src/heroku';
 import {
     createInstagramPostContainer,
@@ -159,6 +160,17 @@ app.get('/publish', async (req, res) => {
     console.log(req.query);
 
     await findUnpublishedContainer();
+
+    res.status(200).send('success');
+    await delay(1000);
+
+    await stopHerokuApp();
+});
+
+app.get('/remove-published', async (req, res) => {
+    console.log(req.query);
+
+    await removePublished();
 
     res.status(200).send('success');
     await delay(1000);
