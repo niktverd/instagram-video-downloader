@@ -4,6 +4,7 @@ import {addDoc, collection} from 'firebase/firestore/lite';
 
 import {firestore} from '../config/firebase';
 import {Collection} from '../constants';
+import {accessTokensArray, getVideoOwnerByVideoId} from '../instagram';
 import {initiateRecord} from '../utils';
 
 dotenv.config();
@@ -77,8 +78,13 @@ export const messageWebhook = async (req: Request, res: Response) => {
         const {type, payload} = attachment;
         console.log(JSON.stringify({senderId, type, payload}));
 
-        const {url, title = ''} = payload;
+        const {url, title = '', reel_video_id: reelVideoId} = payload;
         const originalHashtags: string[] = title?.match(/#\w+/g) || [];
+
+        const owner = await getVideoOwnerByVideoId({
+            reelVideoId,
+            accessToken: accessTokensArray[0].token,
+        });
 
         const collectionRef = collection(firestore, Collection.MediaPosts);
         const firestoreDoc = await addDoc(
@@ -89,12 +95,24 @@ export const messageWebhook = async (req: Request, res: Response) => {
                     senderId,
                     title,
                     originalHashtags,
-                    owner: '',
+                    owner,
+                    reelVideoId,
                 },
             }),
         );
 
-        console.log('firestoreDoc', firestoreDoc.id);
+        console.log(
+            'firestoreDoc',
+            firestoreDoc.id,
+            JSON.stringify({
+                url,
+                senderId,
+                title,
+                originalHashtags,
+                owner,
+                reelVideoId,
+            }),
+        );
         res.status(200).send('success');
     } catch (error) {
         console.log('Error: ', JSON.stringify(error));
