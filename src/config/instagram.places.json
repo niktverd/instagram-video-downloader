@@ -1,0 +1,714 @@
+[
+  {
+    "external_id": "340129803422400",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан",
+    "address": "141 тыс. публикаций",
+    "lat": 55.757684497509,
+    "lng": 37.585035392837
+  },
+  {
+    "external_id": "389365371143360",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан, Павлодар",
+    "address": "2,4 млн публикаций",
+    "lat": 52.283256790118,
+    "lng": 76.939893861546
+  },
+  {
+    "external_id": "164145660851822",
+    "external_id_source": "facebook_places",
+    "name": "Астана Казахстан",
+    "address": "1 млн публикаций",
+    "lat": 51.158583724292,
+    "lng": 71.460657203529
+  },
+  {
+    "external_id": "173156426149091",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан",
+    "address": "40,7 тыс. публикаций",
+    "lat": 43.276824429377,
+    "lng": 76.887479138744
+  },
+  {
+    "external_id": "341836595900773",
+    "external_id_source": "facebook_places",
+    "name": "Астана, Казахстан",
+    "address": "522 тыс. публикаций · Астана, Astana, Kazakhstan",
+    "lat": 51.128091,
+    "lng": 71.43053
+  },
+  {
+    "external_id": "1219166291595205",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан, город Семей Семипалатинск",
+    "address": "236 тыс. публикаций",
+    "lat": 50.414634465821,
+    "lng": 80.259806921794
+  },
+  {
+    "external_id": "333348610112625",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан,Кокшетау",
+    "address": "141 тыс. публикаций · Kokshetau, Kazakhstan",
+    "lat": 53.259270170932,
+    "lng": 69.365444721531
+  },
+  {
+    "external_id": "388481934548883",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан Кызылорда",
+    "address": "798 тыс. публикаций · Kyzylorda",
+    "lat": 44.82971,
+    "lng": 65.509627536667
+  },
+  {
+    "external_id": "369310996487653",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан Тараз",
+    "address": "167 тыс. публикаций · Тараз",
+    "lat": 42.922917345936,
+    "lng": 71.386703548542
+  },
+  {
+    "external_id": "378011912218512",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан, Петропавловск",
+    "address": "31,2 тыс. публикаций · Petropavl",
+    "lat": 54.9250913902,
+    "lng": 69.1403887086
+  },
+  {
+    "external_id": "2175817579210556",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан",
+    "address": "48,2 тыс. публикаций · Казахстан, Aktobe",
+    "lat": 50.282107895993,
+    "lng": 57.210059850092
+  },
+  {
+    "external_id": "666352213800209",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан, город Усть-Каменогорск",
+    "address": "39,1 тыс. публикаций",
+    "lat": 49.9833,
+    "lng": 82.6167
+  },
+  {
+    "external_id": "105362311059605",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан",
+    "address": "Более 1000 публикаций ·  Западно-Казахстанская область, Oral, Kazakhstan",
+    "lat": 51.20297,
+    "lng": 51.3682
+  },
+  {
+    "external_id": "263808620298926",
+    "external_id_source": "facebook_places",
+    "name": "Балхаш, Казахстан",
+    "address": "60,5 тыс. публикаций · Balkhash, Kazakhstan",
+    "lat": 46.8431667163,
+    "lng": 74.9783166523
+  },
+  {
+    "external_id": "225463370888924",
+    "external_id_source": "facebook_places",
+    "name": "Алматы, Казахстан",
+    "address": "369 тыс. публикаций · Almaty, Kazakhstan",
+    "lat": 43.431979812357,
+    "lng": 77.080078125
+  },
+  {
+    "external_id": "113521608833277",
+    "external_id_source": "facebook_places",
+    "name": "Караганда, Казахстан.",
+    "address": "88 тыс. публикаций",
+    "lat": 49.8555895,
+    "lng": 73.2094325
+  },
+  {
+    "external_id": "217830648365993",
+    "external_id_source": "facebook_places",
+    "name": "Караганда, Казахстан",
+    "address": "61,8 тыс. публикаций · Караганда",
+    "lat": 49.787505963436,
+    "lng": 73.148953556945
+  },
+  {
+    "external_id": "397771130275928",
+    "external_id_source": "facebook_places",
+    "name": "Зеренда Акмолинская область Казахстан",
+    "address": "Более 5000 публикаций",
+    "lat": 51.14834752,
+    "lng": 71.47111665
+  },
+  {
+    "external_id": "311919985569090",
+    "external_id_source": "facebook_places",
+    "name": "Капчагай, Алмаатинская Обл, Казахстан",
+    "address": "30,3 тыс. публикаций · Kapchagay, Almaty, Kazakhstan",
+    "lat": 43.88109141,
+    "lng": 77.09433066
+  },
+  {
+    "external_id": "669050393240837",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан г.Тараз",
+    "address": "Более 1000 публикаций · Қонаев көшесі -33, Taraz",
+    "lat": 42.89231,
+    "lng": 71.37134
+  },
+  {
+    "external_id": "618057411690342",
+    "external_id_source": "facebook_places",
+    "name": "Г. Степногорск Акмолинская Обл., Казахстан",
+    "address": "25,8 тыс. публикаций · Қазақстан",
+    "lat": 52.3534266,
+    "lng": 71.8854416
+  },
+  {
+    "external_id": "1464472250471791",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан Щучинск",
+    "address": "16 тыс. публикаций · Казахстан",
+    "lat": 53.006552043436,
+    "lng": 70.20162360643
+  },
+  {
+    "external_id": "228942654692203",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан",
+    "address": "Более 5000 публикаций · казахстан, Atyrau",
+    "lat": 47.103501774078,
+    "lng": 51.909198760986
+  },
+  {
+    "external_id": "383317858347976",
+    "external_id_source": "facebook_places",
+    "name": "Уральск Казахстан",
+    "address": "83,8 тыс. публикаций · Уральск",
+    "lat": 51.250795330062,
+    "lng": 51.391984793692
+  },
+  {
+    "external_id": "113104023459019",
+    "external_id_source": "facebook_places",
+    "name": "Озеро Кобейтуз Ерейментауский Район, Акмолинская Область, Казахстан",
+    "address": "Более 5000 публикаций · 51,7432142, 73,5490368",
+    "lat": 51.73944879401,
+    "lng": 73.549185304998
+  },
+  {
+    "external_id": "336774506345709",
+    "external_id_source": "facebook_places",
+    "name": "Темиртау, Казахстан",
+    "address": "92,1 тыс. публикаций",
+    "lat": 50.058629082519,
+    "lng": 73.003351591162
+  },
+  {
+    "external_id": "819299908101203",
+    "external_id_source": "facebook_places",
+    "name": "Боровое, Акмолинская Область, Казахстан",
+    "address": "16,6 тыс. публикаций",
+    "lat": 52.910625112168,
+    "lng": 70.172206560419
+  },
+  {
+    "external_id": "381392765222588",
+    "external_id_source": "facebook_places",
+    "name": "Тараз Казахстан",
+    "address": "203 тыс. публикаций · Казахстан, Taraz",
+    "lat": 42.302608,
+    "lng": 69.572662
+  },
+  {
+    "external_id": "899525943439126",
+    "external_id_source": "facebook_places",
+    "name": "Казахстан",
+    "address": "10 тыс. публикаций · Алма-Ата",
+    "lat": 43.244444,
+    "lng": 76.9575
+  },
+  {
+    "external_id": "146647199281519",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "188 тыс. публикаций · Астана, Nur-Sultan",
+    "lat": 51.126798458355,
+    "lng": 71.430358886719
+  },
+  {
+    "external_id": "341836595900773",
+    "external_id_source": "facebook_places",
+    "name": "Астана, Казахстан",
+    "address": "522 тыс. публикаций · Астана, Astana, Kazakhstan",
+    "lat": 51.128091,
+    "lng": 71.43053
+  },
+  {
+    "external_id": "164145660851822",
+    "external_id_source": "facebook_places",
+    "name": "Астана Казахстан",
+    "address": "1 млн публикаций",
+    "lat": 51.158583724292,
+    "lng": 71.460657203529
+  },
+  {
+    "external_id": "669320066496377",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "145 тыс. публикаций · Astana, Kazakhstan",
+    "lat": 51.1752558,
+    "lng": 71.3834217
+  },
+  {
+    "external_id": "109308814129178",
+    "external_id_source": "facebook_places",
+    "name": "Астана, Нур-Султан",
+    "address": "118 тыс. публикаций · C 409,дом 41",
+    "lat": 51.1872133,
+    "lng": 71.4116854
+  },
+  {
+    "external_id": "1421045611458422",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "52,4 тыс. публикаций",
+    "lat": 51.1574967584,
+    "lng": 71.4923880024
+  },
+  {
+    "external_id": "360633107293398",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "70,4 тыс. публикаций · Астана",
+    "lat": 51.12810315626,
+    "lng": 71.422605543748
+  },
+  {
+    "external_id": "319704221460123",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "74,9 тыс. публикаций · Nur-Sultan",
+    "lat": 51.119382125373,
+    "lng": 71.439669421009
+  },
+  {
+    "external_id": "1564208427149902",
+    "external_id_source": "facebook_places",
+    "name": "Астана, Коктал 1",
+    "address": "11,3 тыс. публикаций · коктал",
+    "lat": 51.180000305176,
+    "lng": 71.363784790039
+  },
+  {
+    "external_id": "1505613636392231",
+    "external_id_source": "facebook_places",
+    "name": "Астана қаласының әкімдігі/ Акимат города Астаны",
+    "address": "16,9 тыс. публикаций · Бейбітшілік, 11, Nur-Sultan",
+    "lat": 51.16685,
+    "lng": 71.420165
+  },
+  {
+    "external_id": "330932310598101",
+    "external_id_source": "facebook_places",
+    "name": "Астана - Кокшетау",
+    "address": "45,3 тыс. публикаций",
+    "lat": 53.274535746157,
+    "lng": 69.421834838466
+  },
+  {
+    "external_id": "2248817292017075",
+    "external_id_source": "facebook_places",
+    "name": "Астана алаңы / Площадь Астана / Astana Square",
+    "address": "Более 5000 публикаций · Төле би көш.",
+    "lat": 43.254737,
+    "lng": 76.943243
+  },
+  {
+    "external_id": "526099514075898",
+    "external_id_source": "facebook_places",
+    "name": "Хан Шатыр, Астана",
+    "address": "16,8 тыс. публикаций",
+    "lat": 51.132292,
+    "lng": 71.403751
+  },
+  {
+    "external_id": "284952391590215",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "23 тыс. публикаций · Астана, Kokshetau, Kazakhstan",
+    "lat": 53.28252714,
+    "lng": 69.37328785
+  },
+  {
+    "external_id": "280463176228010",
+    "external_id_source": "facebook_places",
+    "name": "Астана",
+    "address": "13 тыс. публикаций",
+    "lat": 53.0676875,
+    "lng": 70.3179999
+  },
+  {
+    "external_id": "570574873378428",
+    "external_id_source": "facebook_places",
+    "name": "Астана Арена / Astana Arena",
+    "address": "Более 5000 публикаций · пр. Кабанбай Батыра",
+    "lat": 51.108163515211,
+    "lng": 71.402736338173
+  },
+  {
+    "external_id": "612401365437330",
+    "external_id_source": "facebook_places",
+    "name": "Астана Азия Парк",
+    "address": "Более 1000 публикаций · Казахстан",
+    "lat": 51.026779487534,
+    "lng": 71.460089172492
+  },
+  {
+    "external_id": "680949818637894",
+    "external_id_source": "facebook_places",
+    "name": "Астана Мустафина",
+    "address": "34,7 тыс. публикаций",
+    "lat": 51.154413400024,
+    "lng": 71.506943499817
+  },
+  {
+    "external_id": "235119243679197",
+    "external_id_source": "facebook_places",
+    "name": "Астана - Моя Столица",
+    "address": "22,3 тыс. публикаций",
+    "lat": 51.119474987513,
+    "lng": 71.475923604937
+  },
+  {
+    "external_id": "472104029494854",
+    "external_id_source": "facebook_places",
+    "name": "AstanaOpera",
+    "address": "25,6 тыс. публикаций · ул. Кунаева 1, Nur-Sultan",
+    "lat": 51.135555555556,
+    "lng": 71.410916666667
+  },
+  {
+    "external_id": "440225466041051",
+    "external_id_source": "facebook_places",
+    "name": "Астана пр. Б. Момышулы",
+    "address": "125 тыс. публикаций",
+    "lat": 51.139489327574,
+    "lng": 71.46660041875
+  },
+  {
+    "external_id": "250557072039431",
+    "external_id_source": "facebook_places",
+    "name": "Нур-Астана",
+    "address": "25 тыс. публикаций · Nur-Sultan",
+    "lat": 51.126561,
+    "lng": 71.415737
+  },
+  {
+    "external_id": "369669260293836",
+    "external_id_source": "facebook_places",
+    "name": "«Астана» саябағы / Парк «Астана» / Astana Park",
+    "address": "16,9 тыс. публикаций · Astana, Kazakhstan",
+    "lat": 51.155369,
+    "lng": 71.419521
+  },
+  {
+    "external_id": "1696740903896063",
+    "external_id_source": "facebook_places",
+    "name": "Астана, Ул. Кошкарбаева",
+    "address": "48,6 тыс. публикаций · Кошкарбаева",
+    "lat": 51.127130104412,
+    "lng": 71.493466262725
+  },
+  {
+    "external_id": "2835478033136037",
+    "external_id_source": "facebook_places",
+    "name": "Астана-Байтерек",
+    "address": "Более 5000 публикаций · Astana, Kazakhstan",
+    "lat": 51.1286493,
+    "lng": 71.4302955
+  },
+  {
+    "external_id": "1747555245491822",
+    "external_id_source": "facebook_places",
+    "name": "The St. Regis Astana",
+    "address": "54,4 тыс. публикаций · 1 Kabanbay Batyr Avenue, Astana",
+    "lat": 51.152944,
+    "lng": 71.425252
+  },
+  {
+    "external_id": "410267012329956",
+    "external_id_source": "facebook_places",
+    "name": "Астана Московская",
+    "address": "Более 1000 публикаций",
+    "lat": 51.181614343558,
+    "lng": 71.41483387606
+  },
+  {
+    "external_id": "321810857981520",
+    "external_id_source": "facebook_places",
+    "name": "Астана Казнуи Дворец Шабыт",
+    "address": "17 тыс. публикаций · Тәуелсіздік даңғылы, 50",
+    "lat": 51.12261,
+    "lng": 71.47338
+  },
+  {
+    "external_id": "478544769145123",
+    "external_id_source": "facebook_places",
+    "name": "Astana International Airport Kazakhstan",
+    "address": "64,1 тыс. публикаций · ул. Кабанбай батыра, 119, Астана (аэропорт)",
+    "lat": 51.027615283212,
+    "lng": 71.462103731236
+  },
+  {
+    "external_id": "271269792973554",
+    "external_id_source": "facebook_places",
+    "name": "Мечеть \"Хазрет Султан\"",
+    "address": "102 тыс. публикаций · Тауелсыздык проспект, 48, Astana, Kazakhstan",
+    "lat": 51.12543261698,
+    "lng": 71.472169744001
+  },
+  {
+    "external_id": "1661000460863060",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "934 тыс. публикаций · Алматы, Alma-Ata, Almaty, Kazakhstan",
+    "lat": 46.175647301336,
+    "lng": 80.944171210334
+  },
+  {
+    "external_id": "100947228762921",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "967 тыс. публикаций",
+    "lat": 43.277502142487,
+    "lng": 76.895821094513
+  },
+  {
+    "external_id": "421918561202845",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "156 тыс. публикаций · Alma-Ata, Almaty, Kazakhstan",
+    "lat": 43.300000667596,
+    "lng": 76.894019708517
+  },
+  {
+    "external_id": "103847345434862",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "39 тыс. публикаций · Алматы, Қазақстан, Almaty, Kazakhstan",
+    "lat": 43.25066,
+    "lng": 76.88814
+  },
+  {
+    "external_id": "1971887743088256",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "64,8 тыс. публикаций · ул. байзакова 280, Almaty, Kazakhstan",
+    "lat": 43.24113,
+    "lng": 76.91437
+  },
+  {
+    "external_id": "225463370888924",
+    "external_id_source": "facebook_places",
+    "name": "Алматы, Казахстан",
+    "address": "369 тыс. публикаций · Almaty, Kazakhstan",
+    "lat": 43.431979812357,
+    "lng": 77.080078125
+  },
+  {
+    "external_id": "1311644092236283",
+    "external_id_source": "facebook_places",
+    "name": "Алматы Медеу",
+    "address": "21,3 тыс. публикаций",
+    "lat": 43.7215157,
+    "lng": 77.3591948
+  },
+  {
+    "external_id": "1798202977107621",
+    "external_id_source": "facebook_places",
+    "name": "Алма-Ата / Алматы / Almaty",
+    "address": "1,2 млн публикаций",
+    "lat": 43.236449082405,
+    "lng": 76.945323944092
+  },
+  {
+    "external_id": "100234864821385",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "40,5 тыс. публикаций · Астана",
+    "lat": 51.161614730225,
+    "lng": 71.412778250091
+  },
+  {
+    "external_id": "132563150697530",
+    "external_id_source": "facebook_places",
+    "name": "Алматы парк Горького",
+    "address": "67,1 тыс. публикаций",
+    "lat": 43.261237,
+    "lng": 76.965622
+  },
+  {
+    "external_id": "534874550000210",
+    "external_id_source": "facebook_places",
+    "name": "Алматы, Гоголя",
+    "address": "24,1 тыс. публикаций · Гоголя",
+    "lat": 43.260220310752,
+    "lng": 76.933783657102
+  },
+  {
+    "external_id": "516875451664871",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "116 тыс. публикаций · Almaty, Kazakhstan",
+    "lat": 43.207060268566,
+    "lng": 76.910947187139
+  },
+  {
+    "external_id": "1800712593491704",
+    "external_id_source": "facebook_places",
+    "name": "Көк Төбе/kok Tobe - Алматы/almaty",
+    "address": "193 тыс. публикаций · Alma-Ata, Almaty, Kazakhstan",
+    "lat": 43.233890475639,
+    "lng": 76.975642767745
+  },
+  {
+    "external_id": "1821852134725950",
+    "external_id_source": "facebook_places",
+    "name": "Алматы Казахстан",
+    "address": "302 тыс. публикаций · Almaty, Kazakhstan",
+    "lat": 43.23521,
+    "lng": 76.9215399
+  },
+  {
+    "external_id": "400501520144044",
+    "external_id_source": "facebook_places",
+    "name": "Кок Тобе Алматы",
+    "address": "109 тыс. публикаций · Алматы",
+    "lat": 43.251788275063,
+    "lng": 76.929678320035
+  },
+  {
+    "external_id": "304379166312227",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "15,8 тыс. публикаций",
+    "lat": 51.127148467563,
+    "lng": 71.424981387769
+  },
+  {
+    "external_id": "416268431733572",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "18,4 тыс. публикаций",
+    "lat": 43.224314298895,
+    "lng": 76.842461556323
+  },
+  {
+    "external_id": "271269792973554",
+    "external_id_source": "facebook_places",
+    "name": "Мечеть \"Хазрет Султан\"",
+    "address": "102 тыс. публикаций · Тауелсыздык проспект, 48, Astana, Kazakhstan",
+    "lat": 51.12543261698,
+    "lng": 71.472169744001
+  },
+  {
+    "external_id": "591093878077085",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "18,5 тыс. публикаций · Almaty, Kazakhstan",
+    "lat": 43.25367,
+    "lng": 76.94949
+  },
+  {
+    "external_id": "1551408165111306",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "Более 5000 публикаций",
+    "lat": 43.214838151286,
+    "lng": 76.820269801939
+  },
+  {
+    "external_id": "121156318645838",
+    "external_id_source": "facebook_places",
+    "name": "Центральный Парк Культуры И Отдыха им. Горького",
+    "address": "70,4 тыс. публикаций · ул. Гоголя, 1, Almaty, Kazakhstan",
+    "lat": 43.261058867428,
+    "lng": 76.964707216136
+  },
+  {
+    "external_id": "295808290769413",
+    "external_id_source": "facebook_places",
+    "name": "Алматы, Шымбұлақ",
+    "address": "18,7 тыс. публикаций",
+    "lat": 43.2775,
+    "lng": 76.8958
+  },
+  {
+    "external_id": "100201133510556",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "Более 5000 публикаций",
+    "lat": 43.259136894889,
+    "lng": 76.927158878471
+  },
+  {
+    "external_id": "686767331339674",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "Более 5000 публикаций",
+    "lat": 43.235350028401,
+    "lng": 76.908623079357
+  },
+  {
+    "external_id": "1477356929225414",
+    "external_id_source": "facebook_places",
+    "name": "Алматы, БАО",
+    "address": "Более 5000 публикаций",
+    "lat": 43.2388199,
+    "lng": 76.8738599
+  },
+  {
+    "external_id": "168377049888130",
+    "external_id_source": "facebook_places",
+    "name": "Алма-Ата",
+    "address": "31,2 тыс. публикаций",
+    "lat": 43.25,
+    "lng": 76.9
+  },
+  {
+    "external_id": "106357394824645",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "11,9 тыс. публикаций · Тараз, Жамбыл ауданы, Қазақстан, Taraz",
+    "lat": 42.89569,
+    "lng": 71.37813
+  },
+  {
+    "external_id": "242637179231060",
+    "external_id_source": "facebook_places",
+    "name": "Акимат Города Алматы",
+    "address": "11,6 тыс. публикаций · Площадь Республики 4",
+    "lat": 43.22870022501,
+    "lng": 76.910761282105
+  },
+  {
+    "external_id": "211978302261802",
+    "external_id_source": "facebook_places",
+    "name": "Алматы,Медео",
+    "address": "38,2 тыс. публикаций · Nur-Sultan",
+    "lat": 51.159583733192,
+    "lng": 71.426574169887
+  },
+  {
+    "external_id": "472135919479303",
+    "external_id_source": "facebook_places",
+    "name": "Алматы",
+    "address": "Более 1000 публикаций",
+    "lat": 45.002914200022,
+    "lng": 78.345082866606
+  }
+]

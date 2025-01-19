@@ -4,8 +4,11 @@ import path from 'path';
 import {collection, doc, updateDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
+import {shuffle} from 'lodash';
 
-import {firestore, storage} from '../config/firebase';
+import {firestore, storage} from './config/firebase';
+import baseHashtags from './config/instagram.hashtags.json';
+import {postText} from './config/post.text';
 
 type UploadFileFromUrlArgs = {
     url: string;
@@ -102,4 +105,16 @@ export const processAndConcatVideos = async (
             })
             .run();
     });
+};
+
+export const preparePostText = (originalHashtags: string[]) => {
+    const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
+    const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
+    const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
+    const finalText = postText.replace(
+        '{popular-hashtags}',
+        [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
+    );
+    console.log({finalText, originalHashtags});
+    return finalText.replace('{original-hashtags}', originalHashtags.join(' ')).trim();
 };

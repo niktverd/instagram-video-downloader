@@ -3,7 +3,7 @@ import express from 'express';
 import {addDoc, collection, deleteDoc, doc, getDocs} from 'firebase/firestore/lite';
 import qs from 'qs';
 
-import {firestore} from './config/firebase';
+import {firestore} from './src/config/firebase';
 import {stopHerokuApp} from './src/heroku';
 import {
     createInstagramPostContainer,
@@ -11,6 +11,7 @@ import {
     getMergedVideo,
 } from './src/instagram';
 import {MediaPostModel} from './src/types';
+import {preparePostText} from './src/utils';
 // import {uploadFileFromUrl} from './src/utils';
 // const cron = require('node-cron');
 dotenv.config();
@@ -90,7 +91,13 @@ app.post('/webhooks', async (req, res) => {
         for (const attachment of attachments) {
             const {type, payload} = attachment;
             console.log({senderId, type, payload});
-            const {url} = payload;
+            const {url, title} = payload;
+            const originalHashtags: string[] = title.match(/#\w+/g) || [];
+
+            console.log(originalHashtags);
+            const caption = preparePostText(originalHashtags);
+
+            console.log(caption);
 
             const collectionRef = collection(firestore, 'media-post');
             const firestoreDoc = await addDoc(collectionRef, {

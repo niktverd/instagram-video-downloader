@@ -14,9 +14,8 @@ import {
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
 
-import {firestore, storage} from '../config/firebase';
-import locations from '../config/instagram.places.json';
-
+import {firestore, storage} from './config/firebase';
+import locations from './config/instagram.places.json';
 import {MediaPostModel} from './types';
 import {processAndConcatVideos, saveFileToDisk} from './utils';
 
