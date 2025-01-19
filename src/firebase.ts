@@ -26,7 +26,6 @@ export const removePublished = async () => {
             }
 
             await deleteDoc(documentRef);
-            break;
         }
     }
 };
