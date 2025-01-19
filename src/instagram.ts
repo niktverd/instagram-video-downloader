@@ -119,9 +119,31 @@ export async function getMergedVideo({
     videoUrl,
     finalVideoUrl,
     firebaseId,
-}: Required<Omit<CreateInstagramPostContainerArgs, 'imageUrl' | 'accessToken' | 'caption'>> & {
+    reelVideoId,
+    accessToken,
+}: Required<Omit<CreateInstagramPostContainerArgs, 'imageUrl' | 'caption'>> & {
     finalVideoUrl: string;
+    reelVideoId: string;
 }) {
+    const accountName = '';
+    try {
+        const accountNameResponse = await fetch(
+            `https://graph.instagram.com/v21.0/${reelVideoId}?fields=owner&access_token=${accessToken}`,
+            // `https://graph.instagram.com/v21.0/${reelVideoId}?fields=owner`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+
+        console.log({accountNameResponse, accountName});
+        const accountNameResponseJson = await accountNameResponse.json();
+        console.log({accountNameResponseJson, accountName});
+    } catch (error) {
+        console.error(error);
+    }
     // download video from instagram
     // download my video
     const [tempFilePath1, tempFilePath2] = await Promise.all([
@@ -134,7 +156,7 @@ export async function getMergedVideo({
     if (!existsSync(outputDir)) {
         mkdirSync(outputDir, {recursive: true});
     }
-    await processAndConcatVideos(tempFilePath1, tempFilePath2, outputFilePath);
+    await processAndConcatVideos(tempFilePath1, tempFilePath2, outputFilePath, '@some_channel');
     // upload final video to firebase strorage
     const processedBuffer = readFileSync(outputFilePath);
     const fileRef = ref(storage, `${firebaseId}.mp4`);

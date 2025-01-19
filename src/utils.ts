@@ -71,7 +71,10 @@ export const processAndConcatVideos = async (
     firstVideoPath: string,
     secondVideoPath: string,
     outputFilePath: string,
+    originalChannerl: string,
 ): Promise<void> => {
+    const dynamicText = `Поддержите их - ${originalChannerl} - support them`;
+    const drawTextFilter = `[outv]drawtext=text='${dynamicText}':fontcolor=white:fontsize=24:x=(w-text_w)/2:y=10:box=1:boxcolor=black@0.5:boxborderw=0[outv]`;
     return new Promise((resolve, reject) => {
         ffmpeg()
             .input(firstVideoPath)
@@ -82,6 +85,7 @@ export const processAndConcatVideos = async (
                 '[1:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v1]',
                 // Конкатенация двух видео
                 '[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]',
+                drawTextFilter,
             ])
             .outputOptions('-map [outv]') // Используем видеопоток из фильтра
             .outputOptions('-map [outa]') // Используем аудиопоток из фильтра
