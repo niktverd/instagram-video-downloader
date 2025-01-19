@@ -115,6 +115,8 @@ app.post('/webhooks', async (req, res) => {
                 firebaseId: firestoreDoc.id,
             });
 
+            console.log({urlToPublish});
+
             await createInstagramPostContainer({
                 videoUrl: urlToPublish,
                 caption:
