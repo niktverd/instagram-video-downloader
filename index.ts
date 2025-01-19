@@ -97,8 +97,6 @@ app.post('/webhooks', async (req, res) => {
             console.log(originalHashtags);
             const caption = preparePostText(originalHashtags);
 
-            console.log(caption);
-
             const collectionRef = collection(firestore, 'media-post');
             const firestoreDoc = await addDoc(collectionRef, {
                 createdAt: new Date(),
@@ -119,7 +117,8 @@ app.post('/webhooks', async (req, res) => {
             await createInstagramPostContainer({
                 videoUrl: urlToPublish,
                 caption:
-                    'carcar.tech - оптовые цены на запчасти и расходники для авто для наших подписчиков (пока только в Астане). Пишите в директ, какая запчасть или какое масло вы ищите и мы предоставим вам лучшие цены с оптовых складов. Присылайте ссылку на свой профиль, чтобы мы убедились, что вы наш подписчик.',
+                    caption ||
+                    'Оптовые цены на запчасти и расходники для авто для наших подписчиков (пока только в Астане). Пишите в директ, какая запчасть или какое масло вы ищите и мы предоставим вам лучшие цены с оптовых складов. Присылайте ссылку на свой профиль, чтобы мы убедились, что вы наш подписчик.',
                 accessToken: accessTokenObject.token,
                 firebaseId: firestoreDoc.id,
             });
