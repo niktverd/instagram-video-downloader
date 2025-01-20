@@ -107,8 +107,8 @@ export const processAndConcatVideos = async (
                     .outputOptions('-map [outv]') // Используем видеопоток из фильтра
                     .outputOptions('-map [outa]') // Используем аудиопоток из фильтра
                     .outputOptions('-movflags +faststart')
-                    .videoBitrate('500k') // Уменьшение битрейта видео
-                    .audioBitrate('128k') // Уменьшение битрейта аудио
+                    // .videoBitrate('500k') // Уменьшение битрейта видео
+                    // .audioBitrate('128k') // Уменьшение битрейта аудио
                     .videoCodec('libx265')
                     .output(outputFilePath) // Указываем выходной файл
                     .on('start', (commandLine) => {
