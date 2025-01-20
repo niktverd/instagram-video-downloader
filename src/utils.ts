@@ -109,7 +109,7 @@ export const processAndConcatVideos = async (
                     .outputOptions('-movflags +faststart')
                     // .videoBitrate('500k') // Уменьшение битрейта видео
                     // .audioBitrate('128k') // Уменьшение битрейта аудио
-                    .videoCodec('libx265')
+                    // .videoCodec('libx265')
                     .output(outputFilePath) // Указываем выходной файл
                     .on('start', (commandLine) => {
                         console.log(2, 'FFmpeg command: ' + commandLine);
