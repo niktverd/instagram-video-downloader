@@ -1,12 +1,20 @@
-import {createReadStream} from 'fs';
-
 import dotenv from 'dotenv';
 import {google} from 'googleapis';
 
 dotenv.config();
 const OAuth2 = google.auth.OAuth2;
 
-export const uploadYoutubeVideo = async () => {
+type UploadYoutubeVideoArgs = {
+    videoReadStream: ReadableStream;
+    title: string;
+    description: string;
+};
+
+export const uploadYoutubeVideo = async ({
+    videoReadStream,
+    title,
+    description,
+}: UploadYoutubeVideoArgs) => {
     const oauth2Client = new OAuth2(
         process.env.YT_CLOUD_ID,
         process.env.YT_SECRET_ID,
@@ -23,8 +31,8 @@ export const uploadYoutubeVideo = async () => {
         {
             requestBody: {
                 snippet: {
-                    title: 'test title',
-                    description: 'test description',
+                    title,
+                    description,
                 },
                 status: {
                     privacyStatus: 'private',
@@ -32,9 +40,7 @@ export const uploadYoutubeVideo = async () => {
             },
             part: ['snippet', 'status'],
             media: {
-                body: createReadStream(
-                    '/Users/niktverd/code/instagram-video-downloader/assets/0NIlzYcCyknw8Krie2h7.mp4',
-                ),
+                body: videoReadStream,
             },
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

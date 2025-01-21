@@ -14,7 +14,6 @@ import {
 } from './src/instagram';
 import {MediaPostModel} from './src/types';
 import {preparePostText} from './src/utils';
-import {uploadYoutubeVideo} from './src/youtube';
 // import {uploadFileFromUrl} from './src/utils';
 // const cron = require('node-cron');
 dotenv.config();
@@ -207,10 +206,6 @@ app.get('/yt-oauth2-callback', async (req, res) => {
         console.error('Error: ', error);
         res.status(500).send('error during oauth');
     }
-});
-
-app.get('/yt-publish-app', async () => {
-    await uploadYoutubeVideo();
 });
 
 const dynamicPort = Number(process.env.PORT);
