@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import {addDoc, collection, deleteDoc, doc, getDocs} from 'firebase/firestore/lite';
+import {google} from 'googleapis';
 import qs from 'qs';
 
 import {firestore} from './src/config/firebase';
@@ -178,6 +179,33 @@ app.get('/remove-published', async (req, res) => {
     await delay(1000);
 
     await stopHerokuApp();
+});
+
+const OAuth2 = google.auth.OAuth2;
+const oauth2Client = new OAuth2(
+    process.env.YT_CLOUD_ID,
+    process.env.YT_SECRET_ID,
+    process.env.YT_REDIRECT_URL,
+);
+
+app.get('/yt-auth', (_req, res) => {
+    const url = oauth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['https://www.googleapis.com/auth/youtube.upload'],
+    });
+    res.redirect(url);
+});
+
+app.get('/yt-oauth2-callback', async (req, res) => {
+    try {
+        const {code} = req.query;
+        const {tokens} = await oauth2Client.getToken(code as string);
+        console.log(tokens);
+        res.send(tokens);
+    } catch (error) {
+        console.error('Error: ', error);
+        res.status(500).send('error during oauth');
+    }
 });
 
 const dynamicPort = Number(process.env.PORT);
