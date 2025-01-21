@@ -10,6 +10,8 @@ import {firestore, storage} from './config/firebase';
 import baseHashtags from './config/instagram.hashtags.json';
 import {postText} from './config/post.text';
 
+export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 type UploadFileFromUrlArgs = {
     url: string;
     firebaseId: string;
