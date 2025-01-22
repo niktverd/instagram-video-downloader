@@ -16,7 +16,7 @@ import {shuffle} from 'lodash';
 
 import {firestore, storage} from './config/firebase';
 import locations from './config/instagram.places.json';
-import {MediaPostModel} from './types';
+import {MediaPostModelOld} from './types';
 import {processAndConcatVideos, saveFileToDisk} from './utils';
 
 dotenv.config();
@@ -41,7 +41,7 @@ export async function createInstagramPostContainer({
     imageUrl,
     caption,
     videoUrl,
-    firebaseId,
+    // firebaseId,
     accessToken,
 }: CreateInstagramPostContainerArgs) {
     try {
@@ -94,12 +94,6 @@ export async function createInstagramPostContainer({
 
         const mediaId = createMediaResponseJson.id;
 
-        const collectionRef = collection(firestore, 'media-post');
-        const documentRef = doc(collectionRef, firebaseId);
-        await updateDoc(documentRef, {
-            mediaContainerId: mediaId,
-        });
-
         return {
             success: true,
             mediaId,
@@ -145,14 +139,6 @@ export async function getMergedVideo({
 
     console.log('Файл успешно загружен:', downloadURL);
 
-    // // update firestore record
-    // const collectionRef = collection(firestore, 'media-post');
-    // const documentRef = doc(collectionRef, firebaseId);
-    // await updateDoc(documentRef, {
-    //     firebaseUrl: downloadURL,
-    // });
-
-    // create media container
     return downloadURL;
 }
 
@@ -229,7 +215,9 @@ export async function findUnpublishedContainer() {
     const docSnaps = await getDocs(collectionRef);
 
     const documents = shuffle(
-        docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id} as unknown as MediaPostModel)),
+        docSnaps.docs.map(
+            (snap) => ({...snap.data(), id: snap.id} as unknown as MediaPostModelOld),
+        ),
     );
     for (const document of documents) {
         console.log(document);

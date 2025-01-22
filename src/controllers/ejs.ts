@@ -2,13 +2,13 @@ import {Request, Response} from 'express';
 import {collection, deleteDoc, doc, getDocs} from 'firebase/firestore/lite';
 
 import {firestore} from '../config/firebase';
-import {MediaPostModel} from '../types';
+import {MediaPostModelOld} from '../types';
 
 export const reportInterface = async (_req: Request, res: Response) => {
     const collectionRef = collection(firestore, 'media-post');
     const snaps = await getDocs(collectionRef);
     const docs = snaps.docs.map(
-        (docEnt) => ({...docEnt.data(), id: docEnt.id} as unknown as MediaPostModel),
+        (docEnt) => ({...docEnt.data(), id: docEnt.id} as unknown as MediaPostModelOld),
     );
 
     const published = docs.filter(({status}) => status === 'published');

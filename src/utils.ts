@@ -1,7 +1,7 @@
 import {writeFileSync} from 'fs';
 import path from 'path';
 
-import {collection, doc, updateDoc} from 'firebase/firestore/lite';
+import {Timestamp, collection, doc, updateDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
 import {shuffle} from 'lodash';
@@ -9,6 +9,7 @@ import {shuffle} from 'lodash';
 import {firestore, storage} from './config/firebase';
 import baseHashtags from './config/instagram.hashtags.json';
 import {postText} from './config/post.text';
+import {MediaPostModel} from './types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -144,3 +145,25 @@ export const preparePostText = (originalHashtags: string[]) => {
     console.log({finalText, originalHashtags});
     return finalText.replace('{original-hashtags}', originalHashtags.join(' ')).trim();
 };
+
+export const initiateRecord = (source: MediaPostModel['sources']) =>
+    ({
+        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
+        firebaseUrl: '',
+        sources: source,
+        publishedOnInstagramCarcarKz: {
+            status: 'empty',
+            mediaContainerId: '',
+            published: false,
+        },
+        publishedOnInstagramCarcarTech: {
+            status: 'empty',
+            mediaContainerId: '',
+            published: false,
+        },
+        publishedOnYoutubeCarcentreKz: {
+            published: false,
+            videoId: '',
+        },
+        attempt: 0,
+    } as Omit<MediaPostModel, 'id'>);
