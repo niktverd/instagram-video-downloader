@@ -152,6 +152,7 @@ export async function publishInstagramPostContainer({
     accessToken,
 }: CublishInstagramPostContainerArgs) {
     try {
+        console.log(JSON.stringify({containerId, accessToken}));
         if (!accessToken || !containerId) {
             throw new Error('Access token not found or container id is empty');
         }
@@ -263,6 +264,7 @@ export const canInstagramPostBePublished = async ({
     accessToken,
 }: CanInstagramPostBePublishedArgs) => {
     try {
+        console.log(JSON.stringify({mediaContainerId, accessToken}));
         if (!accessToken || !mediaContainerId) {
             throw new Error('Access token not found or container id is empty');
         }

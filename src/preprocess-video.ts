@@ -1,5 +1,6 @@
 import {existsSync, mkdirSync, rmSync} from 'fs';
 
+import dotenv from 'dotenv';
 import {collection, doc, getDocs, limit, query, updateDoc, where} from 'firebase/firestore/lite';
 import {shuffle} from 'lodash';
 
@@ -9,6 +10,8 @@ import {createInstagramPostContainer, getMergedVideo} from './instagram';
 import {MediaPostModel, Sources} from './types';
 import {getInstagramPropertyName, preparePostText} from './utils';
 import {uploadYoutubeVideo} from './youtube';
+
+dotenv.config();
 
 const SECOND_VIDEO =
     'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2F0116.mp4?alt=media&token=60b0b84c-cd07-4504-9a6f-a6a44ea73ec4';
@@ -36,7 +39,11 @@ const downloadSource = async (sources: Sources, firebaseId: string) => {
 };
 
 export const preprocessVideo = (ms: number) => {
-    console.log('preprocessVideo', 'start');
+    if (!process.env.ENABLE_PREPROCESS_VIDEO) {
+        console.log('preprocessVideo', 'blocked');
+        return;
+    }
+    console.log('preprocessVideo', 'started');
     // на каждый видос 2 попытки
     // после второй неуспешной пишем в базу метку, что проблемный. Если такая метка уже была, удаляем из базы после двух попыток все уладить
     //   +    грузим по 10 видосов, выбираем рандомно с каким будем работать
