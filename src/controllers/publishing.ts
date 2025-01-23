@@ -50,7 +50,11 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                 const collectionRef = collection(firestore, Collection.MediaPosts);
                 const queryRef = query(
                     collectionRef,
-                    where('random', randomValue < selectorRandomValue ? '>=' : '<=', randomValue),
+                    where(
+                        'randomIndex',
+                        randomValue < selectorRandomValue ? '>=' : '<=',
+                        randomValue,
+                    ),
                     where(`${propertyName}.mediaContainerId`, '!=', '0'),
                     where(`${propertyName}.published`, '==', false),
                     limit(1),

@@ -77,7 +77,7 @@ export const messageWebhook = async (req: Request, res: Response) => {
         const {type, payload} = attachment;
         console.log(JSON.stringify({senderId, type, payload}));
 
-        const {url, title} = payload;
+        const {url, title = ''} = payload;
         const originalHashtags: string[] = title?.match(/#\w+/g) || [];
 
         const collectionRef = collection(firestore, Collection.MediaPosts);
