@@ -55,7 +55,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                         randomValue < selectorRandomValue ? '>=' : '<=',
                         randomValue,
                     ),
-                    where(`${propertyName}.mediaContainerId`, '!=', '0'),
+                    where(`${propertyName}.mediaContainerId`, '!=', ''),
                     where(`${propertyName}.published`, '==', false),
                     limit(1),
                 );
