@@ -141,7 +141,7 @@ export const preprocessVideo = (ms: number) => {
                     break;
                 }
             } catch (error) {
-                console.log(JSON.stringify(error));
+                console.log(JSON.stringify({preprocessVideoCatch: error}));
                 const documentRef = doc(collectionRef, firebaseId);
 
                 if (media.attempt) {
