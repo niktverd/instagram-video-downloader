@@ -1,7 +1,16 @@
 import {existsSync, mkdirSync, rmSync} from 'fs';
 
 import dotenv from 'dotenv';
-import {collection, doc, getDocs, limit, query, updateDoc, where} from 'firebase/firestore/lite';
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    limit,
+    query,
+    updateDoc,
+    where,
+} from 'firebase/firestore/lite';
 import {shuffle} from 'lodash';
 
 import {firestore} from './config/firebase';
@@ -40,7 +49,7 @@ export const preprocessVideo = (ms: number) => {
         console.log('preprocessVideo', 'blocked');
         return;
     }
-    console.log('preprocessVideo', 'started');
+    console.log('preprocessVideo', 'started in', ms, 'ms');
     // на каждый видос 2 попытки
     // после второй неуспешной пишем в базу метку, что проблемный. Если такая метка уже была, удаляем из базы после двух попыток все уладить
     //   +    грузим по 10 видосов, выбираем рандомно с каким будем работать
@@ -133,10 +142,16 @@ export const preprocessVideo = (ms: number) => {
                 }
             } catch (error) {
                 console.log(JSON.stringify(error));
+                const documentRef = doc(collectionRef, firebaseId);
+
                 if (media.attempt) {
                     // delete media
+                    await deleteDoc(documentRef);
                 } else {
                     // save attempt to media
+                    await updateDoc(documentRef, {
+                        attempt: 2,
+                    });
                 }
             } finally {
                 if (existsSync(firebaseId)) {
