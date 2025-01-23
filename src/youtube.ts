@@ -1,3 +1,5 @@
+import {ReadStream} from 'fs';
+
 import dotenv from 'dotenv';
 import {google} from 'googleapis';
 
@@ -5,7 +7,7 @@ dotenv.config();
 const OAuth2 = google.auth.OAuth2;
 
 type UploadYoutubeVideoArgs = {
-    videoReadStream: ReadableStream;
+    videoReadStream: ReadStream;
     title: string;
     description: string;
 };

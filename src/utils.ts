@@ -1,7 +1,7 @@
 import {writeFileSync} from 'fs';
 import path from 'path';
 
-import {Timestamp, collection, doc, updateDoc} from 'firebase/firestore/lite';
+import {Timestamp, collection, doc, getDoc, updateDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
 import {shuffle} from 'lodash';
@@ -9,6 +9,7 @@ import {shuffle} from 'lodash';
 import {firestore, storage} from './config/firebase';
 import baseHashtags from './config/instagram.hashtags.json';
 import {postText} from './config/post.text';
+import {Collection, DelayS} from './constants';
 import {MediaPostModel} from './types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -166,4 +167,26 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
             videoId: '',
         },
         attempt: 0,
+        randomIndex: Math.random(),
     } as Omit<MediaPostModel, 'id'>);
+
+export const isTimeToPublishInstagram = async () => {
+    const systemCollectionRef = collection(firestore, Collection.System);
+    const scheduleDocRef = doc(systemCollectionRef, 'schedule');
+    const scheduleSnap = await getDoc(scheduleDocRef);
+    if (scheduleSnap.exists()) {
+        const schedule = scheduleSnap.data();
+        const now = new Date().getTime() / 1000;
+        const diff = now - schedule.lastPublishingTime.seconds;
+        console.log({schedule, now, diff, delay: DelayS.Min5});
+
+        if (diff < DelayS.Min5) {
+            throw new Error('It is to early to publish container');
+        }
+    }
+};
+
+export const getInstagramPropertyName = (tokenObjectId: string) =>
+    tokenObjectId === 'carcar.kz'
+        ? 'publishedOnInstagramCarcarKz'
+        : 'publishedOnInstagramCarcarTech';

@@ -5,7 +5,7 @@ import qs from 'qs';
 import {DelayMS} from './src/constants';
 import {removePostById, reportInterface} from './src/controllers/ejs';
 import {hubChallangeWebhook, messageWebhook} from './src/controllers/instagram-webhooks';
-import {publishIntagram, removePublishedFromFirebase} from './src/controllers/publishing';
+import {publishIntagram2, removePublishedFromFirebase} from './src/controllers/publishing';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {preprocessVideo} from './src/preprocess-video';
 
@@ -24,7 +24,7 @@ app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
 app.get('/report', reportInterface);
-app.get('/publish', publishIntagram);
+app.get('/publish', publishIntagram2);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);

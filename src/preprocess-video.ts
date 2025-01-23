@@ -4,12 +4,12 @@ import {collection, doc, getDocs, limit, query, updateDoc, where} from 'firebase
 import {shuffle} from 'lodash';
 
 import {firestore} from './config/firebase';
-import {Collection, DelayMS} from './constants';
+import {Collection, DelayMS, accessTokensArray} from './constants';
 import {createInstagramPostContainer, getMergedVideo} from './instagram';
 import {MediaPostModel, Sources} from './types';
-import {preparePostText} from './utils';
+import {getInstagramPropertyName, preparePostText} from './utils';
+import {uploadYoutubeVideo} from './youtube';
 
-const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
 const SECOND_VIDEO =
     'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2F0116.mp4?alt=media&token=60b0b84c-cd07-4504-9a6f-a6a44ea73ec4';
 
@@ -78,10 +78,12 @@ export const preprocessVideo = (ms: number) => {
                         mkdirSync(firebaseId, {recursive: true});
                     }
 
-                    const preparedVideoUrl = await downloadSource(media.sources, firebaseId);
-                    if (!preparedVideoUrl) {
+                    const preparedVideo = await downloadSource(media.sources, firebaseId);
+                    if (!preparedVideo) {
                         continue;
                     }
+
+                    const {downloadURL: preparedVideoUrl, readstream} = preparedVideo;
 
                     // update firestore record
                     const documentRef = doc(collectionRef, firebaseId);
@@ -93,6 +95,13 @@ export const preprocessVideo = (ms: number) => {
                         media.sources.instagramReel?.originalHashtags || [],
                     );
 
+                    await uploadYoutubeVideo({
+                        videoReadStream: readstream,
+                        title: 'Автозапчасти в Астане',
+                        description: caption,
+                    });
+
+                    // create media container
                     for (const tokenObject of accessTokensArray) {
                         const result = await createInstagramPostContainer({
                             videoUrl: preparedVideoUrl,
@@ -104,13 +113,8 @@ export const preprocessVideo = (ms: number) => {
                         });
 
                         if (result.success && result.mediaId) {
-                            // const collectionRef = collection(firestore, 'media-post');
-                            // const documentRef = doc(collectionRef, firebaseId);
                             // eslint-disable-next-line max-depth
-                            const propertyName =
-                                tokenObject.id === 'carcar.kz'
-                                    ? 'publishedOnInstagramCarcarKz'
-                                    : 'publishedOnInstagramCarcarTech';
+                            const propertyName = getInstagramPropertyName(tokenObject.id);
                             await updateDoc(documentRef, {
                                 [propertyName]: {
                                     ...media[propertyName],

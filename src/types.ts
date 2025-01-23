@@ -39,6 +39,7 @@ export type MediaPostModel = {
     publishedOnInstagramCarcarTech: ReportInstagramReel;
     publishedOnYoutubeCarcentreKz: ReportYoutubeShort;
     attempt: number;
+    randomIndex: number;
 };
 
 export type MediaPostModelOld = {
