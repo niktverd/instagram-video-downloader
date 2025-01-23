@@ -71,7 +71,7 @@ export const hubChallangeWebhook = (req: Request, res: Response) => {
 export const messageWebhook = async (req: Request, res: Response) => {
     try {
         console.log(JSON.stringify(req.query));
-        console.log(JSON.stringify(req.body?.entry?.length, null, 3));
+        console.log(JSON.stringify(req.body?.entry?.length));
 
         const {senderId, attachment} = getAttachment(req.body);
         const {type, payload} = attachment;

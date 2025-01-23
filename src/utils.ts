@@ -81,6 +81,38 @@ export const processAndConcatVideos = async (
 ): Promise<void> => {
     return new Promise((resolve, reject) => {
         const tempFilePath = 'temp.mp4';
+
+        function concatenateVideos() {
+            ffmpeg()
+                .input(tempFilePath)
+                .input(secondVideoPath)
+                .complexFilter([
+                    // Подготовка видео: приведение каждого видео к одному формату (если нужно)
+                    '[1:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v1]',
+                    // Конкатенация двух видео
+                    '[0:v][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]',
+                ])
+                .outputOptions('-map [outv]') // Используем видеопоток из фильтра
+                .outputOptions('-map [outa]') // Используем аудиопоток из фильтра
+                .outputOptions('-movflags +faststart')
+                .output(outputFilePath) // Указываем выходной файл
+                .on('start', (commandLine) => {
+                    console.log(2, 'FFmpeg command: ' + commandLine);
+                })
+                .on('stderr', (stderrLine) => {
+                    console.error(2, 'FFmpeg stderr:', stderrLine);
+                })
+                .on('error', (err) => {
+                    console.error(2, 'Ошибка при обработке видео:', err);
+                    reject(err);
+                })
+                .on('end', () => {
+                    console.log(2, 'Обработка и склейка видео завершены.');
+                    resolve();
+                })
+                .run();
+        }
+
         ffmpeg()
             .input(firstVideoPath)
             .output(tempFilePath)
@@ -98,38 +130,44 @@ export const processAndConcatVideos = async (
                 console.error(1, 'Ошибка при обработке видео:', err);
             })
             .on('end', () => {
-                ffmpeg()
-                    .input(tempFilePath)
-                    .input(secondVideoPath)
-                    .complexFilter([
-                        // Подготовка видео: приведение каждого видео к одному формату (если нужно)
-                        // '[0:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v0]',
-                        '[1:v]scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1[v1]',
-                        // Конкатенация двух видео
-                        '[v0][0:a][v1][1:a]concat=n=2:v=1:a=1[outv][outa]',
-                    ])
-                    .outputOptions('-map [outv]') // Используем видеопоток из фильтра
-                    .outputOptions('-map [outa]') // Используем аудиопоток из фильтра
-                    .outputOptions('-movflags +faststart')
-                    // .videoBitrate('500k') // Уменьшение битрейта видео
-                    // .audioBitrate('128k') // Уменьшение битрейта аудио
-                    // .videoCodec('libx265')
-                    .output(outputFilePath) // Указываем выходной файл
-                    .on('start', (commandLine) => {
-                        console.log(2, 'FFmpeg command: ' + commandLine);
-                    })
-                    .on('stderr', (stderrLine) => {
-                        console.error(2, 'FFmpeg stderr:', stderrLine);
-                    })
-                    .on('error', (err) => {
-                        console.error(2, 'Ошибка при обработке видео:', err);
-                        reject(err);
-                    })
-                    .on('end', () => {
-                        console.log(2, 'Обработка и склейка видео завершены.');
-                        resolve();
-                    })
-                    .run();
+                // Check if the first video has an audio stream
+                ffmpeg.ffprobe(tempFilePath, (err, metadata) => {
+                    if (err) {
+                        console.error(1, 'Ошибка при проверке метаданных видео:', err);
+                        return;
+                    }
+
+                    const hasAudio = metadata.streams.some(
+                        (stream) => stream.codec_type === 'audio',
+                    );
+
+                    if (hasAudio) {
+                        // If audio exists, proceed with concatenation
+                        concatenateVideos();
+                    } else {
+                        // If no audio, add a silent audio stream
+                        ffmpeg()
+                            .input(tempFilePath)
+                            .inputFormat('lavfi')
+                            .input('anullsrc') // Add a silent audio stream
+                            .output(tempFilePath)
+                            .audioCodec('aac')
+                            .on('start', (commandLine) => {
+                                console.log(1.5, 'FFmpeg command: ' + commandLine);
+                            })
+                            .on('stderr', (stderrLine) => {
+                                console.error(1.5, 'FFmpeg stderr:', stderrLine);
+                            })
+                            .on('error', (errorLocal) => {
+                                console.error(1.5, 'Ошибка при добавлении аудио:', errorLocal);
+                            })
+                            .on('end', () => {
+                                // Now proceed with concatenation
+                                concatenateVideos();
+                            })
+                            .run();
+                    }
+                });
             })
             .run();
     });

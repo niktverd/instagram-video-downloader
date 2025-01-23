@@ -17,10 +17,7 @@ const SECOND_VIDEO =
     'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2F0116.mp4?alt=media&token=60b0b84c-cd07-4504-9a6f-a6a44ea73ec4';
 
 const downloadSource = async (sources: Sources, firebaseId: string) => {
-    console.log(
-        'downloading source...',
-        JSON.stringify({sources, x: sources.instagramReel}, null, 2),
-    );
+    console.log('downloading source...', JSON.stringify({sources, x: sources.instagramReel}));
     if (sources.instagramReel) {
         console.log('instagram found...');
         return await getMergedVideo({
