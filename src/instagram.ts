@@ -78,7 +78,7 @@ export async function createInstagramPostContainer({
         } else {
             throw new Error('Data is not provided');
         }
-        console.log({postData});
+        console.log(JSON.stringify({postData}));
 
         const createMediaResponse = await fetch(`https://graph.instagram.com/v21.0/me/media`, {
             method: 'POST',
@@ -89,7 +89,7 @@ export async function createInstagramPostContainer({
         });
 
         const createMediaResponseJson = await createMediaResponse.json();
-        console.log({createMediaResponseJson});
+        console.log(JSON.stringify({createMediaResponseJson}));
 
         const mediaId = createMediaResponseJson.id;
 
@@ -205,7 +205,7 @@ export async function findUnpublishedContainer() {
         const schedule = scheduleSnap.data();
         const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
-        console.log({schedule, now, diff});
+        console.log(JSON.stringify({schedule, now, diff}));
 
         if (diff < DelayS.Min10) {
             return;
@@ -221,7 +221,7 @@ export async function findUnpublishedContainer() {
         ),
     );
     for (const document of documents) {
-        console.log(document);
+        console.log(JSON.stringify(document));
         const documentRef = doc(collectionRef, document.id);
 
         if (document.mediaContainerId && document.status !== 'published') {
@@ -246,7 +246,7 @@ export async function findUnpublishedContainer() {
         const now = new Date();
         const dateDiff = now.getTime() / 1000 - createdAt.seconds;
 
-        console.log({dateDiff, delay: DelayS.Day2});
+        console.log(JSON.stringify({dateDiff, delay: DelayS.Day2}));
 
         if (dateDiff > DelayS.Day2) {
             await deleteDoc(documentRef);

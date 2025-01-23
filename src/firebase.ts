@@ -13,7 +13,7 @@ export const removePublished = async () => {
     );
 
     for (const document of documents) {
-        console.log(document);
+        console.log(JSON.stringify(document));
         const documentRef = doc(collectionRef, document.id);
         if (document.mediaContainerId && document.status === 'published') {
             const firebaseUrl = document.firebaseUrl;

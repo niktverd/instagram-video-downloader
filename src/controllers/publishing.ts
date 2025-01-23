@@ -19,7 +19,7 @@ import {MediaPostModel} from '../types';
 import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
-    console.log(req.query);
+    console.log(JSON.stringify(req.query));
 
     await findUnpublishedContainer();
 
@@ -30,12 +30,12 @@ export const publishIntagram = async (req: Request, res: Response) => {
 };
 
 export const publishIntagram2 = async (req: Request, res: Response) => {
-    console.log(req.query);
+    console.log(JSON.stringify(req.query));
 
     try {
         await isTimeToPublishInstagram();
         // get random document for every account
-        console.log('accessTokensArray', accessTokensArray);
+        console.log('accessTokensArray', JSON.stringify(accessTokensArray));
         for (const accessTokenObject of accessTokensArray) {
             try {
                 console.log(
@@ -73,12 +73,14 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                 }
                 const docSnap = snapshot.docs[0];
                 const docData = {...docSnap.data(), id: docSnap.id} as MediaPostModel;
-                console.log({
-                    note: 'doc was found',
-                    propertyName,
-                    randomValue,
-                    docData,
-                });
+                console.log(
+                    JSON.stringify({
+                        note: 'doc was found',
+                        propertyName,
+                        randomValue,
+                        docData,
+                    }),
+                );
 
                 // // check status of media container
                 // // publish media container
@@ -104,7 +106,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
         // update record in db
         res.status(200).send('success');
     } catch (error) {
-        console.log(error);
+        console.log(JSON.stringify(error));
         res.status(200).send('error');
     } finally {
         await delay(1000);
@@ -113,7 +115,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
 };
 
 export const removePublishedFromFirebase = async (req: Request, res: Response) => {
-    console.log(req.query);
+    console.log(JSON.stringify(req.query));
 
     await removePublished();
 

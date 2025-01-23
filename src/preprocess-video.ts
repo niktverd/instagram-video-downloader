@@ -135,7 +135,7 @@ export const preprocessVideo = (ms: number) => {
                     break;
                 }
             } catch (error) {
-                console.log(error);
+                console.log(JSON.stringify(error));
                 if (media.attempt) {
                     // delete media
                 } else {

@@ -143,7 +143,7 @@ export const preparePostText = (originalHashtags: string[]) => {
         '{popular-hashtags}',
         [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
     );
-    console.log({finalText, originalHashtags});
+    console.log(JSON.stringify({finalText, originalHashtags}));
     return finalText.replace('{original-hashtags}', originalHashtags.join(' ')).trim();
 };
 
@@ -178,7 +178,7 @@ export const isTimeToPublishInstagram = async () => {
         const schedule = scheduleSnap.data();
         const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
-        console.log({schedule, now, diff, delay: DelayS.Min5});
+        console.log(JSON.stringify({schedule, now, diff, delay: DelayS.Min5}));
 
         if (diff < DelayS.Min5) {
             throw new Error('It is to early to publish container');

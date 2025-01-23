@@ -41,19 +41,19 @@ const getAttachment = (body: Request['body']) => {
     console.log(JSON.stringify({senderId, messaging}));
 
     if (!availableSenders.includes(senderId?.toString())) {
-        console.log({availableSenders, senderId});
+        console.log(JSON.stringify({availableSenders, senderId}));
         throw new Error('senderId is not allowed');
     }
 
     const attachments = messaging.message?.attachments;
     if (!attachments.length) {
-        console.log({attachments});
+        console.log(JSON.stringify({attachments}));
         throw new Error('attachments is empty');
     }
 
     const [attachment] = attachments;
     if (!attachment) {
-        console.log({attachment});
+        console.log(JSON.stringify({attachment}));
         throw new Error('attachment is undefined');
     }
 
@@ -61,16 +61,16 @@ const getAttachment = (body: Request['body']) => {
 };
 
 export const hubChallangeWebhook = (req: Request, res: Response) => {
-    console.log(req.query);
+    console.log(JSON.stringify(req.query));
     const hubChallenge = req.query['hub.challenge'];
-    console.log(hubChallenge);
+    console.log(JSON.stringify(hubChallenge));
 
     res.status(200).send(hubChallenge);
 };
 
 export const messageWebhook = async (req: Request, res: Response) => {
     try {
-        console.log(req.query);
+        console.log(JSON.stringify(req.query));
         console.log(JSON.stringify(req.body?.entry?.length, null, 3));
 
         const {senderId, attachment} = getAttachment(req.body);
@@ -97,7 +97,7 @@ export const messageWebhook = async (req: Request, res: Response) => {
         console.log('firestoreDoc', firestoreDoc.id);
         res.status(200).send('success');
     } catch (error) {
-        console.log('Error: ', error);
+        console.log('Error: ', JSON.stringify(error));
         res.status(404).send('NotFound');
     }
 };
