@@ -39,4 +39,4 @@ app.listen(appPort, () => {
     console.log(`Example app listening on port ${appPort}`);
 });
 
-preprocessVideo(DelayMS.Min5);
+preprocessVideo(DelayMS.Sec30);
