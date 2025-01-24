@@ -9,6 +9,7 @@ export enum Collection {
 
 export enum DelayMS {
     Sec1 = 1000,
+    Sec30 = 30 * 1000,
     Min5 = 5 * 60 * 1000,
 }
 
