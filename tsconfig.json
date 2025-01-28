@@ -4,6 +4,7 @@
     "outDir": "dist/server",
     "sourceMap": true,
     "target": "ES2019",
+    "jsx": "react", // Поддержка JSX
     "resolveJsonModule": true
   },
   "include": ["src", "index.ts"],
