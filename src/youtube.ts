@@ -48,7 +48,7 @@ export const uploadYoutubeVideo = async ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err: Error | null, data: any) => {
             if (err) {
-                console.error(err);
+                console.error(JSON.stringify(err));
             } else {
                 console.log('video published', data.data.id);
             }
