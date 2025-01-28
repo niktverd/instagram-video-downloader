@@ -20,7 +20,7 @@ export const youtubeAuthCallback = async (req: Request, res: Response) => {
     try {
         const {code} = req.query;
         const {tokens} = await oauth2Client.getToken(code as string);
-        console.log(tokens);
+        console.log(JSON.stringify(tokens));
         res.send(tokens);
     } catch (error) {
         console.error('Error: ', error);

@@ -2,13 +2,13 @@ import dotenv from 'dotenv';
 import express from 'express';
 import qs from 'qs';
 
-// import {firestore} from './src/config/firebase';
+import {DelayMS} from './src/constants';
 import {removePostById, reportInterface} from './src/controllers/ejs';
 import {hubChallangeWebhook, messageWebhook} from './src/controllers/instagram-webhooks';
-import {publishIntagram, removePublishedFromFirebase} from './src/controllers/publishing';
+import {publishIntagram2, removePublishedFromFirebase} from './src/controllers/publishing';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
-// import {uploadFileFromUrl} from './src/utils';
-// const cron = require('node-cron');
+import {preprocessVideo} from './src/preprocess-video';
+
 dotenv.config();
 
 const app = express();
@@ -24,7 +24,7 @@ app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
 app.get('/report', reportInterface);
-app.get('/publish', publishIntagram);
+app.get('/publish', publishIntagram2);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
@@ -39,7 +39,4 @@ app.listen(appPort, () => {
     console.log(`Example app listening on port ${appPort}`);
 });
 
-// cron.schedule('*/5 * * * *', () => {
-//     console.log('Running bot task...');
-//     findUnpublishedContainer();
-// });
+preprocessVideo(DelayMS.Sec30);

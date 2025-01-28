@@ -2,18 +2,18 @@ import {collection, deleteDoc, doc, getDocs} from 'firebase/firestore/lite';
 import {deleteObject, ref} from 'firebase/storage';
 
 import {firestore, storage} from './config/firebase';
-import {MediaPostModel} from './types';
+import {MediaPostModelOld} from './types';
 
 export const removePublished = async () => {
     const collectionRef = collection(firestore, 'media-post');
     const docSnaps = await getDocs(collectionRef);
 
     const documents = docSnaps.docs.map(
-        (snap) => ({...snap.data(), id: snap.id} as unknown as MediaPostModel),
+        (snap) => ({...snap.data(), id: snap.id} as unknown as MediaPostModelOld),
     );
 
     for (const document of documents) {
-        console.log(document);
+        console.log(JSON.stringify(document));
         const documentRef = doc(collectionRef, document.id);
         if (document.mediaContainerId && document.status === 'published') {
             const firebaseUrl = document.firebaseUrl;

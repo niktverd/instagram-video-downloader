@@ -1,3 +1,5 @@
+import {ReadStream} from 'fs';
+
 import dotenv from 'dotenv';
 import {google} from 'googleapis';
 
@@ -5,7 +7,7 @@ dotenv.config();
 const OAuth2 = google.auth.OAuth2;
 
 type UploadYoutubeVideoArgs = {
-    videoReadStream: ReadableStream;
+    videoReadStream: ReadStream;
     title: string;
     description: string;
 };
@@ -46,7 +48,7 @@ export const uploadYoutubeVideo = async ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err: Error | null, data: any) => {
             if (err) {
-                console.error(err);
+                console.error(JSON.stringify(err));
             } else {
                 console.log('video published', data.data.id);
             }

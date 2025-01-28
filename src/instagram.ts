@@ -1,4 +1,4 @@
-import {existsSync, mkdirSync, readFileSync} from 'fs';
+import {createReadStream, existsSync, mkdirSync, readFileSync} from 'fs';
 import path from 'path';
 
 import dotenv from 'dotenv';
@@ -16,7 +16,8 @@ import {shuffle} from 'lodash';
 
 import {firestore, storage} from './config/firebase';
 import locations from './config/instagram.places.json';
-import {MediaPostModel} from './types';
+import {DelayS} from './constants';
+import {MediaPostModelOld} from './types';
 import {processAndConcatVideos, saveFileToDisk} from './utils';
 
 dotenv.config();
@@ -26,8 +27,6 @@ const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY ||
     string,
     string
 >[];
-const SECONDS_IN_DAY = 48 * 60 * 60;
-const TEN_MINUTES = 10 * 60;
 
 type CreateInstagramPostContainerArgs = {
     accessToken: string;
@@ -41,7 +40,7 @@ export async function createInstagramPostContainer({
     imageUrl,
     caption,
     videoUrl,
-    firebaseId,
+    // firebaseId,
     accessToken,
 }: CreateInstagramPostContainerArgs) {
     try {
@@ -79,7 +78,7 @@ export async function createInstagramPostContainer({
         } else {
             throw new Error('Data is not provided');
         }
-        console.log({postData});
+        console.log(JSON.stringify({postData}));
 
         const createMediaResponse = await fetch(`https://graph.instagram.com/v21.0/me/media`, {
             method: 'POST',
@@ -90,15 +89,9 @@ export async function createInstagramPostContainer({
         });
 
         const createMediaResponseJson = await createMediaResponse.json();
-        console.log({createMediaResponseJson});
+        console.log(JSON.stringify({createMediaResponseJson}));
 
         const mediaId = createMediaResponseJson.id;
-
-        const collectionRef = collection(firestore, 'media-post');
-        const documentRef = doc(collectionRef, firebaseId);
-        await updateDoc(documentRef, {
-            mediaContainerId: mediaId,
-        });
 
         return {
             success: true,
@@ -136,6 +129,7 @@ export async function getMergedVideo({
     await processAndConcatVideos(tempFilePath1, tempFilePath2, outputFilePath);
     // upload final video to firebase strorage
     const processedBuffer = readFileSync(outputFilePath);
+    const readstream = createReadStream(outputFilePath);
     const fileRef = ref(storage, `${firebaseId}.mp4`);
     const contentType = 'video/mp4';
     const metadata = {contentType};
@@ -145,15 +139,7 @@ export async function getMergedVideo({
 
     console.log('Файл успешно загружен:', downloadURL);
 
-    // // update firestore record
-    // const collectionRef = collection(firestore, 'media-post');
-    // const documentRef = doc(collectionRef, firebaseId);
-    // await updateDoc(documentRef, {
-    //     firebaseUrl: downloadURL,
-    // });
-
-    // create media container
-    return downloadURL;
+    return {downloadURL, readstream};
 }
 
 type CublishInstagramPostContainerArgs = {
@@ -166,6 +152,7 @@ export async function publishInstagramPostContainer({
     accessToken,
 }: CublishInstagramPostContainerArgs) {
     try {
+        console.log(JSON.stringify({containerId, accessToken}));
         if (!accessToken || !containerId) {
             throw new Error('Access token not found or container id is empty');
         }
@@ -218,9 +205,9 @@ export async function findUnpublishedContainer() {
         const schedule = scheduleSnap.data();
         const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
-        console.log({schedule, now, diff});
+        console.log(JSON.stringify({schedule, now, diff}));
 
-        if (diff < TEN_MINUTES) {
+        if (diff < DelayS.Min10) {
             return;
         }
     }
@@ -229,10 +216,12 @@ export async function findUnpublishedContainer() {
     const docSnaps = await getDocs(collectionRef);
 
     const documents = shuffle(
-        docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id} as unknown as MediaPostModel)),
+        docSnaps.docs.map(
+            (snap) => ({...snap.data(), id: snap.id} as unknown as MediaPostModelOld),
+        ),
     );
     for (const document of documents) {
-        console.log(document);
+        console.log(JSON.stringify(document));
         const documentRef = doc(collectionRef, document.id);
 
         if (document.mediaContainerId && document.status !== 'published') {
@@ -257,10 +246,43 @@ export async function findUnpublishedContainer() {
         const now = new Date();
         const dateDiff = now.getTime() / 1000 - createdAt.seconds;
 
-        console.log({dateDiff, SECONDS_IN_DAY});
+        console.log(JSON.stringify({dateDiff, delay: DelayS.Day2}));
 
-        if (dateDiff > SECONDS_IN_DAY) {
+        if (dateDiff > DelayS.Day2) {
             await deleteDoc(documentRef);
         }
     }
 }
+
+type CanInstagramPostBePublishedArgs = {
+    mediaContainerId: string;
+    accessToken: string;
+};
+
+export const canInstagramPostBePublished = async ({
+    mediaContainerId,
+    accessToken,
+}: CanInstagramPostBePublishedArgs) => {
+    try {
+        console.log(JSON.stringify({mediaContainerId, accessToken}));
+        if (!accessToken || !mediaContainerId) {
+            throw new Error('Access token not found or container id is empty');
+        }
+
+        const statusResponse = await fetch(
+            `https://graph.instagram.com/v21.0/${mediaContainerId}?fields=status_code,status&access_token=${accessToken}`,
+        );
+
+        const statusResponseJson = await statusResponse.json();
+        console.log(JSON.stringify({statusResponseJson}));
+
+        if (statusResponseJson.status_code !== 'FINISHED') {
+            throw new Error('Container is not ready to be published');
+        }
+
+        return true;
+    } catch (error) {
+        console.log(JSON.stringify(error));
+        return false;
+    }
+};
