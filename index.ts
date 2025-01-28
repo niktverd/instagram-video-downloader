@@ -5,7 +5,11 @@ import qs from 'qs';
 import {DelayMS} from './src/constants';
 import {removePostById, reportInterface} from './src/controllers/ejs';
 import {hubChallangeWebhook, messageWebhook} from './src/controllers/instagram-webhooks';
-import {publishIntagram2, removePublishedFromFirebase} from './src/controllers/publishing';
+import {
+    publishById,
+    publishIntagram2,
+    removePublishedFromFirebase,
+} from './src/controllers/publishing';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {preprocessVideo} from './src/preprocess-video';
 
@@ -31,6 +35,7 @@ app.get('/yt-oauth2-callback', youtubeAuthCallback);
 
 app.post('/webhooks', messageWebhook);
 app.post('/remove-post-by-id', removePostById);
+app.post('/publish-by-id', publishById);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;

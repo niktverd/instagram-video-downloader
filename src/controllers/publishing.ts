@@ -1,5 +1,7 @@
 import {Request, Response} from 'express';
 import {
+    DocumentData,
+    DocumentReference,
     collection,
     doc,
     getDocs,
@@ -37,6 +39,9 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
         // get random document for every account
         console.log('accessTokensArray', JSON.stringify(accessTokensArray));
         for (const accessTokenObject of accessTokensArray) {
+            let propertyName: keyof MediaPostModel | null = null;
+            let docRef: DocumentReference<DocumentData, DocumentData> | null = null;
+            // let collectionRef: CollectionReference<DocumentData, DocumentData> | null = null;
             try {
                 console.log(
                     JSON.stringify({
@@ -44,7 +49,10 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                         note: 'Publishing for account',
                     }),
                 );
-                const propertyName = getInstagramPropertyName(accessTokenObject.id);
+                propertyName = getInstagramPropertyName(accessTokenObject.id);
+                if (!propertyName) {
+                    throw new Error(`No propertyName: ${propertyName}`);
+                }
                 const randomValue = Math.random();
                 const selectorRandomValue = Math.random();
                 const collectionRef = collection(firestore, Collection.MediaPosts);
@@ -72,6 +80,8 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                     continue;
                 }
                 const docSnap = snapshot.docs[0];
+                docRef = docSnap.ref;
+                // console.log(docRe2f);
                 const docData = {...docSnap.data(), id: docSnap.id} as MediaPostModel;
                 console.log(
                     JSON.stringify({
@@ -90,7 +100,8 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                     accessToken: accessTokenObject.token,
                 });
                 if (result?.success) {
-                    await updateDoc(docSnap.ref, {
+                    await updateDoc(docRef, {
+                        [`${propertyName}.error`]: false,
                         [`${propertyName}.published`]: true,
                         [`${propertyName}.status`]: 'published',
                     });
@@ -100,6 +111,12 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                 }
             } catch (error) {
                 console.log(JSON.stringify(error));
+                if (docRef) {
+                    await updateDoc(docRef, {
+                        [`${propertyName}.error`]: true,
+                        [`${propertyName}.errorText`]: JSON.stringify(error),
+                    });
+                }
                 continue;
             }
         }
@@ -112,6 +129,26 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
         await delay(1000);
         await stopHerokuApp();
     }
+};
+
+export const publishById = async (req: Request, res: Response) => {
+    try {
+        console.log(JSON.stringify({body: req.body}));
+        const {id, accessToken} = req.body;
+        if (!id || !accessToken) {
+            throw new Error('no id or accessToken found in body');
+        }
+
+        const result = await publishInstagramPostContainer({
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            containerId: id,
+            accessToken: accessToken,
+        });
+        console.log({result});
+    } catch (error) {
+        console.log(JSON.stringify(error));
+    }
+    res.status(200).send('published-by-id');
 };
 
 export const removePublishedFromFirebase = async (req: Request, res: Response) => {
