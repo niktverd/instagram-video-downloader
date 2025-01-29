@@ -12,9 +12,9 @@ import {
     publishIntagram2,
     removePublishedFromFirebase,
 } from './src/controllers/publishing';
+import {fetchMediaPostsForReactUI, renderReactApp} from './src/controllers/react';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {preprocessVideo} from './src/preprocess-video';
-import {renderApp} from './src/react-client';
 
 dotenv.config();
 
@@ -28,7 +28,10 @@ app.set('query parser', function (str: string) {
 });
 
 // app.set('view engine', 'ejs');
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'src', 'public')));
+// console.log(path.join(__dirname, 'src', 'public'));
+// console.log('/Users/niktverd/code/instagram-video-downloader/dist/server/src/public');
 
 app.get('/webhooks', hubChallangeWebhook);
 app.get('/report', reportInterface);
@@ -36,23 +39,8 @@ app.get('/publish', publishIntagram2);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
-app.get('/react', (_req, res) => {
-    const reactApp = renderApp(); // Рендерим React-компонент в строку
-    res.send(`
-        <!DOCTYPE html>
-        <html lang="ru">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>React SSR</title>
-        </head>
-        <body>
-            <div id="root">${reactApp}</div>
-            <script src="/bundle.js"></script> <!-- Подключение клиентского JS -->
-        </body>
-        </html>
-    `);
-});
+app.get('/react', renderReactApp);
+app.get('/ui-fetch-posts', fetchMediaPostsForReactUI);
 
 app.post('/webhooks', messageWebhook);
 app.post('/remove-post-by-id', removePostById);
