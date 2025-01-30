@@ -11,6 +11,7 @@ import {
     publishIntagram2,
     removePublishedFromFirebase,
 } from './src/controllers/publishing';
+import {uiGetMediaPosts} from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {preprocessVideo} from './src/preprocess-video';
 
@@ -51,6 +52,7 @@ app.get('/publish', publishIntagram2);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
+app.get('/ui-get-media-posts', uiGetMediaPosts);
 
 app.post('/webhooks', messageWebhook);
 app.post('/remove-post-by-id', removePostById);

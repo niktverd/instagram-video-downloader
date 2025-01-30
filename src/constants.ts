@@ -19,4 +19,14 @@ export enum DelayS {
     Day2 = 48 * 60 * 60,
 }
 
+export enum MediaPostModelFilters {
+    CreatedAt = 'createdAt',
+    RandomIndex = 'randomIndex',
+}
+
+export enum OrderDirection {
+    Asc = 'asc',
+    Desc = 'desc',
+}
+
 export const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]');
