@@ -14,16 +14,13 @@ import {
 import {shuffle} from 'lodash';
 
 import {firestore} from './config/firebase';
-import {Collection, DelayMS, accessTokensArray} from './constants';
+import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from './constants';
 import {createInstagramPostContainer, getMergedVideo} from './instagram';
 import {MediaPostModel, Sources} from './types';
 import {getInstagramPropertyName, preparePostText} from './utils';
 import {uploadYoutubeVideo} from './youtube';
 
 dotenv.config();
-
-const SECOND_VIDEO =
-    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2F0116.mp4?alt=media&token=60b0b84c-cd07-4504-9a6f-a6a44ea73ec4';
 
 const downloadSource = async (sources: Sources, firebaseId: string) => {
     console.log('downloading source...', JSON.stringify({sources, x: sources.instagramReel}));

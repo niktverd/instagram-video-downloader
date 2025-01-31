@@ -13,6 +13,8 @@ import {pick} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, MediaPostModelFilters, OrderDirection} from '../constants';
+import {MediaPostModel} from '../types';
+import {splitVideoInTheMiddle} from '../utils/video/splitVideoInTheMiddle';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
     const {
@@ -51,4 +53,31 @@ export const uiGetMediaPosts = async (req: Request, res: Response) => {
         lastDocumentId: docs.length ? docs[docs.length - 1].id : null,
         hasMore: docsnap.size === Number(limitLocal),
     });
+};
+
+export const uiSplitVideoInTheMiddle = async (req: Request, res: Response) => {
+    try {
+        const {id} = req.body;
+        if (!id) {
+            throw new Error('id was not provided');
+        }
+
+        const collectionRef = collection(firestore, Collection.MediaPosts);
+        const docRef = doc(collectionRef, id);
+        const snap = await getDoc(docRef);
+        if (!snap.exists()) {
+            throw new Error(`Document with id ${id} does not exist`);
+        }
+        const data = snap.data() as MediaPostModel;
+
+        console.log(JSON.stringify({data}));
+        res.status(200).send({
+            status: 'ok',
+        });
+
+        await splitVideoInTheMiddle(data, snap.id);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
 };

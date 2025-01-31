@@ -1,5 +1,4 @@
 import {writeFileSync} from 'fs';
-import path from 'path';
 
 import {Timestamp, collection, doc, getDoc, updateDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
@@ -62,16 +61,16 @@ export const getBufferVideo = async (url: string) => {
     return Buffer.from(fileBuffer1);
 };
 
-export const saveFileToDisk = async (url: string, fileName: string) => {
+export const saveFileToDisk = async (url: string, filePath: string) => {
     const response = await fetch(url, {
         method: 'GET',
         responseType: 'arraybuffer',
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any);
     const fileBuffer = await response.arrayBuffer();
-    const tempFilePath = path.join(__dirname, fileName);
-    writeFileSync(tempFilePath, Buffer.from(fileBuffer));
-    return tempFilePath;
+    writeFileSync(filePath, Buffer.from(fileBuffer));
+
+    return filePath;
 };
 
 export const processAndConcatVideos = async (

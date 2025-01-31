@@ -116,9 +116,12 @@ export async function getMergedVideo({
 }) {
     // download video from instagram
     // download my video
+    const temp1 = path.join(__dirname, `first.mp4`);
+    const temp2 = path.join(__dirname, `second.mp4`);
+
     const [tempFilePath1, tempFilePath2] = await Promise.all([
-        saveFileToDisk(videoUrl, 'first.mp4'),
-        saveFileToDisk(finalVideoUrl, 'second.mp4'),
+        saveFileToDisk(videoUrl, temp1),
+        saveFileToDisk(finalVideoUrl, temp2),
     ]);
     // merge videos
     const outputFilePath = path.join(__dirname, `output.mp4`);
