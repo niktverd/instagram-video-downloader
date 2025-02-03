@@ -1,6 +1,28 @@
 import {writeFileSync} from 'fs';
+import {dirname, join} from 'path';
 
 import ffmpeg from 'fluent-ffmpeg';
+
+type PrepareOoutputFileNameOptions = {
+    outputFileName?: string;
+    suffix?: string;
+    extention?: string;
+};
+
+export const prepareOoutputFileName = (
+    inputFileName: string,
+    {outputFileName, suffix, extention}: PrepareOoutputFileNameOptions,
+) => {
+    const outputDir = dirname(inputFileName);
+    if (outputFileName) {
+        return join(outputDir, outputFileName);
+    }
+    if (suffix && extention) {
+        return inputFileName.replace(extention, `${suffix}${extention}`);
+    }
+
+    throw new Error('Not sufficient data provided');
+};
 
 export const getVideoDuration = (inputPath: string): Promise<number> => {
     return new Promise((resolve, reject) => {
@@ -51,12 +73,21 @@ export const checkHasAudio = (input: string) => {
 
 type SplitVideoArgs = {
     input: string;
-    output: string;
+    outputOverride: string;
     startTime: number;
     duration?: number;
 };
 
-export const splitVideo = ({input, output, startTime, duration}: SplitVideoArgs) => {
+export const splitVideo = ({
+    input,
+    outputOverride,
+    startTime,
+    duration,
+}: SplitVideoArgs): Promise<string> => {
+    const outputPath = prepareOoutputFileName(input, {
+        outputFileName: outputOverride || 'splitted_video.mp4',
+    });
+
     return new Promise((resolve, reject) => {
         const ffmpegCommand = ffmpeg(input).setStartTime(startTime);
 
@@ -65,8 +96,8 @@ export const splitVideo = ({input, output, startTime, duration}: SplitVideoArgs)
         }
 
         ffmpegCommand
-            .output(output)
-            .on('end', resolve)
+            .output(outputPath)
+            .on('end', () => resolve(outputPath))
             .on('error', (err) => {
                 console.error(1, 'Ошибка при обработке видео:', err);
                 reject();
@@ -77,18 +108,27 @@ export const splitVideo = ({input, output, startTime, duration}: SplitVideoArgs)
 
 type ExtractFramesArgs = {
     input: string;
-    output: string;
     startTime: number;
+    outputOverride?: string;
     frames?: number;
 };
 
-export const extractFrames = ({input, output, startTime, frames = 1}: ExtractFramesArgs) => {
+export const extractFrames = ({
+    input,
+    outputOverride,
+    startTime,
+    frames = 1,
+}: ExtractFramesArgs): Promise<string> => {
+    const outputPath = prepareOoutputFileName(input, {
+        outputFileName: outputOverride || 'frame.png',
+    });
+
     return new Promise((resolve, reject) => {
         ffmpeg(input)
             .setStartTime(startTime)
             .frames(frames)
-            .output(output)
-            .on('end', resolve)
+            .output(outputPath)
+            .on('end', () => resolve(outputPath))
             .on('error', (err) => {
                 console.error(1, 'Ошибка при обработке видео:', err);
                 reject();
@@ -99,11 +139,19 @@ export const extractFrames = ({input, output, startTime, frames = 1}: ExtractFra
 
 type CreateVideoOfFrameArgs = {
     input: string;
-    output: string;
+    outputOverride?: string;
     duration: number;
 };
 
-export const createVideoOfFrame = ({input, output, duration}: CreateVideoOfFrameArgs) => {
+export const createVideoOfFrame = ({
+    input,
+    outputOverride,
+    duration,
+}: CreateVideoOfFrameArgs): Promise<string> => {
+    const outputPath = prepareOoutputFileName(input, {
+        outputFileName: outputOverride || 'frame.mp4',
+    });
+
     return new Promise((resolve, reject) => {
         ffmpeg()
             .input(input) // Input the frame
@@ -113,8 +161,8 @@ export const createVideoOfFrame = ({input, output, duration}: CreateVideoOfFrame
             .audioChannels(2) // Set channels (adjust if needed)
             .audioFrequency(44100) // Set frequency (adjust if needed)
             .outputOptions(['-shortest']) // Use shortest to avoid mismatch issues
-            .output(output)
-            .on('end', resolve)
+            .output(outputPath)
+            .on('end', () => resolve(outputPath))
             .on('error', reject)
             .run();
     });
@@ -122,17 +170,20 @@ export const createVideoOfFrame = ({input, output, duration}: CreateVideoOfFrame
 
 type AddSilentAudioStreamArgs = {
     input: string;
-    output: string;
     duration: number;
     hasAudio?: boolean;
 };
 
 export const addSilentAudioStream = ({
     input,
-    output,
     duration,
     hasAudio = false,
-}: AddSilentAudioStreamArgs) => {
+}: AddSilentAudioStreamArgs): Promise<string> => {
+    const outputPath = prepareOoutputFileName(input, {
+        suffix: '_audio',
+        extention: '.mp4',
+    });
+
     return new Promise((resolve, reject) => {
         const ffmpegCommand = ffmpeg(input);
 
@@ -147,11 +198,11 @@ export const addSilentAudioStream = ({
             // .videoCodec('copy') // This is important to avoid re-encoding if possible
             .audioCodec('aac') // Use AAC audio codec
             .outputOptions(['-shortest']) // Make output duration match shortest input
-            .output(output)
+            .output(outputPath)
             .on('stderr', (stderrLine) => {
                 console.error(2, 'FFmpeg stderr:', stderrLine);
             })
-            .on('end', resolve)
+            .on('end', () => resolve(outputPath))
             .on('error', (err) => {
                 console.error('Error adding silence to video:', err);
                 reject(err);
@@ -180,7 +231,9 @@ export const concatVideoFromList = (list: string, output: string) => {
     });
 };
 
-export const normalizeVideo = (input: string, output: string) => {
+export const normalizeVideo = (input: string): Promise<string> => {
+    const outputPath = prepareOoutputFileName(input, {suffix: '_normilized', extention: '.mp4'});
+
     return new Promise((resolve, reject) => {
         ffmpeg(input)
             .videoCodec('libx264') // Используем libx264 для видео
@@ -192,8 +245,8 @@ export const normalizeVideo = (input: string, output: string) => {
                 '-ar 44100', // Частота дискретизации аудио
                 '-ac 2', // Стерео звук
             ])
-            .output(output)
-            .on('end', resolve)
+            .output(outputPath)
+            .on('end', () => resolve(outputPath))
             .on('error', reject)
             .run();
     });
@@ -202,24 +255,27 @@ export const normalizeVideo = (input: string, output: string) => {
 // /Users/niktverd/code/instagram-video-downloader/green.mp4
 type CoverWithGreenArgs = {
     input: string;
-    output: string;
     green: string;
     startTime: number;
     duration: number;
+    outputOverride?: string;
     padding?: number;
 };
 
 export const coverWithGreen = async ({
     input,
-    output,
     green,
     startTime,
     duration,
     padding = 0,
-}: CoverWithGreenArgs) => {
+}: CoverWithGreenArgs): Promise<string> => {
+    const outputPath = prepareOoutputFileName(input, {
+        suffix: '_green_covered',
+        extention: '.mp4',
+    });
     console.log({
         input,
-        output,
+        outputPath,
         green,
         startTime,
         duration,
@@ -304,7 +360,7 @@ export const coverWithGreen = async ({
                     hasAudio ? '-c:a aac' : '-c:a copy', // Копируем аудио без перекодировки
                 ].filter((outputOption) => outputOption !== 'none'),
             )
-            .save(output) // Сохраняем результат
+            .save(outputPath) // Сохраняем результат
             .on('start', (commandLine) => {
                 console.log('FFmpeg process started:', commandLine);
             })
@@ -314,7 +370,7 @@ export const coverWithGreen = async ({
             .on('stderr', (stderrLine) => {
                 console.error(2, 'FFmpeg stderr:', stderrLine);
             })
-            .on('end', resolve)
+            .on('end', () => resolve(outputPath))
             .on('error', (err) => {
                 console.error('Error occurred:', err);
                 reject();
