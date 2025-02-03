@@ -11,7 +11,7 @@ import {
     publishIntagram2,
     removePublishedFromFirebase,
 } from './src/controllers/publishing';
-import {uiGetMediaPosts, uiSplitVideoInTheMiddle} from './src/controllers/ui';
+import {uiGetMediaPosts, uiSplitVideoInTheMiddle, uiTestGreenScreen} from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {preprocessVideo} from './src/preprocess-video';
 
@@ -58,6 +58,7 @@ app.post('/webhooks', messageWebhook);
 app.post('/remove-post-by-id', removePostById);
 app.post('/publish-by-id', publishById);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
+app.post('/ui-test-green-screen', uiTestGreenScreen);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;

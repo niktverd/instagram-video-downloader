@@ -101,9 +101,10 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
     await concatVideoFromList(mylistPath, outputFilePath);
 
     // await logStreamsInfo(outputFilePath);
+    const normalizedOutputPath = await normalizeVideo(outputFilePath);
 
     const greenInsertionPath = await coverWithGreen({
-        input: outputFilePath,
+        input: normalizedOutputPath,
         // output: greenInsertionPath,
         green: tempFilePath2Formated,
         startTime: pauseTime,
@@ -140,8 +141,42 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
     console.log(downloadURL);
 
     // Clean up temporary files (optional) - use with caution in production!
+    rmSync(basePath, {recursive: true});
+};
 
-    if (process.env.lsdkfjsld) {
-        rmSync(basePath, {recursive: true});
+export const testPIP = async (data: MediaPostModel, firestoreId: string) => {
+    const {sources} = data;
+    if (!sources.instagramReel?.url || !firestoreId) {
+        return;
     }
+
+    const basePath = path.join(__dirname, firestoreId);
+    if (!existsSync(basePath)) {
+        mkdirSync(basePath, {recursive: true});
+    }
+
+    const tempFilePath1 = path.join(basePath, 'first.mp4');
+    const tempFilePath2 = path.join(basePath, 'second.mp4');
+
+    await Promise.all([
+        saveFileToDisk(sources.instagramReel.url, tempFilePath1),
+        saveFileToDisk(SECOND_VIDEO, tempFilePath2),
+    ]);
+
+    const file1Duration = await getVideoDuration(tempFilePath1);
+    const file2Duration = await getVideoDuration(tempFilePath2);
+    const pauseTime = 2;
+    console.log('times: ', JSON.stringify({file1Duration, file2Duration, pauseTime}));
+
+    // format videos
+    const tempFilePath1Formated = await normalizeVideo(tempFilePath1);
+    const tempFilePath2Formated = await normalizeVideo(tempFilePath2);
+
+    await coverWithGreen({
+        input: tempFilePath1Formated,
+        green: tempFilePath2Formated,
+        startTime: pauseTime,
+        duration: file2Duration,
+        padding: 220,
+    });
 };

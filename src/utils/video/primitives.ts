@@ -9,9 +9,9 @@ type PrepareOoutputFileNameOptions = {
     extention?: string;
 };
 
-const ENABLE_STDERR = false;
-const ENABLE_PROGRESS = false;
-const ENABLE_START = false;
+const ENABLE_STDERR = Boolean(process.env.ENABLE_STDERR);
+const ENABLE_PROGRESS = Boolean(process.env.ENABLE_PROGRESS);
+const ENABLE_START = Boolean(process.env.ENABLE_START);
 
 const ffmpegCommon = (
     ffmpegCommand: FfmpegCommand,
@@ -302,9 +302,6 @@ export const coverWithGreen = async ({
             duration,
         }),
     );
-    // await logStreamsInfo(input);
-    // await logStreamsInfo(green);
-    const hasAudio = await checkHasAudio(green);
     const complexFilters = [
         // Применяем chromakey к видео с зеленым экраном
         {
@@ -347,44 +344,17 @@ export const coverWithGreen = async ({
             outputs: '[out]', // Выход: финальное видео
         },
         // Задержка аудио наложенного видео на startSeconds
-        // hasAudio
-        //     ? {
-        //           filter: 'adelay',
-        //           options: `${startTime * 1000}|${startTime * 1000}`, // Задержка в миллисекундах (для стерео)
-        //           inputs: '[1:a]', // Вход: аудио из наложенного видео
-        //           outputs: '[delayed]', // Выход: задержанное аудио
-        //       }
-        //     : 'none',
         {
             filter: 'adelay',
             // options: `${startTime * 1000}|${startTime * 1000}`, // Задержка в миллисекундах (для стерео)
-            options: `${startTime * 500}|${startTime * 500}`, // Задержка в миллисекундах (для стерео)
+            options: `${startTime * 1000}|${startTime * 1000}`, // Задержка в миллисекундах (для стерео)
             inputs: '[1:a]', // Вход: аудио из наложенного видео
             outputs: '[delayed]', // Выход: задержанное аудио
         },
         {
-            filter: 'aresample',
-            options: 'async=1:first_pts=0',
-            inputs: '[delayed]',
-            outputs: '[resampled]',
-        },
-        // Смешивание аудио основного видео и задержанного аудио
-        // hasAudio
-        //     ? {
-        //           filter: 'amix',
-        //           options: {
-        //               inputs: 2, // Количество входных аудиопотоков
-        //               duration: 'longest', // Использовать длительность самого длинного аудио
-        //           },
-        //           //   inputs: ['[0:a]', '[delayed]'], // Входы: аудио из основного видео и задержанное аудио
-        //           inputs: ['[0:a]', '[1:a]'], // Входы: аудио из основного видео и задержанное аудио
-        //           outputs: '[outa]', // Выход: финальное аудио
-        //       }
-        //     : 'none',
-        {
             filter: 'amix',
-            options: {inputs: 2, duration: 'longest'},
-            inputs: ['[0:a]', '[resampled]'],
+            options: {inputs: 2, duration: 'first', dropout_transition: 0},
+            inputs: ['[0:a]', '[delayed]'],
             outputs: '[outa]',
         },
     ];
@@ -400,9 +370,9 @@ export const coverWithGreen = async ({
             .outputOptions(
                 [
                     '-map [out]', // Используем финальный видеопоток
-                    hasAudio ? '-map [outa]' : '-map 0:a', // Используем финальный аудиопоток
+                    '-map [outa]', // Используем финальный аудиопоток
                     '-c:v libx264', // Кодируем видео в H.264
-                    hasAudio ? '-c:a aac' : '-c:a copy', // Копируем аудио без перекодировки
+                    '-c:a aac', // Копируем аудио без перекодировки
                 ].filter((outputOption) => outputOption !== 'none'),
             );
 
