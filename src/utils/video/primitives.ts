@@ -1,7 +1,7 @@
 import {writeFileSync} from 'fs';
 import {dirname, join} from 'path';
 
-import ffmpeg from 'fluent-ffmpeg';
+import ffmpeg, {FfmpegCommand} from 'fluent-ffmpeg';
 
 type PrepareOoutputFileNameOptions = {
     outputFileName?: string;
@@ -9,7 +9,46 @@ type PrepareOoutputFileNameOptions = {
     extention?: string;
 };
 
-export const prepareOoutputFileName = (
+const ENABLE_STDERR = false;
+const ENABLE_PROGRESS = false;
+const ENABLE_START = false;
+
+const ffmpegCommon = (
+    ffmpegCommand: FfmpegCommand,
+    resolve: (outputPash: string) => void,
+    reject: (reason?: string) => void,
+    outputPath: string,
+    reason?: string,
+) => {
+    if (ENABLE_STDERR) {
+        ffmpegCommand.on('stderr', (stderrLine) => {
+            console.error(2, 'FFmpeg stderr:', stderrLine);
+        });
+    }
+
+    if (ENABLE_PROGRESS) {
+        ffmpegCommand.on('progress', (progress) => {
+            console.log(`Processing: ${JSON.stringify(progress)}% done`);
+        });
+    }
+
+    if (ENABLE_START) {
+        ffmpegCommand.on('start', (commandLine) => {
+            console.log('FFmpeg process started:', commandLine);
+        });
+    }
+
+    ffmpegCommand
+        .on('error', (err) => {
+            console.error(1, reason || 'Ошибка при обработке видео:', err);
+            reject(reason);
+        })
+        .on('end', () => resolve(outputPath));
+
+    return ffmpegCommand;
+};
+
+export const prepareOutputFileName = (
     inputFileName: string,
     {outputFileName, suffix, extention}: PrepareOoutputFileNameOptions,
 ) => {
@@ -63,7 +102,7 @@ export const checkHasAudio = (input: string) => {
             }
             resolve(
                 dataLocal.streams.some((stream) => {
-                    console.log({stream});
+                    // console.log({stream});
                     return stream.codec_type === 'audio';
                 }),
             );
@@ -84,7 +123,7 @@ export const splitVideo = ({
     startTime,
     duration,
 }: SplitVideoArgs): Promise<string> => {
-    const outputPath = prepareOoutputFileName(input, {
+    const outputPath = prepareOutputFileName(input, {
         outputFileName: outputOverride || 'splitted_video.mp4',
     });
 
@@ -95,14 +134,9 @@ export const splitVideo = ({
             ffmpegCommand.setDuration(duration);
         }
 
-        ffmpegCommand
-            .output(outputPath)
-            .on('end', () => resolve(outputPath))
-            .on('error', (err) => {
-                console.error(1, 'Ошибка при обработке видео:', err);
-                reject();
-            })
-            .run();
+        ffmpegCommand.output(outputPath).on('end', () => resolve(outputPath));
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'splitVideo').run();
     });
 };
 
@@ -119,21 +153,17 @@ export const extractFrames = ({
     startTime,
     frames = 1,
 }: ExtractFramesArgs): Promise<string> => {
-    const outputPath = prepareOoutputFileName(input, {
+    const outputPath = prepareOutputFileName(input, {
         outputFileName: outputOverride || 'frame.png',
     });
 
     return new Promise((resolve, reject) => {
-        ffmpeg(input)
+        const ffmpegCommand = ffmpeg(input)
             .setStartTime(startTime)
             .frames(frames)
-            .output(outputPath)
-            .on('end', () => resolve(outputPath))
-            .on('error', (err) => {
-                console.error(1, 'Ошибка при обработке видео:', err);
-                reject();
-            })
-            .run();
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'extractFrames').run();
     });
 };
 
@@ -148,12 +178,12 @@ export const createVideoOfFrame = ({
     outputOverride,
     duration,
 }: CreateVideoOfFrameArgs): Promise<string> => {
-    const outputPath = prepareOoutputFileName(input, {
+    const outputPath = prepareOutputFileName(input, {
         outputFileName: outputOverride || 'frame.mp4',
     });
 
     return new Promise((resolve, reject) => {
-        ffmpeg()
+        const ffmpegCommand = ffmpeg()
             .input(input) // Input the frame
             .loop(1)
             .setDuration(duration) // Set duration to the second video's duration
@@ -161,25 +191,23 @@ export const createVideoOfFrame = ({
             .audioChannels(2) // Set channels (adjust if needed)
             .audioFrequency(44100) // Set frequency (adjust if needed)
             .outputOptions(['-shortest']) // Use shortest to avoid mismatch issues
-            .output(outputPath)
-            .on('end', () => resolve(outputPath))
-            .on('error', reject)
-            .run();
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'createVideoOfFrame').run();
     });
 };
 
 type AddSilentAudioStreamArgs = {
     input: string;
-    duration: number;
-    hasAudio?: boolean;
+    // duration?: number;
+    // hasAudio?: boolean;
 };
 
-export const addSilentAudioStream = ({
-    input,
-    duration,
-    hasAudio = false,
-}: AddSilentAudioStreamArgs): Promise<string> => {
-    const outputPath = prepareOoutputFileName(input, {
+export const addSilentAudioStream = async ({input}: AddSilentAudioStreamArgs): Promise<string> => {
+    const hasAudio = await checkHasAudio(input);
+    const duration = await getVideoDuration(input);
+
+    const outputPath = prepareOutputFileName(input, {
         suffix: '_audio',
         extention: '.mp4',
     });
@@ -198,16 +226,9 @@ export const addSilentAudioStream = ({
             // .videoCodec('copy') // This is important to avoid re-encoding if possible
             .audioCodec('aac') // Use AAC audio codec
             .outputOptions(['-shortest']) // Make output duration match shortest input
-            .output(outputPath)
-            .on('stderr', (stderrLine) => {
-                console.error(2, 'FFmpeg stderr:', stderrLine);
-            })
-            .on('end', () => resolve(outputPath))
-            .on('error', (err) => {
-                console.error('Error adding silence to video:', err);
-                reject(err);
-            })
-            .run();
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'createVideoOfFrame').run();
     });
 };
 
@@ -219,23 +240,22 @@ export const saveFileList = (listPash: string, ...args: string[]) => {
 
 export const concatVideoFromList = (list: string, output: string) => {
     return new Promise((resolve, reject) => {
-        ffmpeg()
+        const ffmpegCommand = ffmpeg()
             .input(list)
             .inputOptions(['-f concat', '-safe 0'])
             .output(output)
             .videoCodec('copy') // Copy video if possible.  If you skipped formatting, this is essential!
-            .audioCodec('aac') // Ensure consistent audio codec
-            .on('end', resolve)
-            .on('error', reject)
-            .run();
+            .audioCodec('aac'); // Ensure consistent audio codec
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, output, 'concatVideoFromList').run();
     });
 };
 
 export const normalizeVideo = (input: string): Promise<string> => {
-    const outputPath = prepareOoutputFileName(input, {suffix: '_normilized', extention: '.mp4'});
+    const outputPath = prepareOutputFileName(input, {suffix: '_normilized', extention: '.mp4'});
 
     return new Promise((resolve, reject) => {
-        ffmpeg(input)
+        const ffmpegCommand = ffmpeg(input)
             .videoCodec('libx264') // Используем libx264 для видео
             .audioCodec('aac') // Используем AAC для аудио
             .outputOptions([
@@ -245,10 +265,9 @@ export const normalizeVideo = (input: string): Promise<string> => {
                 '-ar 44100', // Частота дискретизации аудио
                 '-ac 2', // Стерео звук
             ])
-            .output(outputPath)
-            .on('end', () => resolve(outputPath))
-            .on('error', reject)
-            .run();
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'normalizeVideo').run();
     });
 };
 
@@ -269,89 +288,115 @@ export const coverWithGreen = async ({
     duration,
     padding = 0,
 }: CoverWithGreenArgs): Promise<string> => {
-    const outputPath = prepareOoutputFileName(input, {
+    const outputPath = prepareOutputFileName(input, {
         suffix: '_green_covered',
         extention: '.mp4',
     });
-    console.log({
-        input,
-        outputPath,
-        green,
-        startTime,
-        duration,
-    });
-    await logStreamsInfo(input);
-    await logStreamsInfo(green);
+    console.log(
+        'coverWithGreen',
+        JSON.stringify({
+            input,
+            outputPath,
+            green,
+            startTime,
+            duration,
+        }),
+    );
+    // await logStreamsInfo(input);
+    // await logStreamsInfo(green);
     const hasAudio = await checkHasAudio(green);
+    const complexFilters = [
+        // Применяем chromakey к видео с зеленым экраном
+        {
+            filter: 'chromakey',
+            options: {
+                color: '0x00ff00', // Цвет зеленого экрана
+                similarity: 0.1, // Порог схожести
+                blend: 0.2, // Порог смешивания
+            },
+            inputs: '[1:v]', // Вход: видео с зеленым экраном
+            outputs: '[ckout]', // Выход: видео без зеленого экрана
+        },
+        // Масштабируем наложенное видео с сохранением пропорций
+        {
+            filter: 'scale',
+            options: {
+                width: `iw-${padding * 2}`, // Ширина = ширина основного видео минус отступы
+                height: `ih-${padding * 2}`, // Высота = высота основного видео минус отступы
+                force_original_aspect_ratio: 'decrease', // Сохраняем пропорции
+            },
+            inputs: '[ckout]', // Вход: видео без зеленого экрана
+            outputs: '[scaled]', // Выход: масштабированное видео
+        },
+        // Синхронизируем начало наложенного видео с моментом startTime основного видео
+        {
+            filter: 'setpts',
+            options: `PTS-STARTPTS+${startTime}/TB`, // Сдвигаем PTS (Presentation Timestamp) на startSeconds
+            inputs: '[scaled]', // Вход: видео без зеленого экрана
+            outputs: '[synced]', // Выход: синхронизированное видео
+        },
+        // Наложение синхронизированного видео на основное видео
+        {
+            filter: 'overlay',
+            options: {
+                x: '(W-w)/2', // Центрируем по горизонтали
+                y: '(H-h)/2', // Центрируем по вертикали
+                enable: `between(t,${startTime},${startTime + duration})`, // Наложение активно только в указанный период
+            },
+            inputs: ['[0:v]', '[synced]'], // Входы: основное видео и синхронизированное видео
+            outputs: '[out]', // Выход: финальное видео
+        },
+        // Задержка аудио наложенного видео на startSeconds
+        // hasAudio
+        //     ? {
+        //           filter: 'adelay',
+        //           options: `${startTime * 1000}|${startTime * 1000}`, // Задержка в миллисекундах (для стерео)
+        //           inputs: '[1:a]', // Вход: аудио из наложенного видео
+        //           outputs: '[delayed]', // Выход: задержанное аудио
+        //       }
+        //     : 'none',
+        {
+            filter: 'adelay',
+            // options: `${startTime * 1000}|${startTime * 1000}`, // Задержка в миллисекундах (для стерео)
+            options: `${startTime * 500}|${startTime * 500}`, // Задержка в миллисекундах (для стерео)
+            inputs: '[1:a]', // Вход: аудио из наложенного видео
+            outputs: '[delayed]', // Выход: задержанное аудио
+        },
+        {
+            filter: 'aresample',
+            options: 'async=1:first_pts=0',
+            inputs: '[delayed]',
+            outputs: '[resampled]',
+        },
+        // Смешивание аудио основного видео и задержанного аудио
+        // hasAudio
+        //     ? {
+        //           filter: 'amix',
+        //           options: {
+        //               inputs: 2, // Количество входных аудиопотоков
+        //               duration: 'longest', // Использовать длительность самого длинного аудио
+        //           },
+        //           //   inputs: ['[0:a]', '[delayed]'], // Входы: аудио из основного видео и задержанное аудио
+        //           inputs: ['[0:a]', '[1:a]'], // Входы: аудио из основного видео и задержанное аудио
+        //           outputs: '[outa]', // Выход: финальное аудио
+        //       }
+        //     : 'none',
+        {
+            filter: 'amix',
+            options: {inputs: 2, duration: 'longest'},
+            inputs: ['[0:a]', '[resampled]'],
+            outputs: '[outa]',
+        },
+    ];
+    // ].filter((filter) => filter !== 'none');
+
+    console.log('complexFilters', complexFilters);
+
     return new Promise((resolve, reject) => {
-        ffmpeg()
+        const ffmpegCommand = ffmpeg()
             .input(input) // Основное видео
             .input(green) // Видео с зеленым экраном
-            .complexFilter(
-                [
-                    // Применяем chromakey к видео с зеленым экраном
-                    {
-                        filter: 'chromakey',
-                        options: {
-                            color: '0x00ff00', // Цвет зеленого экрана
-                            similarity: 0.1, // Порог схожести
-                            blend: 0.2, // Порог смешивания
-                        },
-                        inputs: '[1:v]', // Вход: видео с зеленым экраном
-                        outputs: '[ckout]', // Выход: видео без зеленого экрана
-                    },
-                    // Масштабируем наложенное видео с сохранением пропорций
-                    {
-                        filter: 'scale',
-                        options: {
-                            width: `iw-${padding * 2}`, // Ширина = ширина основного видео минус отступы
-                            height: `ih-${padding * 2}`, // Высота = высота основного видео минус отступы
-                            force_original_aspect_ratio: 'decrease', // Сохраняем пропорции
-                        },
-                        inputs: '[ckout]', // Вход: видео без зеленого экрана
-                        outputs: '[scaled]', // Выход: масштабированное видео
-                    },
-                    // Синхронизируем начало наложенного видео с моментом startTime основного видео
-                    {
-                        filter: 'setpts',
-                        options: `PTS-STARTPTS+${startTime}/TB`, // Сдвигаем PTS (Presentation Timestamp) на startSeconds
-                        inputs: '[scaled]', // Вход: видео без зеленого экрана
-                        outputs: '[synced]', // Выход: синхронизированное видео
-                    },
-                    // Наложение синхронизированного видео на основное видео
-                    {
-                        filter: 'overlay',
-                        options: {
-                            x: '(W-w)/2', // Центрируем по горизонтали
-                            y: '(H-h)/2', // Центрируем по вертикали
-                            enable: `between(t,${startTime},${startTime + duration})`, // Наложение активно только в указанный период
-                        },
-                        inputs: ['[0:v]', '[synced]'], // Входы: основное видео и синхронизированное видео
-                        outputs: '[out]', // Выход: финальное видео
-                    },
-                    // Задержка аудио наложенного видео на startSeconds
-                    hasAudio
-                        ? {
-                              filter: 'adelay',
-                              options: `${startTime * 1000}|${startTime * 1000}`, // Задержка в миллисекундах (для стерео)
-                              inputs: '[1:a]', // Вход: аудио из наложенного видео
-                              outputs: '[delayed]', // Выход: задержанное аудио
-                          }
-                        : 'none',
-                    // Смешивание аудио основного видео и задержанного аудио
-                    hasAudio
-                        ? {
-                              filter: 'amix',
-                              options: {
-                                  inputs: 2, // Количество входных аудиопотоков
-                                  duration: 'longest', // Использовать длительность самого длинного аудио
-                              },
-                              inputs: ['[0:a]', '[delayed]'], // Входы: аудио из основного видео и задержанное аудио
-                              outputs: '[outa]', // Выход: финальное аудио
-                          }
-                        : 'none',
-                ].filter((filter) => filter !== 'none'),
-            )
+            .complexFilter(complexFilters)
             .outputOptions(
                 [
                     '-map [out]', // Используем финальный видеопоток
@@ -359,21 +404,8 @@ export const coverWithGreen = async ({
                     '-c:v libx264', // Кодируем видео в H.264
                     hasAudio ? '-c:a aac' : '-c:a copy', // Копируем аудио без перекодировки
                 ].filter((outputOption) => outputOption !== 'none'),
-            )
-            .save(outputPath) // Сохраняем результат
-            .on('start', (commandLine) => {
-                console.log('FFmpeg process started:', commandLine);
-            })
-            .on('progress', (progress) => {
-                console.log(`Processing: ${JSON.stringify(progress)}% done`);
-            })
-            .on('stderr', (stderrLine) => {
-                console.error(2, 'FFmpeg stderr:', stderrLine);
-            })
-            .on('end', () => resolve(outputPath))
-            .on('error', (err) => {
-                console.error('Error occurred:', err);
-                reject();
-            });
+            );
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'coverWithGreen').save(outputPath);
     });
 };
