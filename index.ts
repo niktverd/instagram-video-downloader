@@ -13,7 +13,7 @@ import {
 } from './src/controllers/publishing';
 import {uiGetMediaPosts, uiSplitVideoInTheMiddle, uiTestGreenScreen} from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
-import {preprocessVideo} from './src/preprocess-video';
+import {downloadVideo, preprocessVideo} from './src/preprocess-video';
 
 dotenv.config();
 
@@ -68,3 +68,4 @@ app.listen(appPort, () => {
 });
 
 preprocessVideo(DelayMS.Sec30);
+downloadVideo(DelayMS.Sec30);

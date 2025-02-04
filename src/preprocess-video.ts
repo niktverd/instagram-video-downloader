@@ -2,6 +2,8 @@ import {existsSync, mkdirSync, rmSync} from 'fs';
 
 import dotenv from 'dotenv';
 import {
+    Timestamp,
+    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -16,8 +18,8 @@ import {shuffle} from 'lodash';
 import {firestore} from './config/firebase';
 import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from './constants';
 import {createInstagramPostContainer, getMergedVideo} from './instagram';
-import {MediaPostModel, Sources} from './types';
-import {getInstagramPropertyName, preparePostText} from './utils';
+import {MediaPostModel, SourceV3, Sources, VideoV3} from './types';
+import {getInstagramPropertyName, preparePostText, uploadFileFromUrl} from './utils';
 import {uploadYoutubeVideo} from './youtube';
 
 dotenv.config();
@@ -134,6 +136,79 @@ export const preprocessVideo = (ms: number) => {
                             });
                         }
                     }
+
+                    break;
+                }
+            } catch (error) {
+                console.log(JSON.stringify({preprocessVideoCatch: error}));
+                const documentRef = doc(collectionRef, firebaseId);
+
+                if (media.attempt) {
+                    // delete media
+                    await deleteDoc(documentRef);
+                } else {
+                    // save attempt to media
+                    await updateDoc(documentRef, {
+                        attempt: 2,
+                    });
+                }
+            } finally {
+                if (existsSync(firebaseId)) {
+                    rmSync(firebaseId, {maxRetries: 2, force: true, recursive: true});
+                }
+            }
+        }
+
+        preprocessVideo(DelayMS.Sec1);
+    }, ms);
+};
+
+export const downloadVideo = (ms: number) => {
+    if (!process.env.ENABLE_DOWNLOAD_VIDEO) {
+        console.log('downloadVideo', 'blocked');
+        return;
+    }
+    console.log('downloadVideo', 'started in', ms, 'ms');
+
+    setTimeout(async () => {
+        const collectionRef = collection(firestore, Collection.Sources);
+        const queryRef = query(collectionRef, where('firebaseUrl', '==', ''), limit(10));
+        const docSnaps = await getDocs(queryRef);
+        if (docSnaps.empty) {
+            console.log('doc snap is empty');
+            preprocessVideo(DelayMS.Min5);
+            return;
+        }
+
+        const medias = shuffle(
+            docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id} as SourceV3)),
+        );
+        console.log('sources length:', medias.length);
+
+        for (const media of medias) {
+            const firebaseId = media.id;
+            console.log('working with source id: ', firebaseId);
+            try {
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    const sourceUrl = media.sources.instagramReel?.url;
+                    if (!sourceUrl) {
+                        throw new Error('media.sources.instagramReel is empty');
+                    }
+
+                    const firebaseUrl = await uploadFileFromUrl({
+                        url: sourceUrl,
+                        collectionName: Collection.Sources,
+                        firebaseId,
+                    });
+
+                    const colRef = collection(firestore, Collection.Videos);
+                    await addDoc(colRef, {
+                        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
+                        firebaseUrl,
+                        sources: media.sources,
+                        randomIndex: media.randomIndex,
+                        scenarios: [],
+                    } as Omit<VideoV3, 'id'>);
 
                     break;
                 }

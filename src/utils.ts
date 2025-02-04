@@ -9,16 +9,17 @@ import {firestore, storage} from './config/firebase';
 import baseHashtags from './config/instagram.hashtags.json';
 import {postText} from './config/post.text';
 import {Collection, DelayS} from './constants';
-import {MediaPostModel, MediaPostModelV3} from './types';
+import {MediaPostModel, SourceV3} from './types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type UploadFileFromUrlArgs = {
     url: string;
     firebaseId: string;
+    collectionName?: Collection;
 };
 
-export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs) {
+export async function uploadFileFromUrl({url, firebaseId, collectionName}: UploadFileFromUrlArgs) {
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -38,7 +39,7 @@ export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs
 
         console.log('Файл успешно загружен:', downloadURL);
 
-        const collectionRef = collection(firestore, 'media-post');
+        const collectionRef = collection(firestore, collectionName || 'media-post');
         const documentRef = doc(collectionRef, firebaseId);
         await updateDoc(documentRef, {
             firebaseUrl: downloadURL,
@@ -171,8 +172,8 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
     } as Omit<MediaPostModel, 'id'>);
 
 export const initiateRecordV3 = (
-    source: MediaPostModelV3['sources'],
-    bodyJSONString: MediaPostModelV3['bodyJSONString'],
+    source: SourceV3['sources'],
+    bodyJSONString: SourceV3['bodyJSONString'],
 ) =>
     ({
         createdAt: new Timestamp(new Date().getTime() / 1000, 0),
@@ -180,7 +181,7 @@ export const initiateRecordV3 = (
         sources: source,
         randomIndex: Math.random(),
         bodyJSONString,
-    } as Omit<MediaPostModelV3, 'id'>);
+    } as Omit<SourceV3, 'id'>);
 
 export const isTimeToPublishInstagram = async () => {
     const systemCollectionRef = collection(firestore, Collection.System);
