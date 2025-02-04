@@ -62,13 +62,5 @@ export type SourceV3 = {
     randomIndex: number;
     bodyJSONString: string;
     attempt: number;
-};
-
-export type VideoV3 = {
-    id: string;
-    createdAt: Timestamp;
-    firebaseUrl: string;
-    randomIndex: number;
-    sources: Sources;
     scenarios: string[];
 };

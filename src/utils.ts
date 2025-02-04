@@ -1,6 +1,6 @@
 import {writeFileSync} from 'fs';
 
-import {Timestamp, collection, doc, getDoc, updateDoc} from 'firebase/firestore/lite';
+import {Timestamp, collection, doc, getDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
 import {shuffle} from 'lodash';
@@ -19,7 +19,7 @@ type UploadFileFromUrlArgs = {
     collectionName?: Collection;
 };
 
-export async function uploadFileFromUrl({url, firebaseId, collectionName}: UploadFileFromUrlArgs) {
+export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs) {
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -36,14 +36,6 @@ export async function uploadFileFromUrl({url, firebaseId, collectionName}: Uploa
         await uploadBytes(fileRef, fileBuffer, metadata);
 
         const downloadURL = await getDownloadURL(fileRef);
-
-        console.log('Файл успешно загружен:', downloadURL);
-
-        const collectionRef = collection(firestore, collectionName || 'media-post');
-        const documentRef = doc(collectionRef, firebaseId);
-        await updateDoc(documentRef, {
-            firebaseUrl: downloadURL,
-        });
 
         return downloadURL;
     } catch (error) {
@@ -181,6 +173,8 @@ export const initiateRecordV3 = (
         sources: source,
         randomIndex: Math.random(),
         bodyJSONString,
+        attempt: 0,
+        scenarios: [],
     } as Omit<SourceV3, 'id'>);
 
 export const isTimeToPublishInstagram = async () => {

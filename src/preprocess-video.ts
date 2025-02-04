@@ -2,8 +2,6 @@ import {existsSync, mkdirSync, rmSync} from 'fs';
 
 import dotenv from 'dotenv';
 import {
-    Timestamp,
-    addDoc,
     collection,
     deleteDoc,
     doc,
@@ -18,8 +16,9 @@ import {shuffle} from 'lodash';
 import {firestore} from './config/firebase';
 import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from './constants';
 import {createInstagramPostContainer, getMergedVideo} from './instagram';
-import {MediaPostModel, SourceV3, Sources, VideoV3} from './types';
+import {MediaPostModel, SourceV3, Sources} from './types';
 import {getInstagramPropertyName, preparePostText, uploadFileFromUrl} from './utils';
+import {getVideoDuration} from './utils/video/primitives';
 import {uploadYoutubeVideo} from './youtube';
 
 dotenv.config();
@@ -195,20 +194,21 @@ export const downloadVideo = (ms: number) => {
                         throw new Error('media.sources.instagramReel is empty');
                     }
 
-                    const firebaseUrl = await uploadFileFromUrl({
+                    const downloadURL = await uploadFileFromUrl({
                         url: sourceUrl,
                         collectionName: Collection.Sources,
                         firebaseId,
                     });
 
-                    const colRef = collection(firestore, Collection.Videos);
-                    await addDoc(colRef, {
-                        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
-                        firebaseUrl,
-                        sources: media.sources,
-                        randomIndex: media.randomIndex,
-                        scenarios: [],
-                    } as Omit<VideoV3, 'id'>);
+                    const duration = await getVideoDuration(downloadURL);
+
+                    console.log('Файл успешно загружен:', downloadURL);
+
+                    const documentRef = doc(collectionRef, firebaseId);
+                    await updateDoc(documentRef, {
+                        firebaseUrl: downloadURL,
+                        duration,
+                    });
 
                     break;
                 }
