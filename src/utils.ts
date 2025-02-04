@@ -9,7 +9,7 @@ import {firestore, storage} from './config/firebase';
 import baseHashtags from './config/instagram.hashtags.json';
 import {postText} from './config/post.text';
 import {Collection, DelayS} from './constants';
-import {MediaPostModel} from './types';
+import {MediaPostModel, MediaPostModelV3} from './types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -169,6 +169,18 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
         attempt: 0,
         randomIndex: Math.random(),
     } as Omit<MediaPostModel, 'id'>);
+
+export const initiateRecordV3 = (
+    source: MediaPostModelV3['sources'],
+    bodyJSONString: MediaPostModelV3['bodyJSONString'],
+) =>
+    ({
+        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
+        firebaseUrl: '',
+        sources: source,
+        randomIndex: Math.random(),
+        bodyJSONString,
+    } as Omit<MediaPostModelV3, 'id'>);
 
 export const isTimeToPublishInstagram = async () => {
     const systemCollectionRef = collection(firestore, Collection.System);

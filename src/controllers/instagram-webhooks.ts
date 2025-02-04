@@ -4,7 +4,7 @@ import {addDoc, collection} from 'firebase/firestore/lite';
 
 import {firestore} from '../config/firebase';
 import {Collection} from '../constants';
-import {initiateRecord} from '../utils';
+import {initiateRecordV3} from '../utils';
 
 dotenv.config();
 
@@ -80,18 +80,21 @@ export const messageWebhook = async (req: Request, res: Response) => {
         const {url, title = ''} = payload;
         const originalHashtags: string[] = title?.match(/#\w+/g) || [];
 
-        const collectionRef = collection(firestore, Collection.MediaPosts);
+        const collectionRef = collection(firestore, Collection.Sources);
         const firestoreDoc = await addDoc(
             collectionRef,
-            initiateRecord({
-                instagramReel: {
-                    url,
-                    senderId,
-                    title,
-                    originalHashtags,
-                    owner: '',
+            initiateRecordV3(
+                {
+                    instagramReel: {
+                        url,
+                        senderId,
+                        title,
+                        originalHashtags,
+                        owner: '',
+                    },
                 },
-            }),
+                JSON.stringify(req.body),
+            ),
         );
 
         console.log('firestoreDoc', firestoreDoc.id);

@@ -53,3 +53,12 @@ export type MediaPostModelOld = {
     type: string;
     url: string;
 };
+
+export type MediaPostModelV3 = {
+    id: string;
+    createdAt: Timestamp;
+    firebaseUrl: string;
+    sources: Sources;
+    randomIndex: number;
+    bodyJSONString: string;
+};

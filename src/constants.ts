@@ -5,6 +5,9 @@ dotenv.config();
 export enum Collection {
     MediaPosts = 'media-posts',
     System = 'system',
+
+    // v3
+    Sources = 'sources',
 }
 
 export enum DelayMS {
