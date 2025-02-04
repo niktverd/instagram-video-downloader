@@ -1,5 +1,7 @@
 import {Timestamp} from 'firebase/firestore/lite';
 
+import {ScenarioAddBannerAtTheEnd, ScenarioBase} from './scenario';
+
 export type SourceInstagramReel = {
     url: string;
     senderId: string;
@@ -64,3 +66,5 @@ export type SourceV3 = {
     attempt: number;
     scenarios: string[];
 };
+
+export type ScenarioV3 = ScenarioBase & ScenarioAddBannerAtTheEnd;

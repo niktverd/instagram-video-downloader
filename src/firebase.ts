@@ -1,8 +1,9 @@
-import {collection, deleteDoc, doc, getDocs} from 'firebase/firestore/lite';
+import {addDoc, collection, deleteDoc, doc, getDocs, updateDoc} from 'firebase/firestore/lite';
 import {deleteObject, ref} from 'firebase/storage';
 
 import {firestore, storage} from './config/firebase';
-import {MediaPostModelOld} from './types';
+import {Collection} from './constants';
+import {MediaPostModelOld, ScenarioV3} from './types';
 
 export const removePublished = async () => {
     const collectionRef = collection(firestore, 'media-post');
@@ -28,4 +29,29 @@ export const removePublished = async () => {
             await deleteDoc(documentRef);
         }
     }
+};
+
+export const getScenarios = async () => {
+    return [];
+};
+
+type PatchScenarioArgs = {
+    id: string;
+    values: ScenarioV3;
+};
+
+export const patchScenario = async ({id, values}: PatchScenarioArgs) => {
+    const colRef = collection(firestore, Collection.Scenarios);
+    const docRef = doc(colRef, id);
+    await updateDoc(docRef, values);
+};
+
+type AddScenarioArgs = {
+    id: string;
+    values: ScenarioV3;
+};
+
+export const addScenario = async ({values}: AddScenarioArgs) => {
+    const colRef = collection(firestore, Collection.Scenarios);
+    await addDoc(colRef, values);
 };

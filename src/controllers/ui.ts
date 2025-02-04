@@ -13,7 +13,8 @@ import {pick} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, MediaPostModelFilters, OrderDirection} from '../constants';
-import {MediaPostModel} from '../types';
+import {addScenario, patchScenario} from '../firebase';
+import {MediaPostModel, ScenarioV3} from '../types';
 import {splitVideoInTheMiddle, testPIP} from '../utils/video/splitVideoInTheMiddle';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
@@ -107,4 +108,33 @@ export const uiTestGreenScreen = async (req: Request, res: Response) => {
         console.log(error);
         res.status(500).send(error);
     }
+};
+
+export const uiGetScenarios = async (_req: Request, res: Response) => {
+    try {
+        const collectionRef = collection(firestore, Collection.Scenarios);
+        const snaps = await getDocs(collectionRef);
+        if (snaps.empty) {
+            throw new Error(`Collection ${Collection.Scenarios} is empty`);
+        }
+        const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV3));
+
+        console.log(JSON.stringify({data}));
+        res.status(200).send(data);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send(error);
+    }
+};
+
+export const uiPatchScenario = async (req: Request, res: Response) => {
+    const {id, values} = req.body;
+    await patchScenario({id, values});
+    res.status(200).send(req.body);
+};
+
+export const uiAddScenario = async (req: Request, res: Response) => {
+    const {id, values} = req.body;
+    await addScenario({id, values});
+    res.status(200).send(req.body);
 };

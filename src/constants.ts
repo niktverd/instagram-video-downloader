@@ -8,6 +8,7 @@ export enum Collection {
 
     // v3
     Sources = 'sources',
+    Scenarios = 'scenarios',
 }
 
 export enum DelayMS {

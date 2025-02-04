@@ -11,7 +11,14 @@ import {
     publishIntagram2,
     removePublishedFromFirebase,
 } from './src/controllers/publishing';
-import {uiGetMediaPosts, uiSplitVideoInTheMiddle, uiTestGreenScreen} from './src/controllers/ui';
+import {
+    uiAddScenario,
+    uiGetMediaPosts,
+    uiGetScenarios,
+    uiPatchScenario,
+    uiSplitVideoInTheMiddle,
+    uiTestGreenScreen,
+} from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {downloadVideo, preprocessVideo} from './src/preprocess-video';
 
@@ -53,12 +60,16 @@ app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
 app.get('/ui-get-media-posts', uiGetMediaPosts);
+app.get('/ui-get-scenarios', uiGetScenarios);
 
 app.post('/webhooks', messageWebhook);
 app.post('/remove-post-by-id', removePostById);
 app.post('/publish-by-id', publishById);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
 app.post('/ui-test-green-screen', uiTestGreenScreen);
+app.post('/ui-add-scenario', uiAddScenario);
+
+app.patch('/ui-patch-scenario', uiPatchScenario);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
