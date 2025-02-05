@@ -175,7 +175,7 @@ export const downloadVideo = (ms: number, calledFromApi = false) => {
         const docSnaps = await getDocs(queryRef);
         if (docSnaps.empty) {
             console.log('doc snap is empty');
-            preprocessVideo(DelayMS.Min5);
+            downloadVideo(DelayMS.Min5);
             return;
         }
 
@@ -233,7 +233,7 @@ export const downloadVideo = (ms: number, calledFromApi = false) => {
         }
 
         if (!calledFromApi) {
-            preprocessVideo(DelayMS.Sec1);
+            downloadVideo(DelayMS.Sec1);
         }
     }, ms);
 };
