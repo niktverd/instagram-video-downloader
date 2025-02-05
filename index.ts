@@ -22,7 +22,7 @@ import {
     uiTestGreenScreen,
 } from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
-import {downloadVideo, preprocessVideo} from './src/preprocess-video';
+import {downloadVideo} from './src/preprocess-video';
 
 dotenv.config();
 
@@ -82,5 +82,4 @@ app.listen(appPort, () => {
     console.log(`Example app listening on port ${appPort}`);
 });
 
-preprocessVideo(DelayMS.Sec30);
 downloadVideo(DelayMS.Sec30);
