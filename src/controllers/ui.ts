@@ -12,9 +12,18 @@ import {
 import {pick} from 'lodash';
 
 import {firestore} from '../config/firebase';
-import {Collection, MediaPostModelFilters, OrderDirection} from '../constants';
-import {addScenario, patchScenario} from '../firebase';
-import {MediaPostModel, ScenarioV3} from '../types';
+import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '../constants';
+import {
+    addScenario,
+    getOneRandomVideo,
+    getScenarios,
+    patchScenario,
+    regScenarioUsage,
+} from '../firebase';
+import {downloadVideo} from '../preprocess-video';
+import {MediaPostModel} from '../types';
+import {ScenarioName} from '../types/scenario';
+import {addBannerInTheEnd} from '../utils/scenarios/AddBannerInTheEnd';
 import {splitVideoInTheMiddle, testPIP} from '../utils/video/splitVideoInTheMiddle';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
@@ -112,15 +121,8 @@ export const uiTestGreenScreen = async (req: Request, res: Response) => {
 
 export const uiGetScenarios = async (_req: Request, res: Response) => {
     try {
-        const collectionRef = collection(firestore, Collection.Scenarios);
-        const snaps = await getDocs(collectionRef);
-        if (snaps.empty) {
-            throw new Error(`Collection ${Collection.Scenarios} is empty`);
-        }
-        const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV3));
-
-        console.log(JSON.stringify({data}));
-        res.status(200).send(data);
+        const scenarios = await getScenarios();
+        res.status(200).send(scenarios);
     } catch (error) {
         console.log(error);
         res.status(500).send(error);
@@ -137,4 +139,51 @@ export const uiAddScenario = async (req: Request, res: Response) => {
     const {id, values} = req.body;
     await addScenario({id, values});
     res.status(200).send(req.body);
+};
+
+export const uiCreateVideoByScenario = async (_req: Request, res: Response) => {
+    res.status(200).send({message: ' uiCreateVideoByScenario started'});
+    const scenarios = await getScenarios(true);
+
+    const scenario = scenarios.find(
+        ({name}) => name === (ScenarioName.ScenarioAddBannerAtTheEnd1 as string),
+    );
+    if (!scenario) {
+        console.log(
+            '!scenario',
+            scenario,
+            scenarios,
+            ScenarioName.ScenarioAddBannerAtTheEnd1,
+            ScenarioName.ScenarioAddBannerAtTheEnd1,
+            'add-banner-in-the-end-1',
+        );
+        return;
+    }
+    console.log(scenario);
+
+    const oneRandomVideo = await getOneRandomVideo(scenario.name);
+    if (!oneRandomVideo) {
+        console.log('!oneRandomVideo', oneRandomVideo);
+        return;
+    }
+
+    const {firebaseUrl, id} = oneRandomVideo;
+
+    await addBannerInTheEnd({
+        mainVideoUrl: firebaseUrl,
+        bannerVideoUrl: scenario.extraBannerUrl,
+        directoryName: id,
+        scenarioName: scenario.name,
+    });
+
+    if (scenario.onlyOnce) {
+        console.log('scenario.onlyOnce');
+        // update video.scenario with scenario name
+        await regScenarioUsage(oneRandomVideo, scenario.name);
+    }
+};
+
+export const uiDownloadVideoFromSourceV3 = async (_req: Request, res: Response) => {
+    res.status(200).send({message: 'uiDownloadVideoFromSourceV3 started'});
+    downloadVideo(DelayMS.Sec1, true);
 };

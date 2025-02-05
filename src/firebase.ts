@@ -1,9 +1,21 @@
-import {addDoc, collection, deleteDoc, doc, getDocs, updateDoc} from 'firebase/firestore/lite';
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    limit,
+    orderBy,
+    query,
+    updateDoc,
+    where,
+} from 'firebase/firestore/lite';
 import {deleteObject, ref} from 'firebase/storage';
 
 import {firestore, storage} from './config/firebase';
 import {Collection} from './constants';
-import {MediaPostModelOld, ScenarioV3} from './types';
+import {MediaPostModelOld, ScenarioV3, SourceV3} from './types';
+import {ScenarioName} from './types/scenario';
 
 export const removePublished = async () => {
     const collectionRef = collection(firestore, 'media-post');
@@ -31,8 +43,15 @@ export const removePublished = async () => {
     }
 };
 
-export const getScenarios = async () => {
-    return [];
+export const getScenarios = async (onlyEnabled = false) => {
+    const collectionRef = collection(firestore, Collection.Scenarios);
+    const snaps = await getDocs(collectionRef);
+    if (snaps.empty) {
+        throw new Error(`Collection ${Collection.Scenarios} is empty`);
+    }
+    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV3));
+
+    return data.filter(({enabled}) => (onlyEnabled ? enabled : true));
 };
 
 type PatchScenarioArgs = {
@@ -54,4 +73,53 @@ type AddScenarioArgs = {
 export const addScenario = async ({values}: AddScenarioArgs) => {
     const colRef = collection(firestore, Collection.Scenarios);
     await addDoc(colRef, values);
+};
+
+export const getOneRandomVideo = async (particularScenario?: ScenarioName) => {
+    for (let i = 0; i < 10; i++) {
+        const randomValue = Math.random();
+        const selectorRandomValue = Math.random();
+        const collectionRef = collection(firestore, Collection.Sources);
+        let queryRef = query(
+            collectionRef,
+            orderBy('lastUsed', 'asc'),
+            where('timesUsed', '<', 10),
+            where('randomIndex', randomValue < selectorRandomValue ? '>=' : '<=', randomValue),
+            limit(1),
+        );
+
+        if (particularScenario) {
+            queryRef = query(queryRef, where('scenarios', 'array-contains', particularScenario));
+        }
+
+        const snapshot = await getDocs(queryRef);
+        if (snapshot.empty) {
+            console.log(
+                JSON.stringify({
+                    note: 'nothing was found',
+                    randomValue,
+                    selectorRandomValue,
+                }),
+            );
+            continue;
+        }
+        const docSnap = snapshot.docs[0];
+
+        return {...docSnap.data(), id: docSnap.id} as SourceV3;
+    }
+
+    return null;
+};
+
+export const regScenarioUsage = async (source: SourceV3, scenarioName: string) => {
+    console.log(source, scenarioName);
+    if (!source || !scenarioName) {
+        return;
+    }
+
+    const colRef = collection(firestore, Collection.Sources);
+    const docRef = doc(colRef, source.id);
+    await updateDoc(docRef, {
+        scenarios: source.scenarios.filter((name) => name !== scenarioName),
+    });
 };

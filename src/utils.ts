@@ -1,4 +1,5 @@
-import {writeFileSync} from 'fs';
+import {existsSync, mkdirSync, writeFileSync} from 'fs';
+import {join} from 'path';
 
 import {Timestamp, collection, doc, getDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
@@ -9,6 +10,7 @@ import {firestore, storage} from './config/firebase';
 import baseHashtags from './config/instagram.hashtags.json';
 import {postText} from './config/post.text';
 import {Collection, DelayS} from './constants';
+import {getScenarios} from './firebase';
 import {MediaPostModel, SourceV3} from './types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -163,19 +165,24 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
         randomIndex: Math.random(),
     } as Omit<MediaPostModel, 'id'>);
 
-export const initiateRecordV3 = (
+export const initiateRecordV3 = async (
     source: SourceV3['sources'],
     bodyJSONString: SourceV3['bodyJSONString'],
-) =>
-    ({
+) => {
+    const scenarios = await getScenarios(true);
+    console.log(JSON.stringify({scenarios}));
+    return {
         createdAt: new Timestamp(new Date().getTime() / 1000, 0),
         firebaseUrl: '',
         sources: source,
         randomIndex: Math.random(),
         bodyJSONString,
         attempt: 0,
-        scenarios: [],
-    } as Omit<SourceV3, 'id'>);
+        scenarios: scenarios.map(({name}) => name),
+        lastUsed: new Timestamp(0, 0),
+        timesUsed: 0,
+    } as Omit<SourceV3, 'id'>;
+};
 
 export const isTimeToPublishInstagram = async () => {
     const systemCollectionRef = collection(firestore, Collection.System);
@@ -197,3 +204,12 @@ export const getInstagramPropertyName = (tokenObjectId: string) =>
     tokenObjectId === 'carcar.kz'
         ? 'publishedOnInstagramCarcarKz'
         : 'publishedOnInstagramCarcarTech';
+
+export const getWorkingDirectoryForVideo = (directoryName: string) => {
+    const basePath = join(process.cwd(), 'videos-working-directory', directoryName);
+    if (!existsSync(basePath)) {
+        mkdirSync(basePath, {recursive: true});
+    }
+
+    return basePath;
+};

@@ -162,8 +162,8 @@ export const preprocessVideo = (ms: number) => {
     }, ms);
 };
 
-export const downloadVideo = (ms: number) => {
-    if (!process.env.ENABLE_DOWNLOAD_VIDEO) {
+export const downloadVideo = (ms: number, calledFromApi = false) => {
+    if (!process.env.ENABLE_DOWNLOAD_VIDEO && !calledFromApi) {
         console.log('downloadVideo', 'blocked');
         return;
     }
@@ -232,6 +232,8 @@ export const downloadVideo = (ms: number) => {
             }
         }
 
-        preprocessVideo(DelayMS.Sec1);
+        if (!calledFromApi) {
+            preprocessVideo(DelayMS.Sec1);
+        }
     }, ms);
 };

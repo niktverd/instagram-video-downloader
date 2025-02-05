@@ -7,7 +7,7 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {storage} from '../../config/firebase';
 import {SECOND_VIDEO} from '../../constants';
 import {MediaPostModel} from '../../types';
-import {saveFileToDisk} from '../../utils';
+import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils';
 
 import {
     addSilentAudioStream,
@@ -32,10 +32,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
         return;
     }
 
-    const basePath = path.join(__dirname, firestoreId);
-    if (!existsSync(basePath)) {
-        mkdirSync(basePath, {recursive: true});
-    }
+    const basePath = getWorkingDirectoryForVideo(firestoreId);
 
     const tempFilePath1 = path.join(basePath, 'first.mp4');
     const tempFilePath2 = path.join(basePath, 'second.mp4');

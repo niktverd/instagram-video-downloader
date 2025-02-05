@@ -65,6 +65,18 @@ export type SourceV3 = {
     bodyJSONString: string;
     attempt: number;
     scenarios: string[];
+    lastUsed: Timestamp;
+    timesUsed: number;
 };
 
 export type ScenarioV3 = ScenarioBase & ScenarioAddBannerAtTheEnd;
+
+export enum ScenarioType {
+    addBannerInTheEnd = 'addBannerInTheEnd',
+}
+
+export type PreparedVideoV3 = {
+    firebaseUrl: string;
+    scenarioType: ScenarioType;
+    scenarioName: string;
+};

@@ -1,6 +1,8 @@
 export type ScenarioBase = {
     id: string;
-    name: string;
+    name: ScenarioName;
+    onlyOnce: boolean;
+    enabled: boolean;
 };
 
 export enum ScenarioName {

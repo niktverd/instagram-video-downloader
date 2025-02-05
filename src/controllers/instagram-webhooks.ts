@@ -68,7 +68,7 @@ export const hubChallangeWebhook = (req: Request, res: Response) => {
     res.status(200).send(hubChallenge);
 };
 
-export const messageWebhook = async (req: Request, res: Response) => {
+export const messageWebhookV3 = async (req: Request, res: Response) => {
     try {
         console.log(JSON.stringify(req.query));
         console.log(JSON.stringify(req.body?.entry?.length));
@@ -83,7 +83,7 @@ export const messageWebhook = async (req: Request, res: Response) => {
         const collectionRef = collection(firestore, Collection.Sources);
         const firestoreDoc = await addDoc(
             collectionRef,
-            initiateRecordV3(
+            await initiateRecordV3(
                 {
                     instagramReel: {
                         url,

@@ -5,7 +5,7 @@ import qs from 'qs';
 
 import {DelayMS} from './src/constants';
 import {removePostById, reportInterface} from './src/controllers/ejs';
-import {hubChallangeWebhook, messageWebhook} from './src/controllers/instagram-webhooks';
+import {hubChallangeWebhook, messageWebhookV3} from './src/controllers/instagram-webhooks';
 import {
     publishById,
     publishIntagram2,
@@ -13,6 +13,8 @@ import {
 } from './src/controllers/publishing';
 import {
     uiAddScenario,
+    uiCreateVideoByScenario,
+    uiDownloadVideoFromSourceV3,
     uiGetMediaPosts,
     uiGetScenarios,
     uiPatchScenario,
@@ -61,8 +63,10 @@ app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
 app.get('/ui-get-media-posts', uiGetMediaPosts);
 app.get('/ui-get-scenarios', uiGetScenarios);
+app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
+app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
 
-app.post('/webhooks', messageWebhook);
+app.post('/webhooks', messageWebhookV3);
 app.post('/remove-post-by-id', removePostById);
 app.post('/publish-by-id', publishById);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
