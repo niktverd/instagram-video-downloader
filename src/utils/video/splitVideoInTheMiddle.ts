@@ -86,7 +86,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
 
     const hasAudio = await checkHasAudio(pauseFilePath);
 
-    console.log({hasAudio});
+    console.log(JSON.stringify({hasAudio}));
 
     const pauseWithAudioFilePath = await addSilentAudioStream({
         input: pauseFilePath,
@@ -116,7 +116,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
         duration: pauseDuration,
     });
 
-    console.log(playDuration);
+    console.log(JSON.stringify({playDuration}));
 
     const greenPlayPath = await coverWithGreen({
         input: greenPausePath,

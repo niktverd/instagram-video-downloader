@@ -112,7 +112,7 @@ export const getOneRandomVideo = async (particularScenario?: ScenarioName) => {
 };
 
 export const regScenarioUsage = async (source: SourceV3, scenarioName: string) => {
-    console.log(source, scenarioName);
+    console.log(JSON.stringify({source, scenarioName}));
     if (!source || !scenarioName) {
         return;
     }

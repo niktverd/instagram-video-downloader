@@ -84,7 +84,7 @@ export const logStreamsInfo = async (inputPath: string) => {
             }
             console.log('Streams of ', inputPath);
             dataLocal.streams.forEach((stream) => {
-                console.log(stream);
+                console.log(JSON.stringify(stream));
             });
             console.log('\n\n');
 
@@ -360,7 +360,7 @@ export const coverWithGreen = async ({
     ];
     // ].filter((filter) => filter !== 'none');
 
-    console.log('complexFilters', complexFilters);
+    console.log('complexFilters', JSON.stringify(complexFilters));
 
     return new Promise((resolve, reject) => {
         const ffmpegCommand = ffmpeg()
