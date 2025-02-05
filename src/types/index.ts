@@ -79,4 +79,6 @@ export type PreparedVideoV3 = {
     firebaseUrl: string;
     scenarioType: ScenarioType;
     scenarioName: string;
+    title: string;
+    originalHashtags: string[];
 };

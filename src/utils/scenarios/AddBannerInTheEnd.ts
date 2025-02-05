@@ -15,6 +15,8 @@ type AddBannerInTheEndArgs = {
     mainVideoUrl: string;
     bannerVideoUrl: string;
     scenarioName: string;
+    title: string;
+    originalHashtags: string[];
 };
 
 export const addBannerInTheEnd = async ({
@@ -22,6 +24,8 @@ export const addBannerInTheEnd = async ({
     mainVideoUrl,
     bannerVideoUrl,
     scenarioName,
+    title,
+    originalHashtags,
 }: AddBannerInTheEndArgs) => {
     console.log('addBannerInTheEnd', JSON.stringify({mainVideoUrl, bannerVideoUrl}));
     const basePath = getWorkingDirectoryForVideo(directoryName);
@@ -57,6 +61,8 @@ export const addBannerInTheEnd = async ({
         firebaseUrl: downloadURL,
         scenarioType: ScenarioType.addBannerInTheEnd,
         scenarioName,
+        title,
+        originalHashtags,
     } as PreparedVideoV3);
 
     rmSync(basePath, {recursive: true});

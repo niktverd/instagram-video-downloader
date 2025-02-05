@@ -167,13 +167,17 @@ export const uiCreateVideoByScenario = async (_req: Request, res: Response) => {
         return;
     }
 
-    const {firebaseUrl, id} = oneRandomVideo;
+    const {firebaseUrl, id, sources} = oneRandomVideo;
+    const title = sources.instagramReel?.title || '';
+    const originalHashtags = sources.instagramReel?.originalHashtags || [];
 
     await addBannerInTheEnd({
         mainVideoUrl: firebaseUrl,
         bannerVideoUrl: scenario.extraBannerUrl,
         directoryName: id,
         scenarioName: scenario.name,
+        title,
+        originalHashtags,
     });
 
     if (scenario.onlyOnce) {
