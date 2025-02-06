@@ -12,11 +12,14 @@ import {
     removePublishedFromFirebase,
 } from './src/controllers/publishing';
 import {
+    uiAddAccount,
     uiAddScenario,
     uiCreateVideoByScenario,
     uiDownloadVideoFromSourceV3,
+    uiGetAccounts,
     uiGetMediaPosts,
     uiGetScenarios,
+    uiPatchAccount,
     uiPatchScenario,
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
@@ -64,6 +67,7 @@ app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
 app.get('/ui-get-media-posts', uiGetMediaPosts);
 app.get('/ui-get-scenarios', uiGetScenarios);
+app.get('/ui-get-accounts', uiGetAccounts);
 app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
 app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
 
@@ -73,8 +77,10 @@ app.post('/publish-by-id', publishById);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
 app.post('/ui-test-green-screen', uiTestGreenScreen);
 app.post('/ui-add-scenario', uiAddScenario);
+app.post('/ui-add-account', uiAddAccount);
 
 app.patch('/ui-patch-scenario', uiPatchScenario);
+app.patch('/ui-patch-account', uiPatchAccount);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;

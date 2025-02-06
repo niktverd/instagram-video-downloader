@@ -7,6 +7,7 @@ import {
     limit,
     orderBy,
     query,
+    setDoc,
     updateDoc,
     where,
 } from 'firebase/firestore/lite';
@@ -14,7 +15,7 @@ import {deleteObject, ref} from 'firebase/storage';
 
 import {firestore, storage} from './config/firebase';
 import {Collection} from './constants';
-import {MediaPostModelOld, ScenarioV3, SourceV3} from './types';
+import {AccountV3, MediaPostModelOld, ScenarioV3, SourceV3} from './types';
 import {ScenarioName} from './types/scenario';
 
 export const removePublished = async () => {
@@ -122,4 +123,35 @@ export const regScenarioUsage = async (source: SourceV3, scenarioName: string) =
     await updateDoc(docRef, {
         scenarios: source.scenarios.filter((name) => name !== scenarioName),
     });
+};
+
+type AddAccountArgs = {
+    id: string;
+    values: AccountV3;
+};
+
+export const addAccount = async ({id, values}: AddAccountArgs) => {
+    console.log('addAccount', {id, values});
+    const docRef = doc(firestore, Collection.Accounts, id);
+    const result = await setDoc(docRef, values);
+    console.log(result);
+};
+
+export const patchAccount = async ({id, values}: AddAccountArgs) => {
+    if (values.id !== id) {
+        await addAccount({id, values: {...values, id, disabled: true}});
+    }
+
+    await addAccount({id: values.id, values});
+};
+
+export const getAccounts = async (onlyEnabled = false) => {
+    const collectionRef = collection(firestore, Collection.Accounts);
+    const snaps = await getDocs(collectionRef);
+    if (snaps.empty) {
+        throw new Error(`Collection ${Collection.Accounts} is empty`);
+    }
+    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV3));
+
+    return data.filter(({enabled}) => (onlyEnabled ? enabled : true));
 };

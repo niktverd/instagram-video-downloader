@@ -82,3 +82,9 @@ export type PreparedVideoV3 = {
     title: string;
     originalHashtags: string[];
 };
+
+export type AccountV3 = {
+    id: string;
+    token: string;
+    disabled: boolean;
+};

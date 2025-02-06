@@ -13,7 +13,14 @@ import {pick} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '../constants';
-import {addScenario, getScenarios, patchScenario} from '../firebase';
+import {
+    addAccount,
+    addScenario,
+    getAccounts,
+    getScenarios,
+    patchAccount,
+    patchScenario,
+} from '../firebase';
 import {downloadVideo} from '../preprocess-video';
 import {MediaPostModel} from '../types';
 import {runScenario} from '../utils/scenarios';
@@ -139,4 +146,32 @@ export const uiCreateVideoByScenario = async (_req: Request, res: Response) => {
 export const uiDownloadVideoFromSourceV3 = async (_req: Request, res: Response) => {
     res.status(200).send({message: 'uiDownloadVideoFromSourceV3 started'});
     downloadVideo(DelayMS.Sec1, true);
+};
+
+export const uiGetAccounts = async (_req: Request, res: Response) => {
+    try {
+        const accounts = await getAccounts();
+        console.log(accounts);
+        res.status(200).send(accounts);
+    } catch (error) {
+        console.log(error);
+        console.log(JSON.stringify(error));
+        res.status(500).send(error);
+    }
+};
+
+export const uiAddAccount = async (req: Request, res: Response) => {
+    const {
+        values: {id, token},
+    } = req.body;
+    console.log(req.body, {id, values: {id, token}});
+    await addAccount({id, values: {id, token, disabled: false}});
+    res.status(200).send(req.body);
+};
+
+export const uiPatchAccount = async (req: Request, res: Response) => {
+    const {id, values} = req.body;
+    console.log(values);
+    await patchAccount({id, values});
+    res.status(200).send(req.body);
 };

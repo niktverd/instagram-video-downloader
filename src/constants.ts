@@ -10,6 +10,7 @@ export enum Collection {
     Sources = 'sources',
     Scenarios = 'scenarios',
     PreparedVideos = 'prepared-videos',
+    Accounts = 'accounts',
 }
 
 export enum DelayMS {

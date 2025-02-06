@@ -8,5 +8,9 @@ console.log(
             id: 'carcar.tech',
             token: '***',
         },
+        {
+            id: 'alisakalinina878',
+            token: '***'
+        }
     ]),
 );
