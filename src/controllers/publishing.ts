@@ -11,13 +11,18 @@ import {
     updateDoc,
     where,
 } from 'firebase/firestore/lite';
+import {shuffle} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, accessTokensArray} from '../constants';
-import {removePublished} from '../firebase';
+import {getAccounts, getRandomMediaContainersForAccount, removePublished} from '../firebase';
 import {stopHerokuApp} from '../heroku';
-import {findUnpublishedContainer, publishInstagramPostContainer} from '../instagram';
-import {MediaPostModel} from '../types';
+import {
+    findUnpublishedContainer,
+    prepareMediaContainersForAccount,
+    publishInstagramPostContainer,
+} from '../instagram';
+import {AccountMediaContainerV3, MediaPostModel} from '../types';
 import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
@@ -120,6 +125,59 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                 continue;
             }
         }
+        // update record in db
+        res.status(200).send('success');
+    } catch (error) {
+        console.log(JSON.stringify(error));
+        res.status(200).send('error');
+    } finally {
+        await delay(1000);
+        await stopHerokuApp();
+    }
+};
+
+export const publishIntagramV3 = async (req: Request, res: Response) => {
+    console.log(JSON.stringify(req.query));
+
+    try {
+        const accounts = await getAccounts(true);
+
+        for (const account of accounts) {
+            // get random document for every account
+            console.log('account', JSON.stringify({account}));
+            // get 5 video
+            const preparedContainers = await getRandomMediaContainersForAccount(account.id);
+            if (preparedContainers.length < 5) {
+                // prepare 10 media containers
+                await prepareMediaContainersForAccount(account);
+            }
+            if (!preparedContainers.length) {
+                continue;
+            }
+
+            // publish random container
+            const randomContainer = shuffle(preparedContainers)[0];
+            const publishResponse = await publishInstagramPostContainer({
+                containerId: randomContainer.mediaContainerId,
+                accessToken: account.token,
+            });
+
+            console.log(JSON.stringify({publishResponse}));
+
+            // update container data
+            const docRef = doc(
+                firestore,
+                Collection.Accounts,
+                account.id,
+                Collection.AccountMediaContainers,
+            );
+            console.log(JSON.stringify({docRef}));
+
+            await updateDoc(docRef, {
+                status: 'published',
+            } as AccountMediaContainerV3);
+        }
+
         // update record in db
         res.status(200).send('success');
     } catch (error) {

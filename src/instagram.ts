@@ -3,22 +3,27 @@ import path from 'path';
 
 import dotenv from 'dotenv';
 import {
+    Timestamp,
+    addDoc,
     collection,
     deleteDoc,
     doc,
     getDoc,
     getDocs,
+    limit,
+    query,
     setDoc,
     updateDoc,
+    where,
 } from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
 
 import {firestore, storage} from './config/firebase';
 import locations from './config/instagram.places.json';
-import {DelayS} from './constants';
-import {MediaPostModelOld} from './types';
-import {processAndConcatVideos, saveFileToDisk} from './utils';
+import {Collection, DelayS} from './constants';
+import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, PreparedVideoV3} from './types';
+import {preparePostText, processAndConcatVideos, saveFileToDisk} from './utils';
 
 dotenv.config();
 
@@ -31,7 +36,7 @@ const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY ||
 type CreateInstagramPostContainerArgs = {
     accessToken: string;
     caption: string;
-    firebaseId: string;
+    firebaseId?: string;
     imageUrl?: string;
     videoUrl?: string;
 };
@@ -88,14 +93,16 @@ export async function createInstagramPostContainer({
             body: JSON.stringify(postData),
         });
 
+        console.log(JSON.stringify({createMediaResponse}));
+
         const createMediaResponseJson = await createMediaResponse.json();
         console.log(JSON.stringify({createMediaResponseJson}));
 
-        const mediaId = createMediaResponseJson.id;
+        const mediaContainerId = createMediaResponseJson.id;
 
         return {
             success: true,
-            mediaId,
+            mediaContainerId,
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -287,5 +294,39 @@ export const canInstagramPostBePublished = async ({
     } catch (error) {
         console.log(JSON.stringify(error));
         return false;
+    }
+};
+
+export const prepareMediaContainersForAccount = async (account: AccountV3) => {
+    const colRef = collection(firestore, Collection.PreparedVideos);
+    const q = query(colRef, where('accounts', 'array-contains', account.id), limit(10));
+    const preparedVideoSnaps = await getDocs(q);
+    for (const snap of preparedVideoSnaps.docs) {
+        const preparedVideo = snap.data() as PreparedVideoV3;
+
+        const caption = preparePostText(preparedVideo.originalHashtags || []);
+
+        const {mediaContainerId} = await createInstagramPostContainer({
+            videoUrl: preparedVideo.firebaseUrl,
+            caption: caption || '',
+            accessToken: account.token,
+        });
+
+        // save container data to subcollection
+        const subcolRef = collection(
+            firestore,
+            Collection.Accounts,
+            account.id,
+            Collection.AccountMediaContainers,
+        );
+        await addDoc(subcolRef, {
+            mediaContainerId,
+            createdAt: new Timestamp(new Date().getTime() / 1000, 0),
+            status: 'created',
+        } as Omit<AccountMediaContainerV3, 'id'>);
+        // remove accoutn from prepared video accoutn list
+        await updateDoc(snap.ref, {
+            accounts: preparedVideo.accounts.filter((accName) => accName !== account.id),
+        } as PreparedVideoV3);
     }
 };

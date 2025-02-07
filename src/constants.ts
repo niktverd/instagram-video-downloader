@@ -11,6 +11,7 @@ export enum Collection {
     Scenarios = 'scenarios',
     PreparedVideos = 'prepared-videos',
     Accounts = 'accounts',
+    AccountMediaContainers = 'account-media-containers',
 }
 
 export enum DelayMS {

@@ -17,6 +17,7 @@ type AddBannerInTheEndArgs = {
     scenarioName: string;
     title: string;
     originalHashtags: string[];
+    accounts: string[];
 };
 
 export const addBannerInTheEnd = async ({
@@ -26,7 +27,12 @@ export const addBannerInTheEnd = async ({
     scenarioName,
     title,
     originalHashtags,
+    accounts = [],
 }: AddBannerInTheEndArgs) => {
+    if (!accounts.length) {
+        throw new Error('Accounts cannot be empty');
+    }
+
     console.log('addBannerInTheEnd', JSON.stringify({mainVideoUrl, bannerVideoUrl}));
     const basePath = getWorkingDirectoryForVideo(directoryName);
 
@@ -63,6 +69,7 @@ export const addBannerInTheEnd = async ({
         scenarioName,
         title,
         originalHashtags,
+        accounts,
     } as PreparedVideoV3);
 
     rmSync(basePath, {recursive: true});

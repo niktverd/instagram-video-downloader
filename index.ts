@@ -8,7 +8,7 @@ import {removePostById, reportInterface} from './src/controllers/ejs';
 import {hubChallangeWebhook, messageWebhookV3} from './src/controllers/instagram-webhooks';
 import {
     publishById,
-    publishIntagram2,
+    publishIntagramV3,
     removePublishedFromFirebase,
 } from './src/controllers/publishing';
 import {
@@ -61,7 +61,7 @@ app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
 app.get('/report', reportInterface);
-app.get('/publish', publishIntagram2);
+app.get('/publish', publishIntagramV3);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);

@@ -15,7 +15,7 @@ import {deleteObject, ref} from 'firebase/storage';
 
 import {firestore, storage} from './config/firebase';
 import {Collection} from './constants';
-import {AccountV3, MediaPostModelOld, ScenarioV3, SourceV3} from './types';
+import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, ScenarioV3, SourceV3} from './types';
 import {ScenarioName} from './types/scenario';
 
 export const removePublished = async () => {
@@ -151,7 +151,24 @@ export const getAccounts = async (onlyEnabled = false) => {
     if (snaps.empty) {
         throw new Error(`Collection ${Collection.Accounts} is empty`);
     }
-    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV3));
+    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as AccountV3));
 
-    return data.filter(({enabled}) => (onlyEnabled ? enabled : true));
+    return data.filter(({disabled}) => (onlyEnabled ? !disabled : true));
+};
+
+export const getRandomMediaContainersForAccount = async (accountName: string) => {
+    const colRef = collection(
+        firestore,
+        Collection.Accounts,
+        accountName,
+        Collection.AccountMediaContainers,
+    );
+
+    const q = query(colRef, where('status', '==', 'created'));
+    const snaps = await getDocs(q);
+    const mediaContainers = snaps.docs.map(
+        (snap) => ({...snap.data(), id: snap.id} as AccountMediaContainerV3),
+    );
+
+    return mediaContainers;
 };

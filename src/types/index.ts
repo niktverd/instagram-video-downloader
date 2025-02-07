@@ -81,10 +81,19 @@ export type PreparedVideoV3 = {
     scenarioName: string;
     title: string;
     originalHashtags: string[];
+    accounts: string[];
 };
 
 export type AccountV3 = {
     id: string;
     token: string;
     disabled: boolean;
+    availableScenarios: string[];
+};
+
+export type AccountMediaContainerV3 = {
+    id: string;
+    mediaContainerId: string;
+    createdAt: Timestamp;
+    status: 'created' | 'published';
 };

@@ -1,12 +1,17 @@
 import {DelayMS} from '../../constants';
-import {getOneRandomVideo, getScenarios, regScenarioUsage} from '../../firebase';
+import {getAccounts, getOneRandomVideo, getScenarios, regScenarioUsage} from '../../firebase';
 import {ScenarioName} from '../../types/scenario';
 
 import {addBannerInTheEnd} from './AddBannerInTheEnd';
 
 export const runScenario = async () => {
     try {
+        const accounts = await getAccounts(true);
         const scenarios = await getScenarios(true);
+
+        const accountsByScenario = accounts.filter((account) =>
+            account.availableScenarios?.includes(ScenarioName.ScenarioAddBannerAtTheEnd1),
+        );
 
         const scenario = scenarios.find(
             ({name}) => name === (ScenarioName.ScenarioAddBannerAtTheEnd1 as string),
@@ -34,6 +39,7 @@ export const runScenario = async () => {
             scenarioName: scenario.name,
             title,
             originalHashtags,
+            accounts: accountsByScenario.map(({id: accountName}) => accountName),
         });
 
         if (scenario.onlyOnce) {
@@ -42,6 +48,7 @@ export const runScenario = async () => {
             await regScenarioUsage(oneRandomVideo, scenario.name);
         }
     } catch (error) {
+        console.log(error);
         console.log(JSON.stringify(error));
     }
 };

@@ -123,13 +123,13 @@ export const preprocessVideo = (ms: number) => {
                             firebaseId: firebaseId,
                         });
 
-                        if (result.success && result.mediaId) {
+                        if (result.success && result.mediaContainerId) {
                             // eslint-disable-next-line max-depth
                             const propertyName = getInstagramPropertyName(tokenObject.id);
                             await updateDoc(documentRef, {
                                 [propertyName]: {
                                     ...media[propertyName],
-                                    mediaContainerId: result.mediaId,
+                                    mediaContainerId: result.mediaContainerId,
                                     status: 'uploaded',
                                 },
                             });

@@ -162,10 +162,10 @@ export const uiGetAccounts = async (_req: Request, res: Response) => {
 
 export const uiAddAccount = async (req: Request, res: Response) => {
     const {
-        values: {id, token},
+        values: {id, token, availableScenarios},
     } = req.body;
     console.log(req.body, {id, values: {id, token}});
-    await addAccount({id, values: {id, token, disabled: false}});
+    await addAccount({id, values: {id, token, disabled: false, availableScenarios}});
     res.status(200).send(req.body);
 };
 
