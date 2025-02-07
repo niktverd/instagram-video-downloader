@@ -1,6 +1,7 @@
 import {DelayMS} from '../../constants';
 import {getAccounts, getOneRandomVideo, getScenarios, regScenarioUsage} from '../../firebase';
 import {ScenarioName} from '../../types/scenario';
+import {log, logError} from '../logging';
 
 import {addBannerInTheEnd} from './AddBannerInTheEnd';
 
@@ -17,14 +18,14 @@ export const runScenario = async () => {
             ({name}) => name === (ScenarioName.ScenarioAddBannerAtTheEnd1 as string),
         );
         if (!scenario) {
-            console.log(JSON.stringify(['!scenario', scenario, scenarios]));
+            log(['!scenario', scenario, scenarios]);
             return;
         }
-        console.log(JSON.stringify(scenario));
+        log(scenario);
 
         const oneRandomVideo = await getOneRandomVideo(scenario.name);
         if (!oneRandomVideo) {
-            console.log('!oneRandomVideo', JSON.stringify(oneRandomVideo));
+            log('!oneRandomVideo', oneRandomVideo);
             return;
         }
 
@@ -43,22 +44,21 @@ export const runScenario = async () => {
         });
 
         if (scenario.onlyOnce) {
-            console.log('scenario.onlyOnce');
+            log('scenario.onlyOnce');
             // update video.scenario with scenario name
             await regScenarioUsage(oneRandomVideo, scenario.name);
         }
     } catch (error) {
-        console.log(error);
-        console.log(JSON.stringify(error));
+        logError(error);
     }
 };
 
 export const runScenarioCron = (ms: number) => {
     if (!process.env.ENABLE_RUN_SCENARIO_VIDEO) {
-        console.log('runScenarioCron', 'blocked');
+        log('runScenarioCron', 'blocked');
         return;
     }
-    console.log('runScenarioCron', 'started in', ms, 'ms');
+    log('runScenarioCron', 'started in', ms, 'ms');
     setTimeout(() => {
         runScenario();
         runScenarioCron(DelayMS.Min5);

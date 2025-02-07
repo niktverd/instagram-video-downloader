@@ -1,6 +1,8 @@
 import {Request, Response} from 'express';
 import {google} from 'googleapis';
 
+import {log, logError} from '../utils/logging';
+
 const OAuth2 = google.auth.OAuth2;
 const oauth2Client = new OAuth2(
     process.env.YT_CLOUD_ID,
@@ -20,10 +22,10 @@ export const youtubeAuthCallback = async (req: Request, res: Response) => {
     try {
         const {code} = req.query;
         const {tokens} = await oauth2Client.getToken(code as string);
-        console.log(JSON.stringify(tokens));
+        log(tokens);
         res.send(tokens);
     } catch (error) {
-        console.error('Error: ', error);
+        logError('Error: ', error);
         res.status(500).send('error during oauth');
     }
 };

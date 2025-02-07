@@ -17,6 +17,7 @@ import {firestore, storage} from './config/firebase';
 import {Collection} from './constants';
 import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, ScenarioV3, SourceV3} from './types';
 import {ScenarioName} from './types/scenario';
+import {log, logGroup} from './utils/logging';
 
 export const removePublished = async () => {
     const collectionRef = collection(firestore, 'media-post');
@@ -27,14 +28,14 @@ export const removePublished = async () => {
     );
 
     for (const document of documents) {
-        console.log(JSON.stringify(document));
+        log(document);
         const documentRef = doc(collectionRef, document.id);
         if (document.mediaContainerId && document.status === 'published') {
             const firebaseUrl = document.firebaseUrl;
             if (firebaseUrl) {
                 const filePath = decodeURIComponent(firebaseUrl.split('/o/')[1].split('?')[0]);
 
-                console.log(filePath); // Выведет: 0IG9JusjhjTRWX8Yd1G9.mp4
+                log(filePath); // Выведет: 0IG9JusjhjTRWX8Yd1G9.mp4
                 const fileRef = ref(storage, filePath);
                 await deleteObject(fileRef);
             }
@@ -95,13 +96,11 @@ export const getOneRandomVideo = async (particularScenario?: ScenarioName) => {
 
         const snapshot = await getDocs(queryRef);
         if (snapshot.empty) {
-            console.log(
-                JSON.stringify({
-                    note: 'nothing was found',
-                    randomValue,
-                    selectorRandomValue,
-                }),
-            );
+            log({
+                note: 'nothing was found',
+                randomValue,
+                selectorRandomValue,
+            });
             continue;
         }
         const docSnap = snapshot.docs[0];
@@ -113,7 +112,7 @@ export const getOneRandomVideo = async (particularScenario?: ScenarioName) => {
 };
 
 export const regScenarioUsage = async (source: SourceV3, scenarioName: string) => {
-    console.log(JSON.stringify({source, scenarioName}));
+    log({source, scenarioName});
     if (!source || !scenarioName) {
         return;
     }
@@ -131,10 +130,10 @@ type AddAccountArgs = {
 };
 
 export const addAccount = async ({id, values}: AddAccountArgs) => {
-    console.log('addAccount', {id, values});
+    log('addAccount', {id, values});
     const docRef = doc(firestore, Collection.Accounts, id);
     const result = await setDoc(docRef, values);
-    console.log(result);
+    log(result);
 };
 
 export const patchAccount = async ({id, values}: AddAccountArgs) => {
@@ -146,6 +145,8 @@ export const patchAccount = async ({id, values}: AddAccountArgs) => {
 };
 
 export const getAccounts = async (onlyEnabled = false) => {
+    logGroup('open');
+
     const collectionRef = collection(firestore, Collection.Accounts);
     const snaps = await getDocs(collectionRef);
     if (snaps.empty) {
@@ -153,10 +154,13 @@ export const getAccounts = async (onlyEnabled = false) => {
     }
     const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as AccountV3));
 
+    logGroup('close');
     return data.filter(({disabled}) => (onlyEnabled ? !disabled : true));
 };
 
 export const getRandomMediaContainersForAccount = async (accountName: string) => {
+    logGroup('open');
+
     const colRef = collection(
         firestore,
         Collection.Accounts,
@@ -170,5 +174,6 @@ export const getRandomMediaContainersForAccount = async (accountName: string) =>
         (snap) => ({...snap.data(), id: snap.id} as AccountMediaContainerV3),
     );
 
+    logGroup('close');
     return mediaContainers;
 };

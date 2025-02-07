@@ -23,6 +23,7 @@ import {
 } from '../firebase';
 import {downloadVideo} from '../preprocess-video';
 import {MediaPostModel} from '../types';
+import {log, logError} from '../utils/logging';
 import {runScenario} from '../utils/scenarios';
 import {splitVideoInTheMiddle, testPIP} from '../utils/video/splitVideoInTheMiddle';
 
@@ -77,14 +78,14 @@ export const uiSplitVideoInTheMiddle = async (req: Request, res: Response) => {
         }
         const data = snap.data() as MediaPostModel;
 
-        console.log(JSON.stringify({data}));
+        log({data});
         res.status(200).send({
             status: 'ok',
         });
 
         await splitVideoInTheMiddle(data, snap.id);
     } catch (error) {
-        console.log(JSON.stringify(error));
+        logError(error);
         res.status(500).send(error);
     }
 };
@@ -104,14 +105,14 @@ export const uiTestGreenScreen = async (req: Request, res: Response) => {
         }
         const data = snap.data() as MediaPostModel;
 
-        console.log(JSON.stringify({data}));
+        log({data});
         res.status(200).send({
             status: 'ok',
         });
 
         await testPIP(data, snap.id);
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
         res.status(500).send(error);
     }
 };
@@ -121,7 +122,7 @@ export const uiGetScenarios = async (_req: Request, res: Response) => {
         const scenarios = await getScenarios();
         res.status(200).send(scenarios);
     } catch (error) {
-        console.log(JSON.stringify(error));
+        logError(error);
         res.status(500).send(error);
     }
 };
@@ -151,11 +152,11 @@ export const uiDownloadVideoFromSourceV3 = async (_req: Request, res: Response) 
 export const uiGetAccounts = async (_req: Request, res: Response) => {
     try {
         const accounts = await getAccounts();
-        console.log(accounts);
+        log(accounts);
         res.status(200).send(accounts);
     } catch (error) {
-        console.log(error);
-        console.log(JSON.stringify(error));
+        log(error);
+        logError(error);
         res.status(500).send(error);
     }
 };
@@ -164,14 +165,14 @@ export const uiAddAccount = async (req: Request, res: Response) => {
     const {
         values: {id, token, availableScenarios},
     } = req.body;
-    console.log(req.body, {id, values: {id, token}});
+    log(req.body, {id, values: {id, token}});
     await addAccount({id, values: {id, token, disabled: false, availableScenarios}});
     res.status(200).send(req.body);
 };
 
 export const uiPatchAccount = async (req: Request, res: Response) => {
     const {id, values} = req.body;
-    console.log(values);
+    log(values);
     await patchAccount({id, values});
     res.status(200).send(req.body);
 };

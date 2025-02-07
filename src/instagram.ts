@@ -23,7 +23,8 @@ import {firestore, storage} from './config/firebase';
 import locations from './config/instagram.places.json';
 import {Collection, DelayS} from './constants';
 import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, PreparedVideoV3} from './types';
-import {preparePostText, processAndConcatVideos, saveFileToDisk} from './utils';
+import {log, logGroup} from './utils/logging';
+import {preparePostText, processAndConcatVideos, saveFileToDisk} from './utils/utils';
 
 dotenv.config();
 
@@ -83,7 +84,7 @@ export async function createInstagramPostContainer({
         } else {
             throw new Error('Data is not provided');
         }
-        console.log(JSON.stringify({postData}));
+        log({postData});
 
         const createMediaResponse = await fetch(`https://graph.instagram.com/v21.0/me/media`, {
             method: 'POST',
@@ -93,10 +94,10 @@ export async function createInstagramPostContainer({
             body: JSON.stringify(postData),
         });
 
-        console.log(JSON.stringify({createMediaResponse}));
+        log({createMediaResponse});
 
         const createMediaResponseJson = await createMediaResponse.json();
-        console.log(JSON.stringify({createMediaResponseJson}));
+        log({createMediaResponseJson});
 
         const mediaContainerId = createMediaResponseJson.id;
 
@@ -106,7 +107,7 @@ export async function createInstagramPostContainer({
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        console.error(error);
+        error(error);
         return {
             success: false,
             error: error.response?.data || error.message,
@@ -147,7 +148,7 @@ export async function getMergedVideo({
 
     const downloadURL = await getDownloadURL(fileRef);
 
-    console.log('Файл успешно загружен:', downloadURL);
+    log('Файл успешно загружен:', downloadURL);
 
     return {downloadURL, readstream};
 }
@@ -161,8 +162,10 @@ export async function publishInstagramPostContainer({
     containerId,
     accessToken,
 }: CublishInstagramPostContainerArgs) {
+    logGroup('open');
+
     try {
-        console.log(JSON.stringify({containerId, accessToken}));
+        log({containerId, accessToken});
         if (!accessToken || !containerId) {
             throw new Error('Access token not found or container id is empty');
         }
@@ -173,7 +176,7 @@ export async function publishInstagramPostContainer({
         );
 
         const statusResponseJson = await statusResponse.json();
-        console.log(JSON.stringify({statusResponseJson}));
+        log({statusResponseJson});
 
         if (statusResponseJson.status_code !== 'FINISHED') {
             throw new Error('Media is not ready to be published');
@@ -192,18 +195,20 @@ export async function publishInstagramPostContainer({
         });
 
         const publishResponseJson = await publishResponse.json();
-        console.log(JSON.stringify({publishResponseJson}));
+        log({publishResponseJson});
         return {
             success: true,
             postId: publishResponseJson.id,
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        console.error(error);
+        error(error);
         return {
             success: false,
             error: error.response?.data || error.message,
         };
+    } finally {
+        logGroup('close');
     }
 }
 
@@ -215,7 +220,7 @@ export async function findUnpublishedContainer() {
         const schedule = scheduleSnap.data();
         const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
-        console.log(JSON.stringify({schedule, now, diff}));
+        log({schedule, now, diff});
 
         if (diff < DelayS.Min10) {
             return;
@@ -231,16 +236,16 @@ export async function findUnpublishedContainer() {
         ),
     );
     for (const document of documents) {
-        console.log(JSON.stringify(document));
+        log(document);
         const documentRef = doc(collectionRef, document.id);
 
         if (document.mediaContainerId && document.status !== 'published') {
             const tokenObj = accessTokensArray.find(({id}) => id === document.account);
             const accessToken = tokenObj?.token || accessTokensArray[0].token;
-            console.log(JSON.stringify({accessTokensArray}));
-            console.log(JSON.stringify({tokenObj}));
-            console.log(JSON.stringify({'tokenObj?.token': tokenObj?.token}));
-            console.log(JSON.stringify({accessToken}));
+            log({accessTokensArray});
+            log({tokenObj});
+            log({'tokenObj?.token': tokenObj?.token});
+            log({accessToken});
             const result = await publishInstagramPostContainer({
                 containerId: document.mediaContainerId,
                 accessToken,
@@ -256,7 +261,7 @@ export async function findUnpublishedContainer() {
         const now = new Date();
         const dateDiff = now.getTime() / 1000 - createdAt.seconds;
 
-        console.log(JSON.stringify({dateDiff, delay: DelayS.Day2}));
+        log({dateDiff, delay: DelayS.Day2});
 
         if (dateDiff > DelayS.Day2) {
             await deleteDoc(documentRef);
@@ -274,7 +279,7 @@ export const canInstagramPostBePublished = async ({
     accessToken,
 }: CanInstagramPostBePublishedArgs) => {
     try {
-        console.log(JSON.stringify({mediaContainerId, accessToken}));
+        log({mediaContainerId, accessToken});
         if (!accessToken || !mediaContainerId) {
             throw new Error('Access token not found or container id is empty');
         }
@@ -284,7 +289,7 @@ export const canInstagramPostBePublished = async ({
         );
 
         const statusResponseJson = await statusResponse.json();
-        console.log(JSON.stringify({statusResponseJson}));
+        log({statusResponseJson});
 
         if (statusResponseJson.status_code !== 'FINISHED') {
             throw new Error('Container is not ready to be published');
@@ -292,12 +297,13 @@ export const canInstagramPostBePublished = async ({
 
         return true;
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
         return false;
     }
 };
 
 export const prepareMediaContainersForAccount = async (account: AccountV3) => {
+    logGroup('open');
     const colRef = collection(firestore, Collection.PreparedVideos);
     const q = query(colRef, where('accounts', 'array-contains', account.id), limit(10));
     const preparedVideoSnaps = await getDocs(q);
@@ -329,4 +335,5 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
             accounts: preparedVideo.accounts.filter((accName) => accName !== account.id),
         } as PreparedVideoV3);
     }
+    logGroup('close');
 };

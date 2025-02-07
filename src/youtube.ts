@@ -3,6 +3,8 @@ import {ReadStream} from 'fs';
 import dotenv from 'dotenv';
 import {google} from 'googleapis';
 
+import {log, logError} from './utils/logging';
+
 dotenv.config();
 const OAuth2 = google.auth.OAuth2;
 
@@ -48,9 +50,9 @@ export const uploadYoutubeVideo = async ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (err: Error | null, data: any) => {
             if (err) {
-                console.error(JSON.stringify(err));
+                logError(err);
             } else {
-                console.log('video published', data.data.id);
+                log('video published', data.data.id);
             }
         },
     );

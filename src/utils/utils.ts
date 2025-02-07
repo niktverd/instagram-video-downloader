@@ -6,12 +6,14 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
 import {shuffle} from 'lodash';
 
-import {firestore, storage} from './config/firebase';
-import baseHashtags from './config/instagram.hashtags.json';
-import {postText} from './config/post.text';
-import {Collection, DelayS} from './constants';
-import {getScenarios} from './firebase';
-import {MediaPostModel, SourceV3} from './types';
+import {firestore, storage} from '../config/firebase';
+import baseHashtags from '../config/instagram.hashtags.json';
+import {postText} from '../config/post.text';
+import {Collection, DelayS} from '../constants';
+import {getScenarios} from '../firebase';
+import {MediaPostModel, SourceV3} from '../types';
+
+import {log, logError} from './logging';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -41,7 +43,7 @@ export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs
 
         return downloadURL;
     } catch (error) {
-        console.error('Ошибка при загрузке файла:', error);
+        log('Ошибка при загрузке файла:', error);
         throw error;
     }
 }
@@ -84,13 +86,13 @@ export const processAndConcatVideos = async (
                 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1',
             )
             .on('start', (commandLine) => {
-                console.log(1, 'FFmpeg command: ' + commandLine);
+                log(1, 'FFmpeg command: ' + commandLine);
             })
             .on('stderr', (stderrLine) => {
-                console.error(1, 'FFmpeg stderr:', stderrLine);
+                logError(1, 'FFmpeg stderr:', stderrLine);
             })
             .on('error', (err) => {
-                console.error(1, 'Ошибка при обработке видео:', err);
+                logError(1, 'Ошибка при обработке видео:', err);
             })
             .on('end', () => {
                 ffmpeg()
@@ -111,17 +113,17 @@ export const processAndConcatVideos = async (
                     // .videoCodec('libx265')
                     .output(outputFilePath) // Указываем выходной файл
                     .on('start', (commandLine) => {
-                        console.log(2, 'FFmpeg command: ' + commandLine);
+                        log(2, 'FFmpeg command: ' + commandLine);
                     })
                     .on('stderr', (stderrLine) => {
-                        console.error(2, 'FFmpeg stderr:', stderrLine);
+                        logError(2, 'FFmpeg stderr:', stderrLine);
                     })
                     .on('error', (err) => {
-                        console.error(2, 'Ошибка при обработке видео:', err);
+                        logError(2, 'Ошибка при обработке видео:', err);
                         reject(err);
                     })
                     .on('end', () => {
-                        console.log(2, 'Обработка и склейка видео завершены.');
+                        log(2, 'Обработка и склейка видео завершены.');
                         resolve();
                     })
                     .run();
@@ -138,7 +140,7 @@ export const preparePostText = (originalHashtags: string[]) => {
         '{popular-hashtags}',
         [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
     );
-    console.log(JSON.stringify({finalText, originalHashtags}));
+    log({finalText, originalHashtags});
     return finalText.replace('{original-hashtags}', originalHashtags.join(' ')).trim();
 };
 
@@ -170,7 +172,7 @@ export const initiateRecordV3 = async (
     bodyJSONString: SourceV3['bodyJSONString'],
 ) => {
     const scenarios = await getScenarios(true);
-    console.log(JSON.stringify({scenarios}));
+    log({scenarios});
     return {
         createdAt: new Timestamp(new Date().getTime() / 1000, 0),
         firebaseUrl: '',
@@ -192,7 +194,7 @@ export const isTimeToPublishInstagram = async () => {
         const schedule = scheduleSnap.data();
         const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
-        console.log(JSON.stringify({schedule, now, diff, delay: DelayS.Min5}));
+        log({schedule, now, diff, delay: DelayS.Min5});
 
         if (diff < DelayS.Min5) {
             throw new Error('It is to early to publish container');

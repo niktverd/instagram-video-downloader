@@ -7,7 +7,8 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {firestore, storage} from '../../config/firebase';
 import {Collection} from '../../constants';
 import {PreparedVideoV3, ScenarioType} from '../../types';
-import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils';
+import {log} from '../logging';
+import {getWorkingDirectoryForVideo, saveFileToDisk} from '../utils';
 import {concatVideoFromList, normalizeVideo, saveFileList} from '../video/primitives';
 
 type AddBannerInTheEndArgs = {
@@ -33,7 +34,7 @@ export const addBannerInTheEnd = async ({
         throw new Error('Accounts cannot be empty');
     }
 
-    console.log('addBannerInTheEnd', JSON.stringify({mainVideoUrl, bannerVideoUrl}));
+    log('addBannerInTheEnd', {mainVideoUrl, bannerVideoUrl});
     const basePath = getWorkingDirectoryForVideo(directoryName);
 
     //download videos
@@ -59,7 +60,7 @@ export const addBannerInTheEnd = async ({
     const metadata = {contentType};
     await uploadBytes(fileRef, processedBuffer, metadata);
     const downloadURL = await getDownloadURL(fileRef);
-    console.log('downloadURL', downloadURL);
+    log('downloadURL', downloadURL);
 
     // update database
     const colRef = collection(firestore, Collection.PreparedVideos);

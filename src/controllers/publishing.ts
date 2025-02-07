@@ -23,10 +23,11 @@ import {
     publishInstagramPostContainer,
 } from '../instagram';
 import {AccountMediaContainerV3, MediaPostModel} from '../types';
-import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils';
+import {log, logGroup} from '../utils/logging';
+import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils/utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    log(req.query);
 
     await findUnpublishedContainer();
 
@@ -37,23 +38,21 @@ export const publishIntagram = async (req: Request, res: Response) => {
 };
 
 export const publishIntagram2 = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    log(req.query);
 
     try {
         await isTimeToPublishInstagram();
         // get random document for every account
-        console.log('accessTokensArray', JSON.stringify(accessTokensArray));
+        log('accessTokensArray', accessTokensArray);
         for (const accessTokenObject of accessTokensArray) {
             let propertyName: keyof MediaPostModel | null = null;
             let docRef: DocumentReference<DocumentData, DocumentData> | null = null;
             // let collectionRef: CollectionReference<DocumentData, DocumentData> | null = null;
             try {
-                console.log(
-                    JSON.stringify({
-                        accessTokenId: accessTokenObject.id,
-                        note: 'Publishing for account',
-                    }),
-                );
+                log({
+                    accessTokenId: accessTokenObject.id,
+                    note: 'Publishing for account',
+                });
                 propertyName = getInstagramPropertyName(accessTokenObject.id);
                 if (!propertyName) {
                     throw new Error(`No propertyName: ${propertyName}`);
@@ -74,28 +73,24 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                 );
                 const snapshot = await getDocs(queryRef);
                 if (snapshot.empty) {
-                    console.log(
-                        JSON.stringify({
-                            note: 'nothing was found',
-                            propertyName,
-                            randomValue,
-                            selectorRandomValue,
-                        }),
-                    );
+                    log({
+                        note: 'nothing was found',
+                        propertyName,
+                        randomValue,
+                        selectorRandomValue,
+                    });
                     continue;
                 }
                 const docSnap = snapshot.docs[0];
                 docRef = docSnap.ref;
-                // console.log(docRe2f);
+                //  log(docRe2f);
                 const docData = {...docSnap.data(), id: docSnap.id} as MediaPostModel;
-                console.log(
-                    JSON.stringify({
-                        note: 'doc was found',
-                        propertyName,
-                        randomValue,
-                        docData,
-                    }),
-                );
+                log({
+                    note: 'doc was found',
+                    propertyName,
+                    randomValue,
+                    docData,
+                });
 
                 // // check status of media container
                 // // publish media container
@@ -115,7 +110,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                     await setDoc(scheduleDocRef, {lastPublishingTime: new Date()});
                 }
             } catch (error) {
-                console.log(JSON.stringify(error));
+                log(error);
                 if (docRef) {
                     await updateDoc(docRef, {
                         [`${propertyName}.error`]: true,
@@ -128,7 +123,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
         // update record in db
         res.status(200).send('success');
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
         res.status(200).send('error');
     } finally {
         await delay(1000);
@@ -137,14 +132,15 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
 };
 
 export const publishIntagramV3 = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    logGroup('open');
+    log(req.query);
 
     try {
         const accounts = await getAccounts(true);
 
         for (const account of accounts) {
             // get random document for every account
-            console.log('account', JSON.stringify({account}));
+            log('account', {account});
             // get 5 video
             const preparedContainers = await getRandomMediaContainersForAccount(account.id);
             if (preparedContainers.length < 5) {
@@ -162,7 +158,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
                 accessToken: account.token,
             });
 
-            console.log(JSON.stringify({publishResponse}));
+            log({publishResponse});
 
             // update container data
             const docRef = doc(
@@ -171,7 +167,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
                 account.id,
                 Collection.AccountMediaContainers,
             );
-            console.log(JSON.stringify({docRef}));
+            log({docRef});
 
             await updateDoc(docRef, {
                 status: 'published',
@@ -181,17 +177,18 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
         // update record in db
         res.status(200).send('success');
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
         res.status(200).send('error');
     } finally {
         await delay(1000);
         await stopHerokuApp();
+        logGroup('close');
     }
 };
 
 export const publishById = async (req: Request, res: Response) => {
     try {
-        console.log(JSON.stringify({body: req.body}));
+        log({body: req.body});
         const {id, accessToken} = req.body;
         if (!id || !accessToken) {
             throw new Error('no id or accessToken found in body');
@@ -202,15 +199,15 @@ export const publishById = async (req: Request, res: Response) => {
             containerId: id,
             accessToken: accessToken,
         });
-        console.log({result});
+        log({result});
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
     }
     res.status(200).send('published-by-id');
 };
 
 export const removePublishedFromFirebase = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    log(req.query);
 
     await removePublished();
 

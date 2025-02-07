@@ -1,4 +1,4 @@
-console.log(
+ console.log(
     JSON.stringify([
         {
             id: 'carcar.kz',

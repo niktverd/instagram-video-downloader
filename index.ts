@@ -26,6 +26,7 @@ import {
 } from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
 import {downloadVideo} from './src/preprocess-video';
+import {log} from './src/utils/logging';
 import {runScenarioCron} from './src/utils/scenarios';
 
 dotenv.config();
@@ -86,7 +87,7 @@ const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
 
 app.listen(appPort, () => {
-    console.log(`Example app listening on port ${appPort}`);
+    log(`Example app listening on port ${appPort}`);
 });
 
 downloadVideo(DelayMS.Sec30);
