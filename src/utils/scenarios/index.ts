@@ -75,7 +75,7 @@ export const runScenarioCron = (ms: number) => {
     log('runScenarioCron', 'started in', ms, 'ms');
     setTimeout(() => {
         runScenario();
-        runScenarioCron(DelayMS.Min2);
+        runScenarioCron(DelayMS.Min1);
     }, ms);
     logGroup('close');
 };
