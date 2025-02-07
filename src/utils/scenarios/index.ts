@@ -1,3 +1,5 @@
+import {shuffle} from 'lodash';
+
 import {DelayMS} from '../../constants';
 import {getAccounts, getOneRandomVideo, getScenarios, regScenarioUsage} from '../../firebase';
 import {ScenarioName} from '../../types/scenario';
@@ -11,13 +13,16 @@ export const runScenario = async () => {
         const accounts = await getAccounts(true);
         const scenarios = await getScenarios(true);
 
+        const randomScenario = shuffle([
+            String(ScenarioName.ScenarioAddBannerAtTheEnd1),
+            String(ScenarioName.ScenarioAddBannerAtTheEnd2),
+        ])[0];
+
         const accountsByScenario = accounts.filter((account) =>
-            account.availableScenarios?.includes(ScenarioName.ScenarioAddBannerAtTheEnd1),
+            account.availableScenarios?.includes(randomScenario),
         );
 
-        const scenario = scenarios.find(
-            ({name}) => name === (ScenarioName.ScenarioAddBannerAtTheEnd1 as string),
-        );
+        const scenario = scenarios.find(({name}) => name === randomScenario);
         if (!scenario) {
             log(['!scenario', scenario, scenarios]);
             return;
