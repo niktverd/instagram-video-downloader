@@ -3,6 +3,7 @@ import {
     collection,
     deleteDoc,
     doc,
+    getDoc,
     getDocs,
     limit,
     orderBy,
@@ -122,6 +123,18 @@ export const regScenarioUsage = async (source: SourceV3, scenarioName: string) =
     await updateDoc(docRef, {
         scenarios: source.scenarios.filter((name) => name !== scenarioName),
     });
+    const updatedDoc = await getDoc(docRef);
+    if (updatedDoc.exists()) {
+        log(
+            source.id,
+            {
+                scenarios: source.scenarios.filter((name) => name !== scenarioName),
+            },
+            updatedDoc.data(),
+        );
+    } else {
+        log('doc', source.id, 'is not exist');
+    }
 };
 
 type AddAccountArgs = {

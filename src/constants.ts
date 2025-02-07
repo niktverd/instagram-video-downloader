@@ -19,6 +19,7 @@ export enum DelayMS {
     Sec30 = 30 * 1000,
     Min5 = 5 * 60 * 1000,
     Min2 = 2 * 60 * 1000,
+    Min1 = 1 * 60 * 1000,
 }
 
 export enum DelayS {
