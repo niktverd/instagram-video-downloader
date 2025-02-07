@@ -33,6 +33,10 @@ export const runScenario = async () => {
         const title = sources.instagramReel?.title || '';
         const originalHashtags = sources.instagramReel?.originalHashtags || [];
 
+        if (!firebaseUrl) {
+            return;
+        }
+
         await addBannerInTheEnd({
             mainVideoUrl: firebaseUrl,
             bannerVideoUrl: scenario.extraBannerUrl,

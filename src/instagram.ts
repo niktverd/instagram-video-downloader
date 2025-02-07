@@ -23,7 +23,7 @@ import {firestore, storage} from './config/firebase';
 import locations from './config/instagram.places.json';
 import {Collection, DelayS} from './constants';
 import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, PreparedVideoV3} from './types';
-import {log, logGroup} from './utils/logging';
+import {log, logError, logGroup} from './utils/logging';
 import {preparePostText, processAndConcatVideos, saveFileToDisk} from './utils/utils';
 
 dotenv.config();
@@ -202,7 +202,7 @@ export async function publishInstagramPostContainer({
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-        error(error);
+        logError(error);
         return {
             success: false,
             error: error.response?.data || error.message,

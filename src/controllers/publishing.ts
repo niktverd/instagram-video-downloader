@@ -159,6 +159,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
             });
 
             log({publishResponse});
+            log([firestore, Collection.Accounts, account.id, Collection.AccountMediaContainers]);
 
             // update container data
             const docRef = doc(
@@ -166,6 +167,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
                 Collection.Accounts,
                 account.id,
                 Collection.AccountMediaContainers,
+                randomContainer.id,
             );
             log({docRef});
 

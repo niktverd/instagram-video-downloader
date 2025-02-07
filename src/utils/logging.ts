@@ -1,6 +1,29 @@
 import chalk from 'chalk';
 
-// const chalk = new Chalk();
+const chalkMap = [
+    chalk.bgBlue,
+    chalk.bgCyan,
+    chalk.bgGray,
+    chalk.bgGreen,
+    chalk.bgMagenta,
+    chalk.bgRed,
+    chalk.bgWhite,
+    chalk.bgYellow,
+    chalk.bgBlueBright,
+    chalk.bgCyanBright,
+    chalk.bgGreenBright,
+    chalk.bgMagentaBright,
+    chalk.bgRedBright,
+    chalk.bgWhiteBright,
+    chalk.bgYellowBright,
+];
+
+function getCallerDepth() {
+    const error = new Error();
+    const stack = error.stack?.split('\n');
+    // Ищем глубину вызова, считая количество строк стека до текущей функции
+    return stack?.slice(3).length || 0; // Игнорируем первые 3 строки (ошибка, getCallerDepth, logWithFunctionName)
+}
 
 const getCallerFunctionName = () => {
     const error = new Error();
@@ -13,9 +36,13 @@ const getCallerFunctionName = () => {
 
 export const logGroup = async (variant: 'open' | 'close') => {
     const functionName = getCallerFunctionName();
+    let depth = getCallerDepth();
+    if (depth >= chalkMap.length) {
+        depth = chalkMap.length - 1;
+    }
 
     if (variant === 'open') {
-        console.group(chalk.bgYellow(functionName));
+        console.group(chalkMap[depth](functionName));
     } else {
         console.groupEnd();
     }
