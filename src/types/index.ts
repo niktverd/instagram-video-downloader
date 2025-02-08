@@ -67,6 +67,7 @@ export type SourceV3 = {
     scenarios: string[];
     lastUsed: Timestamp;
     timesUsed: number;
+    scenariosHasBeenCreated: [];
 };
 
 export type ScenarioV3 = ScenarioBase & ScenarioAddBannerAtTheEnd;
@@ -76,12 +77,14 @@ export enum ScenarioType {
 }
 
 export type PreparedVideoV3 = {
+    id: string;
     firebaseUrl: string;
     scenarioType: ScenarioType;
     scenarioName: string;
     title: string;
     originalHashtags: string[];
     accounts: string[];
+    accountsHasBeenUsed: string[];
 };
 
 export type AccountV3 = {

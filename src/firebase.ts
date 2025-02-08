@@ -122,6 +122,9 @@ export const regScenarioUsage = async (source: SourceV3, scenarioName: string) =
     const docRef = doc(colRef, source.id);
     await updateDoc(docRef, {
         scenarios: source.scenarios.filter((name) => name !== scenarioName),
+        scenariosHasBeenCreated: source.scenariosHasBeenCreated?.length
+            ? [...source.scenariosHasBeenCreated, scenarioName]
+            : [scenarioName],
     });
     const updatedDoc = await getDoc(docRef);
     if (updatedDoc.exists()) {

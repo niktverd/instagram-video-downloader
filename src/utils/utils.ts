@@ -132,7 +132,13 @@ export const processAndConcatVideos = async (
     });
 };
 
-export const preparePostText = (originalHashtags: string[]) => {
+type PreparePostTextArgs = {
+    originalHashtags: string[];
+    system: string;
+    account: string;
+};
+
+export const preparePostText = ({originalHashtags, system = '', account}: PreparePostTextArgs) => {
     const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
     const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
     const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
@@ -141,7 +147,15 @@ export const preparePostText = (originalHashtags: string[]) => {
         [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
     );
     log({finalText, originalHashtags});
-    return finalText.replace('{original-hashtags}', originalHashtags.join(' ')).trim();
+
+    const caption = finalText
+        .replace('{account}', account)
+        .replace('{original-hashtags}', originalHashtags.join(' '))
+        .trim();
+    if (system?.length) {
+        return `${caption} \n---\n${system}`;
+    }
+    return caption;
 };
 
 export const initiateRecord = (source: MediaPostModel['sources']) =>
@@ -183,6 +197,7 @@ export const initiateRecordV3 = async (
         scenarios: scenarios.map(({name}) => name),
         lastUsed: new Timestamp(0, 0),
         timesUsed: 0,
+        scenariosHasBeenCreated: [],
     } as Omit<SourceV3, 'id'>;
 };
 

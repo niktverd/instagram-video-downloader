@@ -310,7 +310,11 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
     for (const snap of preparedVideoSnaps.docs) {
         const preparedVideo = snap.data() as PreparedVideoV3;
 
-        const caption = preparePostText(preparedVideo.originalHashtags || []);
+        const caption = preparePostText({
+            originalHashtags: preparedVideo.originalHashtags || [],
+            system: `${preparedVideo.scenarioName} ${snap.id}`,
+            account: account.id,
+        });
 
         const {mediaContainerId} = await createInstagramPostContainer({
             videoUrl: preparedVideo.firebaseUrl,
@@ -333,6 +337,9 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
         // remove accoutn from prepared video accoutn list
         await updateDoc(snap.ref, {
             accounts: preparedVideo.accounts.filter((accName) => accName !== account.id),
+            accountsHasBeenUsed: preparedVideo.accountsHasBeenUsed
+                ? [...preparedVideo.accountsHasBeenUsed, account.id]
+                : [account.id],
         } as PreparedVideoV3);
     }
     logGroup('close');

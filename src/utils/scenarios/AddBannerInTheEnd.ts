@@ -71,7 +71,8 @@ export const addBannerInTheEnd = async ({
         title,
         originalHashtags,
         accounts,
-    } as PreparedVideoV3);
+        accountsHasBeenUsed: [],
+    } as Omit<PreparedVideoV3, 'id'>);
 
     rmSync(basePath, {recursive: true});
 };

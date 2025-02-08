@@ -103,9 +103,11 @@ export const preprocessVideo = (ms: number) => {
                         firebaseUrl: preparedVideoUrl,
                     });
 
-                    const caption = preparePostText(
-                        media.sources.instagramReel?.originalHashtags || [],
-                    );
+                    const caption = preparePostText({
+                        originalHashtags: media.sources.instagramReel?.originalHashtags || [],
+                        account: 'carcar.tech #carcar.kz',
+                        system: '',
+                    });
 
                     await uploadYoutubeVideo({
                         videoReadStream: readstream,

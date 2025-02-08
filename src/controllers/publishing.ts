@@ -143,6 +143,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
             log('account', {account});
             // get 5 video
             const preparedContainers = await getRandomMediaContainersForAccount(account.id);
+            log({account, preparedContainers});
             if (preparedContainers.length < 5) {
                 // prepare 10 media containers
                 await prepareMediaContainersForAccount(account);
