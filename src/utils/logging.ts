@@ -54,7 +54,7 @@ export const log = (...messages: unknown[]) => {
     if (isDevelopment) {
         console.log(...messages);
     } else {
-        console.log(`[${functionName}]`, messages);
+        console.log(`[${functionName}]`, JSON.stringify(messages));
     }
 };
 
@@ -66,6 +66,6 @@ export const logError = (...messages: unknown[]) => {
         console.error(...messages);
         console.groupEnd();
     } else {
-        console.error(`[${functionName}]`, messages);
+        console.error(`[${functionName}]`, JSON.stringify(messages));
     }
 };
