@@ -21,6 +21,7 @@ import {
     patchAccount,
     patchScenario,
 } from '../firebase';
+import {getInstagramInsights} from '../instagram';
 import {downloadVideo} from '../preprocess-video';
 import {MediaPostModel} from '../types';
 import {log, logError} from '../utils/logging';
@@ -161,11 +162,34 @@ export const uiGetAccounts = async (_req: Request, res: Response) => {
     }
 };
 
+export const uiGetInsights = async (req: Request, res: Response) => {
+    const {id: accountName} = req.query;
+
+    try {
+        if (!accountName) {
+            throw new Error('accoutn name is not provided');
+        }
+        const accounts = await getAccounts();
+        const account = accounts.find(({id}) => id === accountName);
+        if (!account) {
+            throw new Error(`accoutn with name ${accountName} was not found`);
+        }
+        const insight = await getInstagramInsights(account.token);
+
+        log(insight);
+        res.status(200).send(insight);
+    } catch (error) {
+        log(error);
+        logError(error);
+        res.status(500).send(error);
+    }
+};
+
 export const uiAddAccount = async (req: Request, res: Response) => {
     const {
         values: {id, token, availableScenarios},
     } = req.body;
-    log(req.body, {id, values: {id, token}});
+    log(req.body, {id, values: {id, token, availableScenarios}});
     await addAccount({id, values: {id, token, disabled: false, availableScenarios}});
     res.status(200).send(req.body);
 };

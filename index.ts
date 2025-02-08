@@ -17,6 +17,7 @@ import {
     uiCreateVideoByScenario,
     uiDownloadVideoFromSourceV3,
     uiGetAccounts,
+    uiGetInsights,
     uiGetMediaPosts,
     uiGetScenarios,
     uiPatchAccount,
@@ -71,6 +72,7 @@ app.get('/ui-get-scenarios', uiGetScenarios);
 app.get('/ui-get-accounts', uiGetAccounts);
 app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
 app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
+app.get('/ui-get-insights', uiGetInsights);
 
 app.post('/webhooks', messageWebhookV3);
 app.post('/remove-post-by-id', removePostById);
