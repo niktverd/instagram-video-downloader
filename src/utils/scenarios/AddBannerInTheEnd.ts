@@ -16,6 +16,7 @@ type AddBannerInTheEndArgs = {
     mainVideoUrl: string;
     bannerVideoUrl: string;
     scenarioName: string;
+    scenarioId: string;
     title: string;
     originalHashtags: string[];
     accounts: string[];
@@ -26,6 +27,7 @@ export const addBannerInTheEnd = async ({
     mainVideoUrl,
     bannerVideoUrl,
     scenarioName,
+    scenarioId,
     title,
     originalHashtags,
     accounts = [],
@@ -68,6 +70,7 @@ export const addBannerInTheEnd = async ({
         firebaseUrl: downloadURL,
         scenarioType: ScenarioType.addBannerInTheEnd,
         scenarioName,
+        scenarioId,
         title,
         originalHashtags,
         accounts,

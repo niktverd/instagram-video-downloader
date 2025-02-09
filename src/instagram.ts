@@ -312,7 +312,7 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
 
         const caption = preparePostText({
             originalHashtags: preparedVideo.originalHashtags || [],
-            system: `${preparedVideo.scenarioName} ${snap.id}`,
+            system: `${preparedVideo.scenarioId} ${snap.id}`,
             account: account.id,
         });
 

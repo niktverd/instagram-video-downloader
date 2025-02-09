@@ -223,7 +223,7 @@ export const getInstagramPropertyName = (tokenObjectId: string) =>
         : 'publishedOnInstagramCarcarTech';
 
 export const getWorkingDirectoryForVideo = (directoryName: string) => {
-    const basePath = join(process.cwd(), 'videos-working-directory', directoryName);
+    const basePath = join(process.cwd(), 'videos-working-directory', directoryName + Math.random());
     if (!existsSync(basePath)) {
         mkdirSync(basePath, {recursive: true});
     }

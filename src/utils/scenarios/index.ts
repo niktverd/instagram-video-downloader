@@ -24,7 +24,7 @@ export const runScenario = async () => {
 
         const scenario = scenarios.find(({name}) => name === randomScenario);
         if (!scenario) {
-            log(['!scenario', scenario, scenarios]);
+            log(['!scenario', randomScenario, scenario, scenarios]);
             return;
         }
         log(scenario);
@@ -48,6 +48,7 @@ export const runScenario = async () => {
             bannerVideoUrl: scenario.extraBannerUrl,
             directoryName: id,
             scenarioName: scenario.name,
+            scenarioId: scenario.id,
             title,
             originalHashtags,
             accounts: accountsByScenario.map(({id: accountName}) => accountName),
