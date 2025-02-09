@@ -7,9 +7,8 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {storage} from '../../config/firebase';
 import {SECOND_VIDEO} from '../../constants';
 import {MediaPostModel} from '../../types';
-import {log} from '../logging';
-import {getWorkingDirectoryForVideo, saveFileToDisk} from '../utils';
-
+import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils/common';
+import {log} from '../../utils/logging';
 import {
     addSilentAudioStream,
     checkHasAudio,
@@ -18,11 +17,10 @@ import {
     createVideoOfFrame,
     extractFrames,
     getVideoDuration,
-    // logStreamsInfo,
     normalizeVideo,
     saveFileList,
     splitVideo,
-} from './primitives';
+} from '../video/primitives';
 
 const pauseSourcePath = '/Users/niktverd/code/instagram-video-downloader/greenPause.mp4';
 const playSourcePath = '/Users/niktverd/code/instagram-video-downloader/greenPlay.mp4';

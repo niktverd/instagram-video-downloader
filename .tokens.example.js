@@ -1,4 +1,4 @@
- console.log(
+console.log(
     JSON.stringify([
         {
             id: 'carcar.kz',
@@ -10,7 +10,7 @@
         },
         {
             id: 'alisakalinina878',
-            token: '***'
-        }
+            token: '***',
+        },
     ]),
 );

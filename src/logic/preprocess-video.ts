@@ -13,13 +13,14 @@ import {
 } from 'firebase/firestore/lite';
 import {shuffle} from 'lodash';
 
-import {firestore} from './config/firebase';
-import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from './constants';
-import {createInstagramPostContainer, getMergedVideo} from './instagram';
-import {MediaPostModel, SourceV3, Sources} from './types';
-import {log} from './utils/logging';
-import {getInstagramPropertyName, preparePostText, uploadFileFromUrl} from './utils/utils';
-import {getVideoDuration} from './utils/video/primitives';
+import {firestore} from '../config/firebase';
+import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '../constants';
+import {MediaPostModel, SourceV3, Sources} from '../types';
+import {getInstagramPropertyName, preparePostText, uploadFileFromUrl} from '../utils/common';
+import {log} from '../utils/logging';
+
+import {createInstagramPostContainer, getMergedVideo} from './instagram/instagram';
+import {getVideoDuration} from './video/primitives';
 import {uploadYoutubeVideo} from './youtube';
 
 dotenv.config();
@@ -165,12 +166,12 @@ export const preprocessVideo = (ms: number) => {
     }, ms);
 };
 
-export const downloadVideo = (ms: number, calledFromApi = false) => {
+export const downloadVideoCron = (ms: number, calledFromApi = false) => {
     if (!process.env.ENABLE_DOWNLOAD_VIDEO && !calledFromApi) {
-        log('downloadVideo', 'blocked');
+        log('downloadVideoCron', 'blocked');
         return;
     }
-    log('downloadVideo', 'started in', ms, 'ms');
+    log('downloadVideoCron', 'started in', ms, 'ms');
 
     setTimeout(async () => {
         const collectionRef = collection(firestore, Collection.Sources);
@@ -178,7 +179,7 @@ export const downloadVideo = (ms: number, calledFromApi = false) => {
         const docSnaps = await getDocs(queryRef);
         if (docSnaps.empty) {
             log('doc snap is empty');
-            downloadVideo(DelayMS.Min5);
+            downloadVideoCron(DelayMS.Min5);
             return;
         }
 
@@ -236,7 +237,7 @@ export const downloadVideo = (ms: number, calledFromApi = false) => {
         }
 
         if (!calledFromApi) {
-            downloadVideo(DelayMS.Sec1);
+            downloadVideoCron(DelayMS.Sec1);
         }
     }, ms);
 };

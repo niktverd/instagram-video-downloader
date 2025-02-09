@@ -4,8 +4,8 @@ import {addDoc, collection} from 'firebase/firestore/lite';
 
 import {firestore} from '../config/firebase';
 import {Collection} from '../constants';
+import {initiateRecordV3} from '../utils/common';
 import {log, logError, logGroup} from '../utils/logging';
-import {initiateRecordV3} from '../utils/utils';
 
 dotenv.config();
 

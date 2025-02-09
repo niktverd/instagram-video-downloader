@@ -13,20 +13,14 @@ import {pick} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '../constants';
-import {
-    addAccount,
-    addScenario,
-    getAccounts,
-    getScenarios,
-    patchAccount,
-    patchScenario,
-} from '../firebase';
-import {getInstagramInsights} from '../instagram';
-import {downloadVideo} from '../preprocess-video';
+import {addAccount, getAccounts, patchAccount} from '../logic/firebase/accounts';
+import {addScenario, getScenarios, patchScenario} from '../logic/firebase/scenarios';
+import {getInstagramInsights} from '../logic/instagram/aux';
+import {downloadVideoCron} from '../logic/preprocess-video';
+import {runScenario} from '../logic/scenarios';
+import {splitVideoInTheMiddle, testPIP} from '../logic/scenarios/splitVideoInTheMiddle';
 import {MediaPostModel} from '../types';
 import {log, logError} from '../utils/logging';
-import {runScenario} from '../utils/scenarios';
-import {splitVideoInTheMiddle, testPIP} from '../utils/video/splitVideoInTheMiddle';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
     const {
@@ -147,7 +141,7 @@ export const uiCreateVideoByScenario = async (_req: Request, res: Response) => {
 
 export const uiDownloadVideoFromSourceV3 = async (_req: Request, res: Response) => {
     res.status(200).send({message: 'uiDownloadVideoFromSourceV3 started'});
-    downloadVideo(DelayMS.Sec1, true);
+    downloadVideoCron(DelayMS.Sec1, true);
 };
 
 export const uiGetAccounts = async (_req: Request, res: Response) => {

@@ -3,7 +3,7 @@ import {dirname, join} from 'path';
 
 import ffmpeg, {FfmpegCommand} from 'fluent-ffmpeg';
 
-import {log, logError} from '../logging';
+import {log, logError} from '../../utils/logging';
 
 type PrepareOoutputFileNameOptions = {
     outputFileName?: string;

@@ -1,9 +1,11 @@
 import {shuffle} from 'lodash';
 
 import {DelayMS} from '../../constants';
-import {getAccounts, getOneRandomVideo, getScenarios, regScenarioUsage} from '../../firebase';
 import {ScenarioName} from '../../types/scenario';
-import {log, logError, logGroup} from '../logging';
+import {log, logError, logGroup} from '../../utils/logging';
+import {getAccounts} from '../firebase/accounts';
+import {getOneRandomVideo} from '../firebase/firebase';
+import {getScenarios, regScenarioUsage} from '../firebase/scenarios';
 
 import {addBannerInTheEnd} from './AddBannerInTheEnd';
 

@@ -26,9 +26,9 @@ import {
     uiTestGreenScreen,
 } from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
-import {downloadVideo} from './src/preprocess-video';
+import {downloadVideoCron} from './src/logic/preprocess-video';
+import {runScenarioCron} from './src/logic/scenarios';
 import {log} from './src/utils/logging';
-import {runScenarioCron} from './src/utils/scenarios';
 
 dotenv.config();
 
@@ -92,5 +92,5 @@ app.listen(appPort, () => {
     log(`Example app listening on port ${appPort}`);
 });
 
-downloadVideo(DelayMS.Sec30);
+downloadVideoCron(DelayMS.Sec30);
 runScenarioCron(DelayMS.Sec30);

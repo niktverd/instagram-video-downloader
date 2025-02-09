@@ -6,10 +6,10 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 
 import {firestore, storage} from '../../config/firebase';
 import {Collection} from '../../constants';
+import {concatVideoFromList, normalizeVideo, saveFileList} from '../../logic/video/primitives';
 import {PreparedVideoV3, ScenarioType} from '../../types';
-import {log} from '../logging';
-import {getWorkingDirectoryForVideo, saveFileToDisk} from '../utils';
-import {concatVideoFromList, normalizeVideo, saveFileList} from '../video/primitives';
+import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils/common';
+import {log} from '../../utils/logging';
 
 type AddBannerInTheEndArgs = {
     directoryName: string;

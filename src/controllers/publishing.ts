@@ -15,16 +15,17 @@ import {shuffle} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, accessTokensArray} from '../constants';
-import {getAccounts, getRandomMediaContainersForAccount, removePublished} from '../firebase';
-import {stopHerokuApp} from '../heroku';
+import {getAccounts} from '../logic/firebase/accounts';
+import {getRandomMediaContainersForAccount, removePublished} from '../logic/firebase/firebase';
+import {stopHerokuApp} from '../logic/heroku';
 import {
     findUnpublishedContainer,
     prepareMediaContainersForAccount,
     publishInstagramPostContainer,
-} from '../instagram';
+} from '../logic/instagram/instagram';
 import {AccountMediaContainerV3, MediaPostModel} from '../types';
+import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils/common';
 import {log, logGroup} from '../utils/logging';
-import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils/utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
     log(req.query);

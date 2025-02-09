@@ -3,7 +3,7 @@ import {ReadStream} from 'fs';
 import dotenv from 'dotenv';
 import {google} from 'googleapis';
 
-import {log, logError} from './utils/logging';
+import {log, logError} from '../utils/logging';
 
 dotenv.config();
 const OAuth2 = google.auth.OAuth2;
