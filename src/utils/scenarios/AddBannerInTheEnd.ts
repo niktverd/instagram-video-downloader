@@ -57,7 +57,7 @@ export const addBannerInTheEnd = async ({
 
     // Upload data to server
     const processedBuffer = readFileSync(outputFilePath);
-    const fileRef = ref(storage, `${directoryName}-scenarioName.mp4`);
+    const fileRef = ref(storage, `${directoryName}-${scenarioName}.mp4`);
     const contentType = 'video/mp4';
     const metadata = {contentType};
     await uploadBytes(fileRef, processedBuffer, metadata);
