@@ -14,6 +14,7 @@ import {pick} from 'lodash';
 import {firestore} from '../config/firebase';
 import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '../constants';
 import {addAccount, getAccounts, patchAccount} from '../logic/firebase/accounts';
+import {clearPreprod} from '../logic/firebase/clear-preprod';
 import {addScenario, getScenarios, patchScenario} from '../logic/firebase/scenarios';
 import {getInstagramInsights} from '../logic/instagram/aux';
 import {downloadVideoCron} from '../logic/preprocess-video';
@@ -193,4 +194,9 @@ export const uiPatchAccount = async (req: Request, res: Response) => {
     log(values);
     await patchAccount({id, values});
     res.status(200).send(req.body);
+};
+
+export const uiClearPreprod = async (req: Request, res: Response) => {
+    await clearPreprod();
+    res.status(200).send(req.query);
 };

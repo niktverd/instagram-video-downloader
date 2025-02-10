@@ -333,6 +333,7 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
             mediaContainerId,
             createdAt: new Timestamp(new Date().getTime() / 1000, 0),
             status: 'created',
+            preparedVideoId: snap.id,
         } as Omit<AccountMediaContainerV3, 'id'>);
         // remove accoutn from prepared video accoutn list
         await updateDoc(snap.ref, {

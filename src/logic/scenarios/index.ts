@@ -1,7 +1,4 @@
-import {shuffle} from 'lodash';
-
 import {DelayMS} from '../../constants';
-import {ScenarioName} from '../../types/scenario';
 import {log, logError, logGroup} from '../../utils/logging';
 import {getAccounts} from '../firebase/accounts';
 import {getOneRandomVideo} from '../firebase/firebase';
@@ -15,51 +12,49 @@ export const runScenario = async () => {
         const accounts = await getAccounts(true);
         const scenarios = await getScenarios(true);
 
-        const randomScenario = shuffle([
-            String(ScenarioName.ScenarioAddBannerAtTheEnd1),
-            String(ScenarioName.ScenarioAddBannerAtTheEnd2),
-        ])[0];
+        for (const scenario of scenarios) {
+            if (!scenario) {
+                log(['!scenario', scenario, scenarios]);
+                return;
+            }
 
-        const accountsByScenario = accounts.filter((account) =>
-            account.availableScenarios?.includes(randomScenario),
-        );
+            const randomScenarioName = scenario.name;
+            const accountsByScenario = accounts.filter((account) =>
+                account.availableScenarios?.includes(randomScenarioName),
+            );
 
-        const scenario = scenarios.find(({name}) => name === randomScenario);
-        if (!scenario) {
-            log(['!scenario', randomScenario, scenario, scenarios]);
-            return;
-        }
-        log(scenario);
+            const oneRandomVideo = await getOneRandomVideo(scenario.name);
+            if (!oneRandomVideo) {
+                log('!oneRandomVideo', oneRandomVideo);
+                return;
+            }
 
-        const oneRandomVideo = await getOneRandomVideo(scenario.name);
-        if (!oneRandomVideo) {
-            log('!oneRandomVideo', oneRandomVideo);
-            return;
-        }
+            const {firebaseUrl, id, sources} = oneRandomVideo;
+            const title = sources.instagramReel?.title || '';
+            const originalHashtags = sources.instagramReel?.originalHashtags || [];
+            log({accountsByScenario, scenario, randomVideoId: id});
 
-        const {firebaseUrl, id, sources} = oneRandomVideo;
-        const title = sources.instagramReel?.title || '';
-        const originalHashtags = sources.instagramReel?.originalHashtags || [];
+            if (!firebaseUrl) {
+                return;
+            }
 
-        if (!firebaseUrl) {
-            return;
-        }
+            await addBannerInTheEnd({
+                sourceId: id,
+                mainVideoUrl: firebaseUrl,
+                bannerVideoUrl: scenario.extraBannerUrl,
+                directoryName: id,
+                scenarioName: scenario.name,
+                scenarioId: scenario.id,
+                title,
+                originalHashtags,
+                accounts: accountsByScenario.map(({id: accountName}) => accountName),
+            });
 
-        await addBannerInTheEnd({
-            mainVideoUrl: firebaseUrl,
-            bannerVideoUrl: scenario.extraBannerUrl,
-            directoryName: id,
-            scenarioName: scenario.name,
-            scenarioId: scenario.id,
-            title,
-            originalHashtags,
-            accounts: accountsByScenario.map(({id: accountName}) => accountName),
-        });
-
-        if (scenario.onlyOnce) {
-            log('scenario.onlyOnce');
-            // update video.scenario with scenario name
-            await regScenarioUsage(oneRandomVideo, scenario.name);
+            if (scenario.onlyOnce) {
+                log('scenario.onlyOnce');
+                // update video.scenario with scenario name
+                await regScenarioUsage(oneRandomVideo, scenario.name);
+            }
         }
     } catch (error) {
         logError(error);
@@ -76,8 +71,8 @@ export const runScenarioCron = (ms: number) => {
         return;
     }
     log('runScenarioCron', 'started in', ms, 'ms');
-    setTimeout(() => {
-        runScenario();
+    setTimeout(async () => {
+        await runScenario();
         runScenarioCron(DelayMS.Min1);
     }, ms);
     logGroup('close');

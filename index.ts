@@ -26,6 +26,7 @@ import {
     uiTestGreenScreen,
 } from './src/controllers/ui';
 import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
+import {clearPreprod} from './src/logic/firebase/clear-preprod';
 import {downloadVideoCron} from './src/logic/preprocess-video';
 import {runScenarioCron} from './src/logic/scenarios';
 import {log} from './src/utils/logging';
@@ -84,6 +85,8 @@ app.post('/ui-add-account', uiAddAccount);
 
 app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);
+
+app.delete('/ui-clear-proprod-database', clearPreprod);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;

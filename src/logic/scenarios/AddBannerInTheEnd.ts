@@ -1,17 +1,13 @@
-import {readFileSync, rmSync} from 'fs';
+import {rmSync} from 'fs';
 import {join} from 'path';
 
-import {addDoc, collection} from 'firebase/firestore/lite';
-import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
-
-import {firestore, storage} from '../../config/firebase';
-import {Collection} from '../../constants';
 import {concatVideoFromList, normalizeVideo, saveFileList} from '../../logic/video/primitives';
-import {PreparedVideoV3, ScenarioType} from '../../types';
 import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils/common';
 import {log} from '../../utils/logging';
+import {addPreparedVideo, uploadFileToServer} from '../firebase/prepared-videos';
 
 type AddBannerInTheEndArgs = {
+    sourceId: string;
     directoryName: string;
     mainVideoUrl: string;
     bannerVideoUrl: string;
@@ -23,6 +19,7 @@ type AddBannerInTheEndArgs = {
 };
 
 export const addBannerInTheEnd = async ({
+    sourceId,
     directoryName,
     mainVideoUrl,
     bannerVideoUrl,
@@ -56,26 +53,23 @@ export const addBannerInTheEnd = async ({
     await concatVideoFromList(outputListPath, outputFilePath);
 
     // Upload data to server
-    const processedBuffer = readFileSync(outputFilePath);
-    const fileRef = ref(storage, `${directoryName}-${scenarioName}.mp4`);
-    const contentType = 'video/mp4';
-    const metadata = {contentType};
-    await uploadBytes(fileRef, processedBuffer, metadata);
-    const downloadURL = await getDownloadURL(fileRef);
-    log('downloadURL', downloadURL);
+    const downloadURL = await uploadFileToServer(
+        outputFilePath,
+        `${directoryName}-${scenarioName}.mp4`,
+    );
 
     // update database
-    const colRef = collection(firestore, Collection.PreparedVideos);
-    await addDoc(colRef, {
+    await addPreparedVideo({
         firebaseUrl: downloadURL,
-        scenarioType: ScenarioType.addBannerInTheEnd,
         scenarioName,
         scenarioId,
+        sourceId,
         title,
         originalHashtags,
         accounts,
         accountsHasBeenUsed: [],
-    } as Omit<PreparedVideoV3, 'id'>);
+    });
 
+    // delete tempfiles
     rmSync(basePath, {recursive: true});
 };

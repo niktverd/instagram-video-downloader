@@ -72,15 +72,11 @@ export type SourceV3 = {
 
 export type ScenarioV3 = ScenarioBase & ScenarioAddBannerAtTheEnd;
 
-export enum ScenarioType {
-    addBannerInTheEnd = 'addBannerInTheEnd',
-}
-
 export type PreparedVideoV3 = {
     id: string;
     firebaseUrl: string;
-    scenarioType: ScenarioType;
     scenarioName: string;
+    sourceId: string;
     scenarioId: string;
     title: string;
     originalHashtags: string[];
@@ -100,4 +96,5 @@ export type AccountMediaContainerV3 = {
     mediaContainerId: string;
     createdAt: Timestamp;
     status: 'created' | 'published';
+    preparedVideoId: string;
 };

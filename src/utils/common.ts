@@ -230,3 +230,7 @@ export const getWorkingDirectoryForVideo = (directoryName: string) => {
 
     return basePath;
 };
+
+export const getRandomElementOfArray = <T>(array: T[]) => {
+    return array[Math.floor(Math.random() * array.length)];
+};
