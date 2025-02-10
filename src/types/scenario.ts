@@ -3,6 +3,7 @@ export type ScenarioBase = {
     name: ScenarioName;
     onlyOnce: boolean;
     enabled: boolean;
+    texts: Record<string, string[]>;
 };
 
 export enum ScenarioName {
