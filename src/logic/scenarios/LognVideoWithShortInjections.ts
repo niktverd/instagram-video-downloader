@@ -21,6 +21,14 @@ type PrepareLongVideoWithShortInjectionsArgs = {
     accounts: string[];
 };
 
+const prepareCaption = (scenario: ScenarioV3) => {
+    const intro = shuffle(scenario.texts.intro || [''])[0];
+    const main = shuffle(scenario.texts.main || [''])[0];
+    const outro = shuffle(scenario.texts.outro || [''])[0];
+
+    return [intro, main, outro].join('\n');
+};
+
 export const prepareLongVideoWithShortInjections = async ({
     scenario,
     accounts,
@@ -42,7 +50,7 @@ export const prepareLongVideoWithShortInjections = async ({
     const injectionUrls = [...shuffle(injections).slice(0, limit - 1), adsBannerUrl];
 
     log({injectionUrls});
-    const {videoUrls, sourceRefs} = await getNRandomSources(limit);
+    const {videoUrls, sourceRefs, ids, originalHashtags} = await getNRandomSources(limit);
     log({videoUrls});
     const urls = [startBannerUrl];
 
@@ -80,9 +88,9 @@ export const prepareLongVideoWithShortInjections = async ({
         firebaseUrl: downloadURL,
         scenarioName: name,
         scenarioId: scenario.id,
-        sourceId: '',
-        title: '',
-        originalHashtags: [],
+        sourceId: ids.join('_'),
+        title: prepareCaption(scenario),
+        originalHashtags: shuffle(originalHashtags).slice(0, 10),
         accounts,
         accountsHasBeenUsed: [],
     });

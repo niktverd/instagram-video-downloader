@@ -20,21 +20,31 @@ export const getNRandomSources = async (limitVideo: number) => {
     }
 
     const colRef = collection(firestore, Collection.Sources);
-    let q = query(colRef, limit(1), orderBy('lastUsed', 'asc'), where('firebaseUrl', '!=', ''));
 
     const videoUrls: string[] = [];
     const sourceRefs: {
         ref: DocumentSnapshot<DocumentData, DocumentData>['ref'];
         timesUsed: number;
     }[] = [];
+    const ids: string[] = [];
+    let originalHashtags: string[] = [];
 
+    const maxRetries = 100;
+    let retry = 0;
     while (videoUrls.length < limitVideo) {
+        if (retry++ > maxRetries) {
+            break;
+        }
+
         const randomValue = Math.random();
         const selectorRandomValue = Math.random();
-        q = query(
-            q,
+        const q = query(
+            colRef,
+            orderBy('randomIndex', randomValue < selectorRandomValue ? 'asc' : 'desc'),
+            where('firebaseUrl', '!=', ''),
             where('timesUsed', '<', 10),
             where('randomIndex', randomValue < selectorRandomValue ? '>=' : '<=', randomValue),
+            limit(1),
         );
 
         const snapshot = await getDocs(q);
@@ -47,15 +57,26 @@ export const getNRandomSources = async (limitVideo: number) => {
             continue;
         }
         const docSnap = snapshot.docs[0];
-        const url = (docSnap.data() as SourceV3).firebaseUrl;
+        const docData = docSnap.data() as SourceV3;
+        log({
+            randomValue,
+            selectorRandomValue,
+            doc: docData.randomIndex,
+            cond: randomValue < selectorRandomValue ? '>=' : '<=',
+        });
+        const url = docData.firebaseUrl;
         if (!url) {
             log('not url', url);
             continue;
         }
 
         videoUrls.push(url);
-        sourceRefs.push({ref: docSnap.ref, timesUsed: (docSnap.data() as SourceV3).timesUsed || 0});
+        sourceRefs.push({ref: docSnap.ref, timesUsed: docData.timesUsed || 0});
+        ids.push(docSnap.id);
+        originalHashtags = originalHashtags.concat(
+            docData.sources.instagramReel?.originalHashtags || [],
+        );
     }
 
-    return {videoUrls, sourceRefs};
+    return {videoUrls, sourceRefs, ids, originalHashtags};
 };
