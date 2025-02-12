@@ -22,6 +22,7 @@ import {
     uiGetScenarios,
     uiPatchAccount,
     uiPatchScenario,
+    uiRunInjectionScenraios,
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
     youtubeAuth,
@@ -73,6 +74,7 @@ app.get('/ui-get-accounts', uiGetAccounts);
 app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
 app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
 app.get('/ui-get-insights', uiGetInsights);
+app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
 
 app.post('/webhooks', messageWebhookV3);
 app.post('/remove-post-by-id', removePostById);

@@ -18,6 +18,10 @@ export const runScenario = async () => {
                 return;
             }
 
+            if (scenario.type !== 'ScenarioAddBannerAtTheEnd') {
+                continue;
+            }
+
             const randomScenarioName = scenario.name;
             const accountsByScenario = accounts.filter((account) =>
                 account.availableScenarios?.includes(randomScenarioName),

@@ -23,6 +23,7 @@ import {
     getScenarios,
     patchAccount,
     patchScenario,
+    runInjectionScenraios,
     runScenario,
     splitVideoInTheMiddle,
     testPIP,
@@ -206,4 +207,9 @@ export const uiPatchAccount = async (req: Request, res: Response) => {
 export const uiClearPreprod = async (req: Request, res: Response) => {
     await clearPreprod();
     res.status(200).send(req.query);
+};
+
+export const uiRunInjectionScenraios = async (req: Request, res: Response) => {
+    res.status(200).send(req.query);
+    await runInjectionScenraios();
 };

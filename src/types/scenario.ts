@@ -12,5 +12,14 @@ export enum ScenarioName {
 }
 
 export type ScenarioAddBannerAtTheEnd = {
+    type: 'ScenarioAddBannerAtTheEnd';
     extraBannerUrl: string;
+};
+
+export type ScenarioLongVideoWithInjections = {
+    type: 'ScenarioLongVideoWithInjections';
+    adsBannerUrl: string;
+    startBannerUrl: string;
+    injections: string[];
+    limit: number;
 };
