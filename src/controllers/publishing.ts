@@ -141,23 +141,26 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
 
         for (const account of accounts) {
             // get random document for every account
-            log('account', {account});
             // get 5 video
             const preparedContainers = await getRandomMediaContainersForAccount(account.id);
             log({account, preparedContainers});
             if (preparedContainers.length < 5) {
+                log('preparation for publishing');
                 // prepare 10 media containers
                 await prepareMediaContainersForAccount(account);
             }
             if (!preparedContainers.length) {
+                log('preparedContainers is empty');
                 continue;
             }
 
             // publish random container
             const randomContainer = shuffle(preparedContainers)[0];
             if (process.env.APP_ENV !== 'development') {
+                log('publishing is blocked in development');
                 continue;
             }
+
             const publishResponse = await publishInstagramPostContainer({
                 containerId: randomContainer.mediaContainerId,
                 accessToken: account.token,
