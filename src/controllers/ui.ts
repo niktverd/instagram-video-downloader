@@ -13,15 +13,22 @@ import {pick} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '../constants';
-import {addAccount, getAccounts, patchAccount} from '../logic/firebase/accounts';
-import {clearPreprod} from '../logic/firebase/clear-preprod';
-import {addScenario, getScenarios, patchScenario} from '../logic/firebase/scenarios';
-import {getInstagramInsights} from '../logic/instagram/aux';
-import {downloadVideoCron} from '../logic/preprocess-video';
-import {runScenario} from '../logic/scenarios';
-import {splitVideoInTheMiddle, testPIP} from '../logic/scenarios/splitVideoInTheMiddle';
+import {
+    addAccount,
+    addScenario,
+    clearPreprod,
+    downloadVideoCron,
+    getAccounts,
+    getInstagramInsights,
+    getScenarios,
+    patchAccount,
+    patchScenario,
+    runScenario,
+    splitVideoInTheMiddle,
+    testPIP,
+} from '../logic';
 import {MediaPostModel} from '../types';
-import {log, logError} from '../utils/logging';
+import {log, logError} from '../utils';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
     const {

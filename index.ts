@@ -4,14 +4,14 @@ import express from 'express';
 import qs from 'qs';
 
 import {DelayMS} from './src/constants';
-import {removePostById, reportInterface} from './src/controllers/ejs';
-import {hubChallangeWebhook, messageWebhookV3} from './src/controllers/instagram-webhooks';
 import {
+    hubChallangeWebhook,
+    messageWebhookV3,
     publishById,
     publishIntagramV3,
+    removePostById,
     removePublishedFromFirebase,
-} from './src/controllers/publishing';
-import {
+    reportInterface,
     uiAddAccount,
     uiAddScenario,
     uiCreateVideoByScenario,
@@ -24,12 +24,11 @@ import {
     uiPatchScenario,
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
-} from './src/controllers/ui';
-import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
-import {clearPreprod} from './src/logic/firebase/clear-preprod';
-import {downloadVideoCron} from './src/logic/preprocess-video';
-import {runScenarioCron} from './src/logic/scenarios';
-import {log} from './src/utils/logging';
+    youtubeAuth,
+    youtubeAuthCallback,
+} from './src/controllers';
+import {clearPreprod, downloadVideoCron, runScenarioCron} from './src/logic';
+import {log} from './src/utils';
 
 dotenv.config();
 

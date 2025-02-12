@@ -1,10 +1,9 @@
 import {rmSync} from 'fs';
 import {join} from 'path';
 
-import {concatVideoFromList, normalizeVideo, saveFileList} from '../../logic/video/primitives';
-import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils/common';
-import {log} from '../../utils/logging';
+import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../../utils';
 import {addPreparedVideo, uploadFileToServer} from '../firebase/prepared-videos';
+import {concatVideoFromList, normalizeVideo, saveFileList} from '../video/primitives';
 
 type AddBannerInTheEndArgs = {
     sourceId: string;
