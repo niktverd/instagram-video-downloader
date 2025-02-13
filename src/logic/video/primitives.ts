@@ -378,3 +378,28 @@ export const coverWithGreen = async ({
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'coverWithGreen').save(outputPath);
     });
 };
+
+type TrimVideoArgs = {
+    input: string;
+    maxDuration: number;
+    outputOverride?: string;
+};
+
+export const trimVideo = async ({input, maxDuration}: TrimVideoArgs): Promise<string> => {
+    const duration = await getVideoDuration(input);
+
+    if (duration <= maxDuration) {
+        return input;
+    }
+
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_trimmed',
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        const ffmpegCommand = ffmpeg(input).duration(maxDuration).output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'trimVideo').run();
+    });
+};

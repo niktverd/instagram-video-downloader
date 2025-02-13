@@ -14,6 +14,7 @@ import {
     concatVideoFromList,
     normalizeVideo,
     saveFileList,
+    trimVideo,
 } from '../video';
 
 type PrepareLongVideoWithShortInjectionsArgs = {
@@ -69,6 +70,9 @@ export const prepareLongVideoWithShortInjections = async ({
         const hasAudio = await checkHasAudio(tempFilePath);
         if (!hasAudio) {
             tempFilePath = await addSilentAudioStream({input: tempFilePath});
+        }
+        if (indx % 2 === 0) {
+            tempFilePath = await trimVideo({input: tempFilePath, maxDuration: 7});
         }
         const tempFilePathFormated = await normalizeVideo(tempFilePath);
         fileNames.push(tempFilePathFormated);
