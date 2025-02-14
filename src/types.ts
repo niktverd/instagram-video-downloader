@@ -6,6 +6,7 @@ export type SourceInstagramReel = {
     owner: string;
     title: string;
     originalHashtags: string[];
+    reelVideoId: string;
 };
 
 export type SourceYoutubeShort = {

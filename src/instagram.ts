@@ -23,10 +23,9 @@ import {processAndConcatVideos, saveFileToDisk} from './utils';
 dotenv.config();
 
 // const IG_ID = process.env.IG_ID;
-const accessTokensArray = JSON.parse(process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]') as Record<
-    string,
-    string
->[];
+export const accessTokensArray = JSON.parse(
+    process.env.INSTAGRAM_ACCESS_TOKEN_ARRAY || '[]',
+) as Record<string, string>[];
 
 type CreateInstagramPostContainerArgs = {
     accessToken: string;
@@ -80,7 +79,7 @@ export async function createInstagramPostContainer({
         }
         console.log(JSON.stringify({postData}));
 
-        const createMediaResponse = await fetch(`https://graph.instagram.com/v21.0/me/media`, {
+        const createMediaResponse = await fetch(`https://graph.instagram.com/v22.0/me/media`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -105,6 +104,40 @@ export async function createInstagramPostContainer({
             error: error.response?.data || error.message,
         };
     }
+}
+
+type GetVideoOwnerByVideoIdArgs = {
+    reelVideoId: string;
+    accessToken: string;
+};
+
+export async function getVideoOwnerByVideoId({
+    reelVideoId,
+    accessToken,
+}: GetVideoOwnerByVideoIdArgs) {
+    const accountName = '';
+    console.log({reelVideoId});
+    try {
+        const accountNameResponse = await fetch(
+            `https://graph.instagram.com/v22.0/${reelVideoId}?fields=owner&access_token=${accessToken}`,
+            // `https://graph.instagram.com/v22.0/17895695668004550?fields=id,media_type,media_url,owner,timestamp&access_token=${accessToken}`,
+            // `https://graph.instagram.com/v22.0/${reelVideoId}?fields=owner`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+
+        console.log({accountNameResponse, accountName});
+        const accountNameResponseJson = await accountNameResponse.json();
+        console.log({accountNameResponseJson, accountName});
+    } catch (error) {
+        console.error(error);
+    }
+
+    return accountName;
 }
 
 export async function getMergedVideo({
@@ -160,9 +193,9 @@ export async function publishInstagramPostContainer({
             throw new Error('Access token not found or container id is empty');
         }
 
-        // const statusResponse = await fetch(`https://graph.instagram.com/v21.0/${containerId}?fields=copyright_check_status&access_token=${accessToken}`);
+        // const statusResponse = await fetch(`https://graph.instagram.com/v22.0/${containerId}?fields=copyright_check_status&access_token=${accessToken}`);
         const statusResponse = await fetch(
-            `https://graph.instagram.com/v21.0/${containerId}?fields=status_code,status&access_token=${accessToken}`,
+            `https://graph.instagram.com/v22.0/${containerId}?fields=status_code,status&access_token=${accessToken}`,
         );
 
         const statusResponseJson = await statusResponse.json();
@@ -173,7 +206,7 @@ export async function publishInstagramPostContainer({
         }
 
         // Then publish the container
-        const publishResponse = await fetch(`https://graph.instagram.com/v21.0/me/media_publish`, {
+        const publishResponse = await fetch(`https://graph.instagram.com/v22.0/me/media_publish`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -273,7 +306,7 @@ export const canInstagramPostBePublished = async ({
         }
 
         const statusResponse = await fetch(
-            `https://graph.instagram.com/v21.0/${mediaContainerId}?fields=status_code,status&access_token=${accessToken}`,
+            `https://graph.instagram.com/v22.0/${mediaContainerId}?fields=status_code,status&access_token=${accessToken}`,
         );
 
         const statusResponseJson = await statusResponse.json();
