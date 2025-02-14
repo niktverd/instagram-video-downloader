@@ -56,3 +56,78 @@ export const getInstagramInsights = async (accessToken: string) => {
 
     return insightsJson;
 };
+
+export const getInstagramMedia = async (accessToken: string) => {
+    const mediaResponse = await fetch(
+        `https://graph.instagram.com/v21.0/me/media?access_token=${accessToken}`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        },
+    );
+
+    log({mediaResponse});
+
+    const mediaResponseJson = await mediaResponse.json();
+    log({mediaResponseJson});
+
+    return mediaResponseJson;
+};
+
+export const getInstagramUserNameById = async (userId: string, accessToken: string) => {
+    // email_contacts, phone_call_clicks, text_message_clicks, get_directions_clicks, website_clicks, profile_views
+    const userData = await fetch(
+        `https://graph.instagram.com/v21.0/${userId}?access_token=${accessToken}`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        },
+    );
+
+    log({userData});
+
+    const user = await userData.json();
+    log({user});
+
+    return user;
+};
+
+type GetVideoOwnerByVideoIdArgs = {
+    reelVideoId: string;
+    accessToken: string;
+};
+
+// not working because of https://stackoverflow.com/questions/35921660/get-media-from-public-accounts-with-instagram-api
+export const getVideoOwnerByVideoId = async ({
+    reelVideoId,
+    accessToken,
+}: GetVideoOwnerByVideoIdArgs) => {
+    const accountName = '';
+    console.log({reelVideoId});
+    try {
+        const accountNameResponse = await fetch(
+            `https://graph.instagram.com/v22.0/${reelVideoId}?fields=owner&access_token=${accessToken}`,
+            // `https://graph.instagram.com/v22.0/${reelVideoId}?fields=id&access_token=${accessToken}`,
+            // `https://graph.instagram.com/v22.0/17895695668004550?fields=id,media_type,media_url,owner,timestamp&access_token=${accessToken}`,
+            // `https://graph.instagram.com/v22.0/${reelVideoId}?fields=owner`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            },
+        );
+
+        console.log({accountNameResponse, accountName});
+        const accountNameResponseJson = await accountNameResponse.json();
+        console.log({accountNameResponseJson, accountName});
+    } catch (error) {
+        console.error(error);
+    }
+
+    return accountName;
+};

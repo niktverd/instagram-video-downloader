@@ -20,7 +20,10 @@ import {
     downloadVideoCron,
     getAccounts,
     getInstagramInsights,
+    getInstagramMedia,
+    getInstagramUserNameById,
     getScenarios,
+    getVideoOwnerByVideoId,
     patchAccount,
     patchScenario,
     runInjectionScenraios,
@@ -181,6 +184,78 @@ export const uiGetInsights = async (req: Request, res: Response) => {
 
         log(insight);
         res.status(200).send(insight);
+    } catch (error) {
+        log(error);
+        logError(error);
+        res.status(500).send(error);
+    }
+};
+
+export const uiGetInstagramUserById = async (req: Request, res: Response) => {
+    const {id: accountName, userId} = req.query;
+
+    try {
+        if (!accountName || !userId) {
+            throw new Error('accoutn name or userId are not provided');
+        }
+        const accounts = await getAccounts();
+        const account = accounts.find(({id}) => id === accountName);
+        if (!account) {
+            throw new Error(`accoutn with name ${accountName} was not found`);
+        }
+        const user = await getInstagramUserNameById(userId as string, account.token);
+
+        log(user);
+        res.status(200).send(user);
+    } catch (error) {
+        log(error);
+        logError(error);
+        res.status(500).send(error);
+    }
+};
+
+export const uiGetInstagramUserIdByMediaId = async (req: Request, res: Response) => {
+    const {id: accountName, reelVideoId} = req.query;
+
+    try {
+        if (!accountName || !reelVideoId) {
+            throw new Error('accoutn name or reelVideoId are not provided');
+        }
+        const accounts = await getAccounts();
+        const account = accounts.find(({id}) => id === accountName);
+        if (!account) {
+            throw new Error(`accoutn with name ${accountName} was not found`);
+        }
+        const owner = await getVideoOwnerByVideoId({
+            reelVideoId: reelVideoId as string,
+            accessToken: account.token,
+        });
+
+        log(owner);
+        res.status(200).send(owner);
+    } catch (error) {
+        log(error);
+        logError(error);
+        res.status(500).send(error);
+    }
+};
+
+export const uiGetInstagramMedia = async (req: Request, res: Response) => {
+    const {id: accountName} = req.query;
+
+    try {
+        if (!accountName) {
+            throw new Error('accoutn name is not provided');
+        }
+        const accounts = await getAccounts();
+        const account = accounts.find(({id}) => id === accountName);
+        if (!account) {
+            throw new Error(`accoutn with name ${accountName} was not found`);
+        }
+        const media = await getInstagramMedia(account.token);
+
+        log(media);
+        res.status(200).send(media);
     } catch (error) {
         log(error);
         logError(error);

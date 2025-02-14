@@ -18,6 +18,9 @@ import {
     uiDownloadVideoFromSourceV3,
     uiGetAccounts,
     uiGetInsights,
+    uiGetInstagramMedia,
+    uiGetInstagramUserById,
+    uiGetInstagramUserIdByMediaId,
     uiGetMediaPosts,
     uiGetScenarios,
     uiPatchAccount,
@@ -74,6 +77,9 @@ app.get('/ui-get-accounts', uiGetAccounts);
 app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
 app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
 app.get('/ui-get-insights', uiGetInsights);
+app.get('/ui-get-media', uiGetInstagramMedia);
+app.get('/ui-get-user-by-id', uiGetInstagramUserById);
+app.get('/ui-get-owner-by--media-id', uiGetInstagramUserIdByMediaId);
 app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
 
 app.post('/webhooks', messageWebhookV3);
