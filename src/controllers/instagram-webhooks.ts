@@ -4,7 +4,7 @@ import {addDoc, collection} from 'firebase/firestore/lite';
 
 import {firestore} from '../config/firebase';
 import {Collection} from '../constants';
-import {initiateRecordV3, log, logError, logGroup} from '../utils';
+import {initiateRecordV3, log, logError} from '../utils';
 
 dotenv.config();
 
@@ -69,7 +69,6 @@ export const hubChallangeWebhook = (req: Request, res: Response) => {
 };
 
 export const messageWebhookV3 = async (req: Request, res: Response) => {
-    logGroup('open');
     try {
         log(req.query);
         log(req.body?.entry?.length);
@@ -103,7 +102,5 @@ export const messageWebhookV3 = async (req: Request, res: Response) => {
     } catch (error) {
         logError('Error: ', error);
         res.status(404).send('NotFound');
-    } finally {
-        logGroup('close');
     }
 };

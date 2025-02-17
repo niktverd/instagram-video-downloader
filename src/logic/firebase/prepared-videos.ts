@@ -6,7 +6,7 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {firestore, storage} from '../../config/firebase';
 import {Collection} from '../../constants';
 import {PreparedVideoV3} from '../../types';
-import {log, logGroup} from '../../utils/logging';
+import {log} from '../../utils/logging';
 
 export const addPreparedVideo = async (args: Omit<PreparedVideoV3, 'id'>) => {
     const colRef = collection(firestore, Collection.PreparedVideos);
@@ -14,7 +14,6 @@ export const addPreparedVideo = async (args: Omit<PreparedVideoV3, 'id'>) => {
 };
 
 export const uploadFileToServer = async (outputFilePath: string, uploadFileName: string) => {
-    logGroup('open');
     log({outputFilePath, uploadFileName});
     const processedBuffer = readFileSync(outputFilePath);
     const fileRef = ref(storage, uploadFileName);
@@ -23,7 +22,6 @@ export const uploadFileToServer = async (outputFilePath: string, uploadFileName:
     await uploadBytes(fileRef, processedBuffer, metadata);
     const downloadURL = await getDownloadURL(fileRef);
     log('downloadURL', downloadURL);
-    logGroup('close');
 
     return downloadURL;
 };

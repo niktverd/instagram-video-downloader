@@ -14,7 +14,7 @@ import {firestore, storage} from '../../config/firebase';
 import {Collection} from '../../constants';
 import {AccountMediaContainerV3, MediaPostModelOld, SourceV3} from '../../types';
 import {ScenarioName} from '../../types/scenario';
-import {log, logGroup} from '../../utils/logging';
+import {log} from '../../utils/logging';
 
 export const removePublished = async () => {
     const collectionRef = collection(firestore, 'media-post');
@@ -77,8 +77,6 @@ export const getOneRandomVideo = async (particularScenario?: ScenarioName) => {
 };
 
 export const getRandomMediaContainersForAccount = async (accountName: string) => {
-    logGroup('open');
-
     const colRef = collection(
         firestore,
         Collection.Accounts,
@@ -92,6 +90,5 @@ export const getRandomMediaContainersForAccount = async (accountName: string) =>
         (snap) => ({...snap.data(), id: snap.id} as AccountMediaContainerV3),
     );
 
-    logGroup('close');
     return mediaContainers;
 };

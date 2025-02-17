@@ -1,5 +1,5 @@
 import {DelayMS} from '../../constants';
-import {log, logError, logGroup} from '../../utils/logging';
+import {log, logError} from '../../utils/logging';
 import {getAccounts} from '../firebase/accounts';
 import {getOneRandomVideo} from '../firebase/firebase';
 import {getScenarios, regScenarioUsage} from '../firebase/scenarios';
@@ -7,7 +7,6 @@ import {getScenarios, regScenarioUsage} from '../firebase/scenarios';
 import {addBannerInTheEnd} from './AddBannerInTheEnd';
 
 export const runScenario = async () => {
-    logGroup('open');
     try {
         const accounts = await getAccounts(true);
         const scenarios = await getScenarios(true);
@@ -59,16 +58,12 @@ export const runScenario = async () => {
         }
     } catch (error) {
         logError(error);
-    } finally {
-        logGroup('close');
     }
 };
 
 export const runScenarioCron = (ms: number) => {
-    logGroup('open');
     if (!process.env.ENABLE_RUN_SCENARIO_VIDEO) {
         log('runScenarioCron', 'blocked');
-        logGroup('close');
         return;
     }
     log('runScenarioCron', 'started in', ms, 'ms');
@@ -76,5 +71,4 @@ export const runScenarioCron = (ms: number) => {
         await runScenario();
         runScenarioCron(DelayMS.Min1);
     }, ms);
-    logGroup('close');
 };

@@ -18,54 +18,47 @@ const chalkMap = [
     chalk.bgYellowBright,
 ];
 
-function getCallerDepth() {
+const getGroupLabels = () => {
     const error = new Error();
     const stack = error.stack?.split('\n');
-    // Ищем глубину вызова, считая количество строк стека до текущей функции
-    return stack?.slice(3).length || 0; // Игнорируем первые 3 строки (ошибка, getCallerDepth, logWithFunctionName)
-}
+    const functions = stack?.slice(3) || [];
+    const stackPrepared: string[] = [];
+    for (let i = 0; i < functions.length; i++) {
+        if (!functions[i]) {
+            continue;
+        }
 
-const getCallerFunctionName = () => {
-    const error = new Error();
-    const stack = error.stack?.split('\n');
-    // Обычно название функции находится в третьей строке стека
-    const callerLine = stack?.[3];
-    const match = callerLine?.match(/at (\w+)/);
-    return match ? match[1] : 'anonymous';
-};
+        const match = functions[i].match(/at (\w+)/);
 
-export const logGroup = async (variant: 'open' | 'close') => {
-    const functionName = getCallerFunctionName();
-    let depth = getCallerDepth();
-    if (depth >= chalkMap.length) {
-        depth = chalkMap.length - 1;
+        const localDepth = i < chalkMap.length ? i : chalkMap.length - 1;
+        stackPrepared.push(chalkMap[localDepth](match ? match[1] : 'anonymous'));
     }
 
-    if (variant === 'open') {
-        console.group(chalkMap[depth](functionName));
-    } else {
-        console.groupEnd();
-    }
+    return stackPrepared;
 };
 
 export const log = (...messages: unknown[]) => {
     const isDevelopment = process.env.APP_ENV === 'development';
-    const functionName = getCallerFunctionName();
+    const groupLabels = getGroupLabels();
+    console.group(...groupLabels);
     if (isDevelopment) {
         console.log(...messages);
     } else {
-        console.log(`[${functionName}]`, JSON.stringify(messages));
+        console.log(JSON.stringify(messages));
     }
+    console.groupEnd();
 };
 
 export const logError = (...messages: unknown[]) => {
     const isDevelopment = process.env.APP_ENV === 'development';
-    const functionName = getCallerFunctionName();
+    const groupLabels = getGroupLabels();
+    console.group(chalk.bgRed('ERROR'));
+    console.group(...groupLabels);
     if (isDevelopment) {
-        console.group(chalk.bgRed(functionName));
         console.error(...messages);
-        console.groupEnd();
     } else {
-        console.error(`[${functionName}]`, JSON.stringify(messages));
+        console.error(JSON.stringify(messages));
     }
+    console.groupEnd();
+    console.groupEnd();
 };

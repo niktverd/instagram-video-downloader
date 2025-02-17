@@ -25,7 +25,7 @@ import {
     stopHerokuApp,
 } from '../logic';
 import {AccountMediaContainerV3, MediaPostModel} from '../types';
-import {delay, getInstagramPropertyName, isTimeToPublishInstagram, log, logGroup} from '../utils';
+import {delay, getInstagramPropertyName, isTimeToPublishInstagram, log} from '../utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
     log(req.query);
@@ -133,7 +133,6 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
 };
 
 export const publishIntagramV3 = async (req: Request, res: Response) => {
-    logGroup('open');
     log(req.query);
 
     try {
@@ -156,7 +155,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
 
             // publish random container
             const randomContainer = shuffle(preparedContainers)[0];
-            if (process.env.APP_ENV === 'development') {
+            if (process.env.APP_ENV === 'development2') {
                 log('publishing is blocked in development');
                 continue;
             }
@@ -192,7 +191,6 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
     } finally {
         await delay(1000);
         await stopHerokuApp();
-        logGroup('close');
     }
 };
 

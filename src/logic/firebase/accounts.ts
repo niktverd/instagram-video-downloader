@@ -3,7 +3,7 @@ import {collection, doc, getDocs, setDoc} from 'firebase/firestore/lite';
 import {firestore} from '../../config/firebase';
 import {Collection} from '../../constants';
 import {AccountV3} from '../../types';
-import {log, logGroup} from '../../utils/logging';
+import {log} from '../../utils/logging';
 
 type AddAccountArgs = {
     id: string;
@@ -26,8 +26,6 @@ export const patchAccount = async ({id, values}: AddAccountArgs) => {
 };
 
 export const getAccounts = async (onlyEnabled = false) => {
-    logGroup('open');
-
     const collectionRef = collection(firestore, Collection.Accounts);
     const snaps = await getDocs(collectionRef);
     if (snaps.empty) {
@@ -35,6 +33,5 @@ export const getAccounts = async (onlyEnabled = false) => {
     }
     const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as AccountV3));
 
-    logGroup('close');
     return data.filter(({disabled}) => (onlyEnabled ? !disabled : true));
 };

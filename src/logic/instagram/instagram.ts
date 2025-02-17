@@ -29,7 +29,7 @@ import {
     processAndConcatVideos,
     saveFileToDisk,
 } from '../../utils/common';
-import {log, logError, logGroup} from '../../utils/logging';
+import {log, logError} from '../../utils/logging';
 
 dotenv.config();
 
@@ -167,8 +167,6 @@ export async function publishInstagramPostContainer({
     containerId,
     accessToken,
 }: CublishInstagramPostContainerArgs) {
-    logGroup('open');
-
     try {
         log({containerId, accessToken});
         if (!accessToken || !containerId) {
@@ -212,8 +210,6 @@ export async function publishInstagramPostContainer({
             success: false,
             error: error.response?.data || error.message,
         };
-    } finally {
-        logGroup('close');
     }
 }
 
@@ -308,7 +304,6 @@ export const canInstagramPostBePublished = async ({
 };
 
 export const prepareMediaContainersForAccount = async (account: AccountV3) => {
-    logGroup('open');
     const colRef = collection(firestore, Collection.PreparedVideos);
     const q = query(colRef, where('accounts', 'array-contains', account.id), limit(10));
     const preparedVideoSnaps = await getDocs(q);
@@ -357,5 +352,4 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
                 : [account.id],
         } as PreparedVideoV3);
     }
-    logGroup('close');
 };
