@@ -34,7 +34,6 @@ export const runScenario = async () => {
             }
 
             const {firebaseUrl, id, sources} = oneRandomVideo;
-            const title = sources.instagramReel?.title || '';
             const originalHashtags = sources.instagramReel?.originalHashtags || [];
             log({accountsByScenario, scenario, randomVideoId: id});
 
@@ -47,9 +46,7 @@ export const runScenario = async () => {
                 mainVideoUrl: firebaseUrl,
                 bannerVideoUrl: scenario.extraBannerUrl,
                 directoryName: id,
-                scenarioName: scenario.name,
-                scenarioId: scenario.id,
-                title,
+                scenario,
                 originalHashtags,
                 accounts: accountsByScenario.map(({id: accountName}) => accountName),
             });

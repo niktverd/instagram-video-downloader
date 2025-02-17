@@ -23,7 +23,12 @@ import {firestore, storage} from '../../config/firebase';
 import locations from '../../config/instagram.places.json';
 import {Collection, DelayS} from '../../constants';
 import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, PreparedVideoV3} from '../../types';
-import {preparePostText, processAndConcatVideos, saveFileToDisk} from '../../utils/common';
+import {
+    preparePostText,
+    preparePostTextFromScenario,
+    processAndConcatVideos,
+    saveFileToDisk,
+} from '../../utils/common';
 import {log, logError, logGroup} from '../../utils/logging';
 
 dotenv.config();
@@ -310,11 +315,20 @@ export const prepareMediaContainersForAccount = async (account: AccountV3) => {
     for (const snap of preparedVideoSnaps.docs) {
         const preparedVideo = snap.data() as PreparedVideoV3;
 
-        const caption = preparePostText({
-            originalHashtags: preparedVideo.originalHashtags || [],
-            system: `${preparedVideo.scenarioId} ${snap.id}`,
-            account: account.id,
-        });
+        const caption =
+            preparePostTextFromScenario({
+                title: preparedVideo.title,
+                originalHashtags: preparedVideo.originalHashtags || [],
+                system: `${preparedVideo.scenarioId} ${snap.id}`,
+                account: account.id,
+            }) ||
+            preparePostText({
+                originalHashtags: preparedVideo.originalHashtags || [],
+                system: `${preparedVideo.scenarioId} ${snap.id}`,
+                account: account.id,
+            });
+
+        log({caption});
 
         const {mediaContainerId} = await createInstagramPostContainer({
             videoUrl: preparedVideo.firebaseUrl,

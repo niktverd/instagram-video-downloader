@@ -11,7 +11,7 @@ import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
 import {getScenarios} from '../logic/firebase/scenarios';
-import {MediaPostModel, SourceV3} from '../types';
+import {MediaPostModel, ScenarioV3, SourceV3} from '../types';
 
 import {log, logError} from './logging';
 
@@ -158,6 +158,37 @@ export const preparePostText = ({originalHashtags, system = '', account}: Prepar
     return caption;
 };
 
+type PreparePostTextFromScenarioArgs = PreparePostTextArgs & {
+    title: string;
+};
+
+export const preparePostTextFromScenario = ({
+    title,
+    originalHashtags,
+    system = '',
+    account,
+}: PreparePostTextFromScenarioArgs) => {
+    const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
+    const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
+    const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
+    const finalText = [
+        title,
+        '\n\n',
+        [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
+        '\n\n',
+        `@${account}`,
+        '\n\n',
+        shuffle(originalHashtags).slice(0, 10).join(' '),
+    ].join('');
+
+    log({finalText, originalHashtags});
+
+    if (system?.length) {
+        return `${finalText} \n---\n${system}`;
+    }
+    return finalText;
+};
+
 export const initiateRecord = (source: MediaPostModel['sources']) =>
     ({
         createdAt: new Timestamp(new Date().getTime() / 1000, 0),
@@ -233,4 +264,12 @@ export const getWorkingDirectoryForVideo = (directoryName: string) => {
 
 export const getRandomElementOfArray = <T>(array: T[]) => {
     return array[Math.floor(Math.random() * array.length)];
+};
+
+export const prepareCaption = (scenario: ScenarioV3) => {
+    const intro = shuffle(scenario.texts.intro || [''])[0];
+    const main = shuffle(scenario.texts.main || [''])[0];
+    const outro = shuffle(scenario.texts.outro || [''])[0];
+
+    return [intro, main, outro].join('\n');
 };

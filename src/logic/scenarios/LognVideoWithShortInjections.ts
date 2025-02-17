@@ -5,7 +5,7 @@ import {updateDoc} from 'firebase/firestore/lite';
 import {shuffle} from 'lodash';
 
 import {ScenarioV3, SourceV3} from '../../types';
-import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../../utils';
+import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '../../utils';
 import {addPreparedVideo, getAccounts, getScenarios, uploadFileToServer} from '../firebase';
 import {getNRandomSources} from '../firebase/sources';
 import {
@@ -20,14 +20,6 @@ import {
 type PrepareLongVideoWithShortInjectionsArgs = {
     scenario: ScenarioV3;
     accounts: string[];
-};
-
-const prepareCaption = (scenario: ScenarioV3) => {
-    const intro = shuffle(scenario.texts.intro || [''])[0];
-    const main = shuffle(scenario.texts.main || [''])[0];
-    const outro = shuffle(scenario.texts.outro || [''])[0];
-
-    return [intro, main, outro].join('\n');
 };
 
 export const prepareLongVideoWithShortInjections = async ({

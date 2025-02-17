@@ -1,7 +1,8 @@
 import {rmSync} from 'fs';
 import {join} from 'path';
 
-import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../../utils';
+import {ScenarioV3} from '../../types';
+import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '../../utils';
 import {addPreparedVideo, uploadFileToServer} from '../firebase/prepared-videos';
 import {concatVideoFromList, normalizeVideo, saveFileList} from '../video/primitives';
 
@@ -10,9 +11,7 @@ type AddBannerInTheEndArgs = {
     directoryName: string;
     mainVideoUrl: string;
     bannerVideoUrl: string;
-    scenarioName: string;
-    scenarioId: string;
-    title: string;
+    scenario: ScenarioV3;
     originalHashtags: string[];
     accounts: string[];
 };
@@ -22,15 +21,15 @@ export const addBannerInTheEnd = async ({
     directoryName,
     mainVideoUrl,
     bannerVideoUrl,
-    scenarioName,
-    scenarioId,
-    title,
     originalHashtags,
     accounts = [],
+    scenario,
 }: AddBannerInTheEndArgs) => {
-    if (!accounts.length) {
+    if (!accounts.length || !scenario) {
         throw new Error('Accounts cannot be empty');
     }
+
+    const {name: scenarioName, id: scenarioId} = scenario;
 
     log('addBannerInTheEnd', {mainVideoUrl, bannerVideoUrl});
     const basePath = getWorkingDirectoryForVideo(directoryName);
@@ -63,7 +62,7 @@ export const addBannerInTheEnd = async ({
         scenarioName,
         scenarioId,
         sourceId,
-        title,
+        title: prepareCaption(scenario),
         originalHashtags,
         accounts,
         accountsHasBeenUsed: [],
