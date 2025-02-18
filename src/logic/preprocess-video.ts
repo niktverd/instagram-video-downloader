@@ -204,9 +204,9 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                         firebaseId,
                     });
 
-                    const duration = await getVideoDuration(downloadURL);
-
                     log('Файл успешно загружен:', downloadURL);
+
+                    const duration = await getVideoDuration(downloadURL);
 
                     const documentRef = doc(collectionRef, firebaseId);
                     await updateDoc(documentRef, {

@@ -16,6 +16,13 @@ export type ScenarioAddBannerAtTheEnd = {
     extraBannerUrl: string;
 };
 
+export type ScenarioShortify = {
+    type: 'ScenarioShortifyType';
+    finalBanner: string;
+    minDuration: number;
+    maxDuration: number;
+};
+
 export type ScenarioLongVideoWithInjections = {
     type: 'ScenarioLongVideoWithInjections';
     adsBannerUrl: string;

@@ -27,7 +27,7 @@ import {
     patchAccount,
     patchScenario,
     runInjectionScenraios,
-    runScenario,
+    runScenarioAddBannerAtTheEnd,
     splitVideoInTheMiddle,
     testPIP,
 } from '../logic';
@@ -148,7 +148,7 @@ export const uiAddScenario = async (req: Request, res: Response) => {
 
 export const uiCreateVideoByScenario = async (_req: Request, res: Response) => {
     res.status(200).send({message: ' uiCreateVideoByScenario started'});
-    await runScenario();
+    await runScenarioAddBannerAtTheEnd();
 };
 
 export const uiDownloadVideoFromSourceV3 = async (_req: Request, res: Response) => {

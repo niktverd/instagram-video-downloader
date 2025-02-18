@@ -1,6 +1,11 @@
 import {Timestamp} from 'firebase/firestore/lite';
 
-import {ScenarioAddBannerAtTheEnd, ScenarioBase, ScenarioLongVideoWithInjections} from './scenario';
+import {
+    ScenarioAddBannerAtTheEnd,
+    ScenarioBase,
+    ScenarioLongVideoWithInjections,
+    ScenarioShortify,
+} from './scenario';
 
 export type SourceInstagramReel = {
     url: string;
@@ -71,7 +76,7 @@ export type SourceV3 = {
 };
 
 export type ScenarioV3 = ScenarioBase &
-    (ScenarioAddBannerAtTheEnd | ScenarioLongVideoWithInjections);
+    (ScenarioAddBannerAtTheEnd | ScenarioLongVideoWithInjections | ScenarioShortify);
 
 export type PreparedVideoV3 = {
     id: string;
