@@ -68,7 +68,7 @@ export const prepareOutputFileName = (
 export const getVideoDuration = (inputPath: string): Promise<number> => {
     return new Promise((resolve, reject) => {
         ffmpeg.ffprobe(inputPath, (err, data) => {
-            if (err && !data.format.duration) {
+            if (err && !data?.format.duration) {
                 reject(err);
                 return;
             }
