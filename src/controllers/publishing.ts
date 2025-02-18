@@ -166,21 +166,23 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
             });
 
             log({publishResponse});
-            log([firestore, Collection.Accounts, account.id, Collection.AccountMediaContainers]);
+            log([Collection.Accounts, account.id, Collection.AccountMediaContainers]);
 
-            // update container data
-            const docRef = doc(
-                firestore,
-                Collection.Accounts,
-                account.id,
-                Collection.AccountMediaContainers,
-                randomContainer.id,
-            );
-            log({docRef});
+            if (publishResponse.success && !publishResponse.error) {
+                // update container data
+                const docRef = doc(
+                    firestore,
+                    Collection.Accounts,
+                    account.id,
+                    Collection.AccountMediaContainers,
+                    randomContainer.id,
+                );
+                log({docRef});
 
-            await updateDoc(docRef, {
-                status: 'published',
-            } as AccountMediaContainerV3);
+                await updateDoc(docRef, {
+                    status: 'published',
+                } as AccountMediaContainerV3);
+            }
         }
 
         // update record in db

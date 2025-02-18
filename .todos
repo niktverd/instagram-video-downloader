@@ -1,8 +1,8 @@
 WIP:
+fix publishing status on failure publishing (the media container marked as published even if publishing failed)
 
 backlog:
 add scenario that shorts original and leaves link to full video on another account
-fix publishing status on failure publishing (the media container marked as published even if publishing failed)
 
 
 search:
