@@ -88,6 +88,7 @@ export type PreparedVideoV3 = {
     originalHashtags: string[];
     accounts: string[];
     accountsHasBeenUsed: string[];
+    parameters?: unknown;
 };
 
 export type AccountV3 = {

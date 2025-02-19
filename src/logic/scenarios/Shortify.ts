@@ -6,9 +6,9 @@ import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '
 import {addPreparedVideo, uploadFileToServer} from '../firebase/prepared-videos';
 import {
     addSilentAudioStream,
-    concatVideoFromList,
+    coverWithGreen,
+    getVideoDuration,
     normalizeVideo,
-    saveFileList,
     splitVideo,
 } from '../video/primitives';
 
@@ -59,13 +59,14 @@ export const shortify = async ({
     ]);
 
     const pauseTime = minDuration + Math.random() * (maxDuration - minDuration);
+    const extraVideoTime = await getVideoDuration(tempFilePath2);
 
     // shorten video
     const shorten = await splitVideo({
         input: tempFilePath1,
         outputOverride: 'part1.mp4',
         startTime: 0,
-        duration: pauseTime,
+        duration: pauseTime + extraVideoTime,
     });
 
     const tempFilePath1Normalized = await normalizeVideo(shorten);
@@ -73,10 +74,13 @@ export const shortify = async ({
     const tempFilePath2Normalized = await normalizeVideo(tempFilePath2Audio);
 
     // concat videos
-    const outputListPath = join(basePath, 'outputList.txt');
-    const outputFilePath = join(basePath, 'output.mp4');
-    saveFileList(outputListPath, tempFilePath1Normalized, tempFilePath2Normalized);
-    await concatVideoFromList(outputListPath, outputFilePath);
+    const outputFilePath = await coverWithGreen({
+        input: tempFilePath1Normalized,
+        green: tempFilePath2Normalized,
+        startTime: pauseTime,
+        duration: extraVideoTime,
+        padding: 0,
+    });
 
     // Upload data to server
     const downloadURL = await uploadFileToServer(
@@ -94,6 +98,13 @@ export const shortify = async ({
         originalHashtags,
         accounts,
         accountsHasBeenUsed: [],
+        parameters: {
+            scenario,
+            mainVideoUrl,
+            sourceId,
+            pauseTime,
+            duration: await getVideoDuration(outputFilePath),
+        },
     });
 
     // delete tempfiles

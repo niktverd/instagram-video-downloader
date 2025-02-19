@@ -9,6 +9,7 @@ import {PreparedVideoV3} from '../../types';
 import {log} from '../../utils/logging';
 
 export const addPreparedVideo = async (args: Omit<PreparedVideoV3, 'id'>) => {
+    log(args);
     const colRef = collection(firestore, Collection.PreparedVideos);
     await addDoc(colRef, args as Omit<PreparedVideoV3, 'id'>);
 };
