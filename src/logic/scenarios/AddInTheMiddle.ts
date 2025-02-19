@@ -7,8 +7,8 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {storage} from '../../config/firebase';
 import {SECOND_VIDEO} from '../../constants';
 import {MediaPostModel} from '../../types';
-import {saveFileToDisk} from '../../utils';
-
+import {getWorkingDirectoryForVideo, saveFileToDisk} from '../../utils/common';
+import {log} from '../../utils/logging';
 import {
     addSilentAudioStream,
     checkHasAudio,
@@ -17,11 +17,10 @@ import {
     createVideoOfFrame,
     extractFrames,
     getVideoDuration,
-    // logStreamsInfo,
     normalizeVideo,
     saveFileList,
     splitVideo,
-} from './primitives';
+} from '../video/primitives';
 
 const pauseSourcePath = '/Users/niktverd/code/instagram-video-downloader/greenPause.mp4';
 const playSourcePath = '/Users/niktverd/code/instagram-video-downloader/greenPlay.mp4';
@@ -32,10 +31,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
         return;
     }
 
-    const basePath = path.join(__dirname, firestoreId);
-    if (!existsSync(basePath)) {
-        mkdirSync(basePath, {recursive: true});
-    }
+    const basePath = getWorkingDirectoryForVideo(firestoreId);
 
     const tempFilePath1 = path.join(basePath, 'first.mp4');
     const tempFilePath2 = path.join(basePath, 'second.mp4');
@@ -50,7 +46,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
     const file1Duration = await getVideoDuration(tempFilePath1);
     const file2Duration = await getVideoDuration(tempFilePath2);
     const pauseTime = file1Duration / 2;
-    console.log('times: ', JSON.stringify({file1Duration, file2Duration, pauseTime}));
+    log('times: ', {file1Duration, file2Duration, pauseTime});
 
     // format videos
     const tempFilePath1Formated = await normalizeVideo(tempFilePath1);
@@ -89,7 +85,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
 
     const hasAudio = await checkHasAudio(pauseFilePath);
 
-    console.log({hasAudio});
+    log({hasAudio});
 
     const pauseWithAudioFilePath = await addSilentAudioStream({
         input: pauseFilePath,
@@ -119,7 +115,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
         duration: pauseDuration,
     });
 
-    console.log(playDuration);
+    log({playDuration});
 
     const greenPlayPath = await coverWithGreen({
         input: greenPausePath,
@@ -138,7 +134,7 @@ export const splitVideoInTheMiddle = async (data: MediaPostModel, firestoreId: s
     await uploadBytes(fileRef, processedBuffer, metadata);
 
     const downloadURL = await getDownloadURL(fileRef);
-    console.log(downloadURL);
+    log(downloadURL);
 
     // Clean up temporary files (optional) - use with caution in production!
     rmSync(basePath, {recursive: true});
@@ -166,7 +162,7 @@ export const testPIP = async (data: MediaPostModel, firestoreId: string) => {
     const file1Duration = await getVideoDuration(tempFilePath1);
     const file2Duration = await getVideoDuration(tempFilePath2);
     const pauseTime = 2;
-    console.log('times: ', JSON.stringify({file1Duration, file2Duration, pauseTime}));
+    log('times: ', {file1Duration, file2Duration, pauseTime});
 
     // format videos
     const tempFilePath1Formated = await normalizeVideo(tempFilePath1);

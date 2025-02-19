@@ -4,16 +4,35 @@ import express from 'express';
 import qs from 'qs';
 
 import {DelayMS} from './src/constants';
-import {removePostById, reportInterface} from './src/controllers/ejs';
-import {hubChallangeWebhook, messageWebhook} from './src/controllers/instagram-webhooks';
 import {
+    hubChallangeWebhook,
+    messageWebhookV3,
     publishById,
-    publishIntagram2,
+    publishIntagramV3,
+    removePostById,
     removePublishedFromFirebase,
-} from './src/controllers/publishing';
-import {uiGetMediaPosts, uiSplitVideoInTheMiddle, uiTestGreenScreen} from './src/controllers/ui';
-import {youtubeAuth, youtubeAuthCallback} from './src/controllers/youtube';
-import {preprocessVideo} from './src/preprocess-video';
+    reportInterface,
+    uiAddAccount,
+    uiAddScenario,
+    uiCreateVideoByScenario,
+    uiDownloadVideoFromSourceV3,
+    uiGetAccounts,
+    uiGetInsights,
+    uiGetInstagramMedia,
+    uiGetInstagramUserById,
+    uiGetInstagramUserIdByMediaId,
+    uiGetMediaPosts,
+    uiGetScenarios,
+    uiPatchAccount,
+    uiPatchScenario,
+    uiRunInjectionScenraios,
+    uiSplitVideoInTheMiddle,
+    uiTestGreenScreen,
+    youtubeAuth,
+    youtubeAuthCallback,
+} from './src/controllers';
+import {clearPreprod, downloadVideoCron, runScenarioCron} from './src/logic';
+import {log} from './src/utils';
 
 dotenv.config();
 
@@ -48,23 +67,40 @@ app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
 app.get('/report', reportInterface);
-app.get('/publish', publishIntagram2);
+app.get('/publish', publishIntagramV3);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
 app.get('/yt-oauth2-callback', youtubeAuthCallback);
 app.get('/ui-get-media-posts', uiGetMediaPosts);
+app.get('/ui-get-scenarios', uiGetScenarios);
+app.get('/ui-get-accounts', uiGetAccounts);
+app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
+app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
+app.get('/ui-get-insights', uiGetInsights);
+app.get('/ui-get-media', uiGetInstagramMedia);
+app.get('/ui-get-user-by-id', uiGetInstagramUserById);
+app.get('/ui-get-owner-by--media-id', uiGetInstagramUserIdByMediaId);
+app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
 
-app.post('/webhooks', messageWebhook);
+app.post('/webhooks', messageWebhookV3);
 app.post('/remove-post-by-id', removePostById);
 app.post('/publish-by-id', publishById);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
 app.post('/ui-test-green-screen', uiTestGreenScreen);
+app.post('/ui-add-scenario', uiAddScenario);
+app.post('/ui-add-account', uiAddAccount);
+
+app.patch('/ui-patch-scenario', uiPatchScenario);
+app.patch('/ui-patch-account', uiPatchAccount);
+
+app.delete('/ui-clear-proprod-database', clearPreprod);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
 
 app.listen(appPort, () => {
-    console.log(`Example app listening on port ${appPort}`);
+    log(`Example app listening on port ${appPort}`);
 });
 
-preprocessVideo(DelayMS.Sec30);
+downloadVideoCron(DelayMS.Sec30);
+runScenarioCron(DelayMS.Sec30);

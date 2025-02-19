@@ -13,19 +13,22 @@ import {
 } from 'firebase/firestore/lite';
 import {shuffle} from 'lodash';
 
-import {firestore} from './config/firebase';
-import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from './constants';
-import {createInstagramPostContainer, getMergedVideo} from './instagram';
-import {MediaPostModel, Sources} from './types';
-import {getInstagramPropertyName, preparePostText} from './utils';
+import {firestore} from '../config/firebase';
+import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '../constants';
+import {MediaPostModel, SourceV3, Sources} from '../types';
+import {getInstagramPropertyName, preparePostText, uploadFileFromUrl} from '../utils/common';
+import {log} from '../utils/logging';
+
+import {createInstagramPostContainer, getMergedVideo} from './instagram/instagram';
+import {getVideoDuration} from './video/primitives';
 import {uploadYoutubeVideo} from './youtube';
 
 dotenv.config();
 
 const downloadSource = async (sources: Sources, firebaseId: string) => {
-    console.log('downloading source...', JSON.stringify({sources, x: sources.instagramReel}));
+    log('downloading source...', {sources, x: sources.instagramReel});
     if (sources.instagramReel) {
-        console.log('instagram found...');
+        log('instagram found...');
         return await getMergedVideo({
             videoUrl: sources.instagramReel.url,
             finalVideoUrl: SECOND_VIDEO,
@@ -43,10 +46,10 @@ const downloadSource = async (sources: Sources, firebaseId: string) => {
 
 export const preprocessVideo = (ms: number) => {
     if (!process.env.ENABLE_PREPROCESS_VIDEO) {
-        console.log('preprocessVideo', 'blocked');
+        log('preprocessVideo', 'blocked');
         return;
     }
-    console.log('preprocessVideo', 'started in', ms, 'ms');
+    log('preprocessVideo', 'started in', ms, 'ms');
     // на каждый видос 2 попытки
     // после второй неуспешной пишем в базу метку, что проблемный. Если такая метка уже была, удаляем из базы после двух попыток все уладить
     //   +    грузим по 10 видосов, выбираем рандомно с каким будем работать
@@ -67,7 +70,7 @@ export const preprocessVideo = (ms: number) => {
         const queryRef = query(collectionRef, where('firebaseUrl', '==', ''), limit(10));
         const docSnaps = await getDocs(queryRef);
         if (docSnaps.empty) {
-            console.log('doc snap is empty');
+            log('doc snap is empty');
             preprocessVideo(DelayMS.Min5);
             return;
         }
@@ -75,16 +78,16 @@ export const preprocessVideo = (ms: number) => {
         const medias = shuffle(
             docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id} as MediaPostModel)),
         );
-        console.log('medias length:', medias.length);
+        log('medias length:', medias.length);
 
         for (const media of medias) {
             const firebaseId = media.id;
-            console.log('working with media id: ', firebaseId);
+            log('working with media id: ', firebaseId);
             try {
                 for (let attempt = 0; attempt < 2; attempt++) {
                     // create video
                     if (!existsSync(firebaseId)) {
-                        console.log('creating folder ...');
+                        log('creating folder ...');
                         mkdirSync(firebaseId, {recursive: true});
                     }
 
@@ -101,9 +104,11 @@ export const preprocessVideo = (ms: number) => {
                         firebaseUrl: preparedVideoUrl,
                     });
 
-                    const caption = preparePostText(
-                        media.sources.instagramReel?.originalHashtags || [],
-                    );
+                    const caption = preparePostText({
+                        originalHashtags: media.sources.instagramReel?.originalHashtags || [],
+                        account: 'carcar.tech #carcar.kz',
+                        system: '',
+                    });
 
                     await uploadYoutubeVideo({
                         videoReadStream: readstream,
@@ -122,13 +127,13 @@ export const preprocessVideo = (ms: number) => {
                             firebaseId: firebaseId,
                         });
 
-                        if (result.success && result.mediaId) {
+                        if (result.success && result.mediaContainerId) {
                             // eslint-disable-next-line max-depth
                             const propertyName = getInstagramPropertyName(tokenObject.id);
                             await updateDoc(documentRef, {
                                 [propertyName]: {
                                     ...media[propertyName],
-                                    mediaContainerId: result.mediaId,
+                                    mediaContainerId: result.mediaContainerId,
                                     status: 'uploaded',
                                 },
                             });
@@ -138,7 +143,7 @@ export const preprocessVideo = (ms: number) => {
                     break;
                 }
             } catch (error) {
-                console.log(JSON.stringify({preprocessVideoCatch: error}));
+                log({preprocessVideoCatch: error});
                 const documentRef = doc(collectionRef, firebaseId);
 
                 if (media.attempt) {
@@ -158,5 +163,81 @@ export const preprocessVideo = (ms: number) => {
         }
 
         preprocessVideo(DelayMS.Sec1);
+    }, ms);
+};
+
+export const downloadVideoCron = (ms: number, calledFromApi = false) => {
+    if (!process.env.ENABLE_DOWNLOAD_VIDEO && !calledFromApi) {
+        log('downloadVideoCron', 'blocked');
+        return;
+    }
+    log('downloadVideoCron', 'started in', ms, 'ms');
+
+    setTimeout(async () => {
+        const collectionRef = collection(firestore, Collection.Sources);
+        const queryRef = query(collectionRef, where('firebaseUrl', '==', ''), limit(10));
+        const docSnaps = await getDocs(queryRef);
+        if (docSnaps.empty) {
+            log('doc snap is empty');
+            downloadVideoCron(DelayMS.Min5);
+            return;
+        }
+
+        const medias = shuffle(
+            docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id} as SourceV3)),
+        );
+        log('sources length:', medias.length);
+
+        for (const media of medias) {
+            const firebaseId = media.id;
+            log('working with source id: ', firebaseId);
+            try {
+                for (let attempt = 0; attempt < 2; attempt++) {
+                    const sourceUrl = media.sources.instagramReel?.url;
+                    if (!sourceUrl) {
+                        throw new Error('media.sources.instagramReel is empty');
+                    }
+
+                    const downloadURL = await uploadFileFromUrl({
+                        url: sourceUrl,
+                        collectionName: Collection.Sources,
+                        firebaseId,
+                    });
+
+                    log('Файл успешно загружен:', downloadURL);
+
+                    const duration = await getVideoDuration(downloadURL);
+
+                    const documentRef = doc(collectionRef, firebaseId);
+                    await updateDoc(documentRef, {
+                        firebaseUrl: downloadURL,
+                        duration,
+                    });
+
+                    break;
+                }
+            } catch (error) {
+                log({preprocessVideoCatch: error});
+                const documentRef = doc(collectionRef, firebaseId);
+
+                if (media.attempt) {
+                    // delete media
+                    await deleteDoc(documentRef);
+                } else {
+                    // save attempt to media
+                    await updateDoc(documentRef, {
+                        attempt: 2,
+                    });
+                }
+            } finally {
+                if (existsSync(firebaseId)) {
+                    rmSync(firebaseId, {maxRetries: 2, force: true, recursive: true});
+                }
+            }
+        }
+
+        if (!calledFromApi) {
+            downloadVideoCron(DelayMS.Sec1);
+        }
     }, ms);
 };

@@ -5,12 +5,21 @@ dotenv.config();
 export enum Collection {
     MediaPosts = 'media-posts',
     System = 'system',
+
+    // v3
+    Sources = 'sources',
+    Scenarios = 'scenarios',
+    PreparedVideos = 'prepared-videos',
+    Accounts = 'accounts',
+    AccountMediaContainers = 'account-media-containers',
 }
 
 export enum DelayMS {
     Sec1 = 1000,
     Sec30 = 30 * 1000,
     Min5 = 5 * 60 * 1000,
+    Min2 = 2 * 60 * 1000,
+    Min1 = 1 * 60 * 1000,
 }
 
 export enum DelayS {

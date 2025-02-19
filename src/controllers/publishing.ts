@@ -11,17 +11,24 @@ import {
     updateDoc,
     where,
 } from 'firebase/firestore/lite';
+import {shuffle} from 'lodash';
 
 import {firestore} from '../config/firebase';
 import {Collection, accessTokensArray} from '../constants';
-import {removePublished} from '../firebase';
-import {stopHerokuApp} from '../heroku';
-import {findUnpublishedContainer, publishInstagramPostContainer} from '../instagram';
-import {MediaPostModel} from '../types';
-import {delay, getInstagramPropertyName, isTimeToPublishInstagram} from '../utils';
+import {
+    findUnpublishedContainer,
+    getAccounts,
+    getRandomMediaContainersForAccount,
+    prepareMediaContainersForAccount,
+    publishInstagramPostContainer,
+    removePublished,
+    stopHerokuApp,
+} from '../logic';
+import {AccountMediaContainerV3, MediaPostModel} from '../types';
+import {delay, getInstagramPropertyName, isTimeToPublishInstagram, log} from '../utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    log(req.query);
 
     await findUnpublishedContainer();
 
@@ -32,23 +39,21 @@ export const publishIntagram = async (req: Request, res: Response) => {
 };
 
 export const publishIntagram2 = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    log(req.query);
 
     try {
         await isTimeToPublishInstagram();
         // get random document for every account
-        console.log('accessTokensArray', JSON.stringify(accessTokensArray));
+        log('accessTokensArray', accessTokensArray);
         for (const accessTokenObject of accessTokensArray) {
             let propertyName: keyof MediaPostModel | null = null;
             let docRef: DocumentReference<DocumentData, DocumentData> | null = null;
             // let collectionRef: CollectionReference<DocumentData, DocumentData> | null = null;
             try {
-                console.log(
-                    JSON.stringify({
-                        accessTokenId: accessTokenObject.id,
-                        note: 'Publishing for account',
-                    }),
-                );
+                log({
+                    accessTokenId: accessTokenObject.id,
+                    note: 'Publishing for account',
+                });
                 propertyName = getInstagramPropertyName(accessTokenObject.id);
                 if (!propertyName) {
                     throw new Error(`No propertyName: ${propertyName}`);
@@ -69,28 +74,24 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                 );
                 const snapshot = await getDocs(queryRef);
                 if (snapshot.empty) {
-                    console.log(
-                        JSON.stringify({
-                            note: 'nothing was found',
-                            propertyName,
-                            randomValue,
-                            selectorRandomValue,
-                        }),
-                    );
+                    log({
+                        note: 'nothing was found',
+                        propertyName,
+                        randomValue,
+                        selectorRandomValue,
+                    });
                     continue;
                 }
                 const docSnap = snapshot.docs[0];
                 docRef = docSnap.ref;
-                // console.log(docRe2f);
+                //  log(docRe2f);
                 const docData = {...docSnap.data(), id: docSnap.id} as MediaPostModel;
-                console.log(
-                    JSON.stringify({
-                        note: 'doc was found',
-                        propertyName,
-                        randomValue,
-                        docData,
-                    }),
-                );
+                log({
+                    note: 'doc was found',
+                    propertyName,
+                    randomValue,
+                    docData,
+                });
 
                 // // check status of media container
                 // // publish media container
@@ -110,7 +111,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
                     await setDoc(scheduleDocRef, {lastPublishingTime: new Date()});
                 }
             } catch (error) {
-                console.log(JSON.stringify(error));
+                log(error);
                 if (docRef) {
                     await updateDoc(docRef, {
                         [`${propertyName}.error`]: true,
@@ -123,7 +124,71 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
         // update record in db
         res.status(200).send('success');
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
+        res.status(200).send('error');
+    } finally {
+        await delay(1000);
+        await stopHerokuApp();
+    }
+};
+
+export const publishIntagramV3 = async (req: Request, res: Response) => {
+    log(req.query);
+
+    try {
+        const accounts = await getAccounts(true);
+
+        for (const account of accounts) {
+            // get random document for every account
+            // get 5 video
+            const preparedContainers = await getRandomMediaContainersForAccount(account.id);
+            log({account, preparedContainers});
+            if (preparedContainers.length < 5) {
+                log('preparation for publishing');
+                // prepare 10 media containers
+                await prepareMediaContainersForAccount(account);
+            }
+            if (!preparedContainers.length) {
+                log('preparedContainers is empty');
+                continue;
+            }
+
+            // publish random container
+            const randomContainer = shuffle(preparedContainers)[0];
+            if (process.env.APP_ENV === 'development2') {
+                log('publishing is blocked in development');
+                continue;
+            }
+
+            const publishResponse = await publishInstagramPostContainer({
+                containerId: randomContainer.mediaContainerId,
+                accessToken: account.token,
+            });
+
+            log({publishResponse});
+            log([Collection.Accounts, account.id, Collection.AccountMediaContainers]);
+
+            if (publishResponse.success && !publishResponse.error) {
+                // update container data
+                const docRef = doc(
+                    firestore,
+                    Collection.Accounts,
+                    account.id,
+                    Collection.AccountMediaContainers,
+                    randomContainer.id,
+                );
+                log({docRef});
+
+                await updateDoc(docRef, {
+                    status: 'published',
+                } as AccountMediaContainerV3);
+            }
+        }
+
+        // update record in db
+        res.status(200).send('success');
+    } catch (error) {
+        log(error);
         res.status(200).send('error');
     } finally {
         await delay(1000);
@@ -133,7 +198,7 @@ export const publishIntagram2 = async (req: Request, res: Response) => {
 
 export const publishById = async (req: Request, res: Response) => {
     try {
-        console.log(JSON.stringify({body: req.body}));
+        log({body: req.body});
         const {id, accessToken} = req.body;
         if (!id || !accessToken) {
             throw new Error('no id or accessToken found in body');
@@ -144,15 +209,15 @@ export const publishById = async (req: Request, res: Response) => {
             containerId: id,
             accessToken: accessToken,
         });
-        console.log({result});
+        log({result});
     } catch (error) {
-        console.log(JSON.stringify(error));
+        log(error);
     }
     res.status(200).send('published-by-id');
 };
 
 export const removePublishedFromFirebase = async (req: Request, res: Response) => {
-    console.log(JSON.stringify(req.query));
+    log(req.query);
 
     await removePublished();
 

@@ -1,5 +1,12 @@
 import {Timestamp} from 'firebase/firestore/lite';
 
+import {
+    ScenarioAddBannerAtTheEnd,
+    ScenarioBase,
+    ScenarioLongVideoWithInjections,
+    ScenarioShortify,
+} from './scenario';
+
 export type SourceInstagramReel = {
     url: string;
     senderId: string;
@@ -52,4 +59,49 @@ export type MediaPostModelOld = {
     status: string;
     type: string;
     url: string;
+};
+
+export type SourceV3 = {
+    id: string;
+    createdAt: Timestamp;
+    firebaseUrl: string;
+    sources: Sources;
+    randomIndex: number;
+    bodyJSONString: string;
+    attempt: number;
+    scenarios: string[];
+    lastUsed: Timestamp;
+    timesUsed: number;
+    scenariosHasBeenCreated: [];
+};
+
+export type ScenarioV3 = ScenarioBase &
+    (ScenarioAddBannerAtTheEnd | ScenarioLongVideoWithInjections | ScenarioShortify);
+
+export type PreparedVideoV3 = {
+    id: string;
+    firebaseUrl: string;
+    scenarioName: string;
+    sourceId: string;
+    scenarioId: string;
+    title: string;
+    originalHashtags: string[];
+    accounts: string[];
+    accountsHasBeenUsed: string[];
+    parameters?: unknown;
+};
+
+export type AccountV3 = {
+    id: string;
+    token: string;
+    disabled: boolean;
+    availableScenarios: string[];
+};
+
+export type AccountMediaContainerV3 = {
+    id: string;
+    mediaContainerId: string;
+    createdAt: Timestamp;
+    status: 'created' | 'published';
+    preparedVideoId: string;
 };

@@ -3,6 +3,8 @@ import {dirname, join} from 'path';
 
 import ffmpeg, {FfmpegCommand} from 'fluent-ffmpeg';
 
+import {log, logError} from '../../utils/logging';
+
 type PrepareOoutputFileNameOptions = {
     outputFileName?: string;
     suffix?: string;
@@ -22,25 +24,25 @@ const ffmpegCommon = (
 ) => {
     if (ENABLE_STDERR) {
         ffmpegCommand.on('stderr', (stderrLine) => {
-            console.error(2, 'FFmpeg stderr:', stderrLine);
+            logError(2, 'FFmpeg stderr:', stderrLine);
         });
     }
 
     if (ENABLE_PROGRESS) {
         ffmpegCommand.on('progress', (progress) => {
-            console.log(`Processing: ${JSON.stringify(progress)}% done`);
+            log(`Processing: ${progress}% done`);
         });
     }
 
     if (ENABLE_START) {
         ffmpegCommand.on('start', (commandLine) => {
-            console.log('FFmpeg process started:', commandLine);
+            log('FFmpeg process started:', commandLine);
         });
     }
 
     ffmpegCommand
         .on('error', (err) => {
-            console.error(1, reason || 'Ошибка при обработке видео:', err);
+            logError(1, reason || 'Ошибка при обработке видео:', err);
             reject(reason);
         })
         .on('end', () => resolve(outputPath));
@@ -66,7 +68,7 @@ export const prepareOutputFileName = (
 export const getVideoDuration = (inputPath: string): Promise<number> => {
     return new Promise((resolve, reject) => {
         ffmpeg.ffprobe(inputPath, (err, data) => {
-            if (err && !data.format.duration) {
+            if (err && !data?.format.duration) {
                 reject(err);
                 return;
             }
@@ -82,11 +84,11 @@ export const logStreamsInfo = async (inputPath: string) => {
                 reject(err);
                 return;
             }
-            console.log('Streams of ', inputPath);
+            log('Streams of ', inputPath);
             dataLocal.streams.forEach((stream) => {
-                console.log(stream);
+                log(stream);
             });
-            console.log('\n\n');
+            log('\n\n');
 
             resolve(true);
         });
@@ -102,7 +104,7 @@ export const checkHasAudio = (input: string) => {
             }
             resolve(
                 dataLocal.streams.some((stream) => {
-                    // console.log({stream});
+                    //  log({stream});
                     return stream.codec_type === 'audio';
                 }),
             );
@@ -292,16 +294,13 @@ export const coverWithGreen = async ({
         suffix: '_green_covered',
         extention: '.mp4',
     });
-    console.log(
-        'coverWithGreen',
-        JSON.stringify({
-            input,
-            outputPath,
-            green,
-            startTime,
-            duration,
-        }),
-    );
+    log('coverWithGreen', {
+        input,
+        outputPath,
+        green,
+        startTime,
+        duration,
+    });
     const complexFilters = [
         // Применяем chromakey к видео с зеленым экраном
         {
@@ -360,7 +359,7 @@ export const coverWithGreen = async ({
     ];
     // ].filter((filter) => filter !== 'none');
 
-    console.log('complexFilters', complexFilters);
+    log('complexFilters', complexFilters);
 
     return new Promise((resolve, reject) => {
         const ffmpegCommand = ffmpeg()
@@ -377,5 +376,30 @@ export const coverWithGreen = async ({
             );
 
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'coverWithGreen').save(outputPath);
+    });
+};
+
+type TrimVideoArgs = {
+    input: string;
+    maxDuration: number;
+    outputOverride?: string;
+};
+
+export const trimVideo = async ({input, maxDuration}: TrimVideoArgs): Promise<string> => {
+    const duration = await getVideoDuration(input);
+
+    if (duration <= maxDuration) {
+        return input;
+    }
+
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_trimmed',
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        const ffmpegCommand = ffmpeg(input).duration(maxDuration).output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'trimVideo').run();
     });
 };

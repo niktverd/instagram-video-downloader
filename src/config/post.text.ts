@@ -10,7 +10,7 @@ export const postText = `Оптовые цены для подписчиков
 
 Присылай запрос в директ и я обязательно тебе помогу.
 
-#carcar #carcar.tech
+#{account}
 
 {popular-hashtags}
 

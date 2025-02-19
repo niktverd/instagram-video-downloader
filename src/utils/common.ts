@@ -1,21 +1,26 @@
-import {writeFileSync} from 'fs';
+import {existsSync, mkdirSync, writeFileSync} from 'fs';
+import {join} from 'path';
 
-import {Timestamp, collection, doc, getDoc, updateDoc} from 'firebase/firestore/lite';
+import {Timestamp, collection, doc, getDoc} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import ffmpeg from 'fluent-ffmpeg';
 import {shuffle} from 'lodash';
 
-import {firestore, storage} from './config/firebase';
-import baseHashtags from './config/instagram.hashtags.json';
-import {postText} from './config/post.text';
-import {Collection, DelayS} from './constants';
-import {MediaPostModel} from './types';
+import {firestore, storage} from '../config/firebase';
+import baseHashtags from '../config/instagram.hashtags.json';
+import {postText} from '../config/post.text';
+import {Collection, DelayS} from '../constants';
+import {getScenarios} from '../logic/firebase/scenarios';
+import {MediaPostModel, ScenarioV3, SourceV3} from '../types';
+
+import {log, logError} from './logging';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type UploadFileFromUrlArgs = {
     url: string;
     firebaseId: string;
+    collectionName?: Collection;
 };
 
 export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs) {
@@ -29,24 +34,16 @@ export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs
         const fileBuffer = await response.arrayBuffer();
         const contentType = response.headers.get('content-type') || undefined;
 
-        const fileRef = ref(storage, `${firebaseId}.mp4`);
+        const fileRef = ref(storage, `${firebaseId}-${Math.random()}.mp4`);
 
         const metadata = {contentType};
         await uploadBytes(fileRef, fileBuffer, metadata);
 
         const downloadURL = await getDownloadURL(fileRef);
 
-        console.log('Файл успешно загружен:', downloadURL);
-
-        const collectionRef = collection(firestore, 'media-post');
-        const documentRef = doc(collectionRef, firebaseId);
-        await updateDoc(documentRef, {
-            firebaseUrl: downloadURL,
-        });
-
         return downloadURL;
     } catch (error) {
-        console.error('Ошибка при загрузке файла:', error);
+        log('Ошибка при загрузке файла:', error);
         throw error;
     }
 }
@@ -89,13 +86,13 @@ export const processAndConcatVideos = async (
                 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2,setsar=1',
             )
             .on('start', (commandLine) => {
-                console.log(1, 'FFmpeg command: ' + commandLine);
+                log(1, 'FFmpeg command: ' + commandLine);
             })
             .on('stderr', (stderrLine) => {
-                console.error(1, 'FFmpeg stderr:', stderrLine);
+                logError(1, 'FFmpeg stderr:', stderrLine);
             })
             .on('error', (err) => {
-                console.error(1, 'Ошибка при обработке видео:', err);
+                logError(1, 'Ошибка при обработке видео:', err);
             })
             .on('end', () => {
                 ffmpeg()
@@ -116,17 +113,17 @@ export const processAndConcatVideos = async (
                     // .videoCodec('libx265')
                     .output(outputFilePath) // Указываем выходной файл
                     .on('start', (commandLine) => {
-                        console.log(2, 'FFmpeg command: ' + commandLine);
+                        log(2, 'FFmpeg command: ' + commandLine);
                     })
                     .on('stderr', (stderrLine) => {
-                        console.error(2, 'FFmpeg stderr:', stderrLine);
+                        logError(2, 'FFmpeg stderr:', stderrLine);
                     })
                     .on('error', (err) => {
-                        console.error(2, 'Ошибка при обработке видео:', err);
+                        logError(2, 'Ошибка при обработке видео:', err);
                         reject(err);
                     })
                     .on('end', () => {
-                        console.log(2, 'Обработка и склейка видео завершены.');
+                        log(2, 'Обработка и склейка видео завершены.');
                         resolve();
                     })
                     .run();
@@ -135,7 +132,13 @@ export const processAndConcatVideos = async (
     });
 };
 
-export const preparePostText = (originalHashtags: string[]) => {
+type PreparePostTextArgs = {
+    originalHashtags: string[];
+    system: string;
+    account: string;
+};
+
+export const preparePostText = ({originalHashtags, system = '', account}: PreparePostTextArgs) => {
     const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
     const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
     const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
@@ -143,8 +146,47 @@ export const preparePostText = (originalHashtags: string[]) => {
         '{popular-hashtags}',
         [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
     );
-    console.log(JSON.stringify({finalText, originalHashtags}));
-    return finalText.replace('{original-hashtags}', originalHashtags.join(' ')).trim();
+    log({finalText, originalHashtags});
+
+    const caption = finalText
+        .replace('{account}', account)
+        .replace('{original-hashtags}', originalHashtags.join(' '))
+        .trim();
+    if (system?.length) {
+        return `${caption} \n---\n${system}`;
+    }
+    return caption;
+};
+
+type PreparePostTextFromScenarioArgs = PreparePostTextArgs & {
+    title: string;
+};
+
+export const preparePostTextFromScenario = ({
+    title,
+    originalHashtags,
+    system = '',
+    account,
+}: PreparePostTextFromScenarioArgs) => {
+    const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
+    const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
+    const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
+    const finalText = [
+        title,
+        '\n\n',
+        [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
+        '\n\n',
+        `@${account}`,
+        '\n\n',
+        shuffle(originalHashtags).slice(0, 10).join(' '),
+    ].join('');
+
+    log({finalText, originalHashtags});
+
+    if (system?.length) {
+        return `${finalText} \n---\n${system}`;
+    }
+    return finalText;
 };
 
 export const initiateRecord = (source: MediaPostModel['sources']) =>
@@ -170,6 +212,26 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
         randomIndex: Math.random(),
     } as Omit<MediaPostModel, 'id'>);
 
+export const initiateRecordV3 = async (
+    source: SourceV3['sources'],
+    bodyJSONString: SourceV3['bodyJSONString'],
+) => {
+    const scenarios = await getScenarios(true);
+    log({scenarios});
+    return {
+        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
+        firebaseUrl: '',
+        sources: source,
+        randomIndex: Math.random(),
+        bodyJSONString,
+        attempt: 0,
+        scenarios: scenarios.map(({name}) => name),
+        lastUsed: new Timestamp(0, 0),
+        timesUsed: 0,
+        scenariosHasBeenCreated: [],
+    } as Omit<SourceV3, 'id'>;
+};
+
 export const isTimeToPublishInstagram = async () => {
     const systemCollectionRef = collection(firestore, Collection.System);
     const scheduleDocRef = doc(systemCollectionRef, 'schedule');
@@ -178,7 +240,7 @@ export const isTimeToPublishInstagram = async () => {
         const schedule = scheduleSnap.data();
         const now = new Date().getTime() / 1000;
         const diff = now - schedule.lastPublishingTime.seconds;
-        console.log(JSON.stringify({schedule, now, diff, delay: DelayS.Min5}));
+        log({schedule, now, diff, delay: DelayS.Min5});
 
         if (diff < DelayS.Min5) {
             throw new Error('It is to early to publish container');
@@ -190,3 +252,25 @@ export const getInstagramPropertyName = (tokenObjectId: string) =>
     tokenObjectId === 'carcar.kz'
         ? 'publishedOnInstagramCarcarKz'
         : 'publishedOnInstagramCarcarTech';
+
+export const getWorkingDirectoryForVideo = (directoryName: string) => {
+    const basePath = join(process.cwd(), 'videos-working-directory', directoryName + Math.random());
+    if (!existsSync(basePath)) {
+        mkdirSync(basePath, {recursive: true});
+    }
+
+    return basePath;
+};
+
+export const getRandomElementOfArray = <T>(array: T[]) => {
+    return array[Math.floor(Math.random() * array.length)];
+};
+
+export const prepareCaption = (scenario: ScenarioV3) => {
+    const linkToAnotherAccount = shuffle(scenario.texts.link_to_another_account || [''])[0];
+    const intro = shuffle(scenario.texts.intro || [''])[0];
+    const main = shuffle(scenario.texts.main || [''])[0];
+    const outro = shuffle(scenario.texts.outro || [''])[0];
+
+    return [linkToAnotherAccount, intro, main, outro].filter(Boolean).join('\n');
+};
