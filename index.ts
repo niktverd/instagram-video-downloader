@@ -149,13 +149,15 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
         client_secret: API_SECRET || '',
         code: (code as string) || '',
     });
+    log({uri});
     try {
         const response = await fetch(uri, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
         });
-        console.log(await response.json());
-        res.redirect('/pages');
+        const responseJson = await response.json();
+        log(responseJson);
+        res.send(JSON.stringify(responseJson));
     } catch (err) {
         res.render('index', {
             error: `There was an error with the request: ${err}`,
