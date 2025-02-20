@@ -23,6 +23,19 @@ export type ScenarioShortify = {
     maxDuration: number;
 };
 
+export type ScenarioCoverWithImage = {
+    type: 'ScenarioCoverWithImageType';
+    imageUrl: string;
+    imageTop: number;
+    imageLeft: number;
+    imageWidth: number;
+    imageHeight: number;
+    videoTop: number;
+    videoLeft: number;
+    videoWidth: number;
+    videoHeight: number;
+};
+
 export type ScenarioLongVideoWithInjections = {
     type: 'ScenarioLongVideoWithInjections';
     adsBannerUrl: string;

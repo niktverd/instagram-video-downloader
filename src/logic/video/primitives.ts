@@ -22,6 +22,8 @@ const ffmpegCommon = (
     outputPath: string,
     reason?: string,
 ) => {
+    log({outputPath, reason});
+
     if (ENABLE_STDERR) {
         ffmpegCommand.on('stderr', (stderrLine) => {
             logError(2, 'FFmpeg stderr:', stderrLine);
@@ -401,5 +403,87 @@ export const trimVideo = async ({input, maxDuration}: TrimVideoArgs): Promise<st
         const ffmpegCommand = ffmpeg(input).duration(maxDuration).output(outputPath);
 
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'trimVideo').run();
+    });
+};
+
+type OverlayImageOptions = {
+    input: string;
+    overlayImage: string;
+    left?: number; // Процент от ширины видео
+    top?: number; // Процент от высоты видео
+    width?: number; // Процент от ширины видео
+    height?: number; // Процент от высоты видео
+    startTime?: number; // Начало появления изображения (сек)
+    duration?: number; // Длительность показа (сек)
+};
+
+export const overlayImageOnVideo = async ({
+    input,
+    overlayImage,
+    left = 0, // По умолчанию центр (50%)
+    top = 0,
+    width = 100, // 20% ширины видео
+    height = 100, // 20% высоты видео
+    startTime = 0,
+    duration,
+}: OverlayImageOptions): Promise<string> => {
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_covered_with_image',
+        extention: '.mp4',
+    });
+
+    const videoDuration = await getVideoDuration(input);
+
+    log({
+        overlayImage,
+        outputPath,
+        left, // По умолчанию центр (50%)
+        top,
+        width, // 20% ширины видео
+        height, // 20% высоты видео
+        startTime,
+        duration,
+        videoDuration,
+    });
+
+    return new Promise((resolve, reject) => {
+        const complexFilters = [
+            // Масштабируем картинку с сохранением пропорций
+            {
+                filter: 'scale',
+                options: {
+                    width: `iw-${0 * 2}`, // Ширина = ширина основного видео минус отступы
+                    height: `ih-${0 * 2}`, // Высота = высота основного видео минус отступы
+                    force_original_aspect_ratio: 'decrease', // Сохраняем пропорции
+                },
+                inputs: '[1:v]', // Вход: видео без зеленого экрана
+                outputs: '[scaledImage]', // Выход: масштабированное видео
+            },
+            // Наложение синхронизированного видео на основное видео
+            {
+                filter: 'overlay',
+                options: {
+                    x: '(W-w)/2', // Центрируем по горизонтали
+                    y: '(H-h)/2', // Центрируем по вертикали
+                    enable: `between(t,${startTime},${startTime + (duration || videoDuration)})`, // Наложение активно только в указанный период
+                },
+                inputs: ['[0:v]', '[scaledImage]'], // Входы: основное видео и синхронизированное видео
+                outputs: '[out]', // Выход: финальное видео
+            },
+        ];
+
+        const ffmpegCommand = ffmpeg(input)
+            .input(overlayImage)
+            .complexFilter(complexFilters)
+            .outputOptions([
+                '-map [out]', // Используем финальный видеопоток
+                // '-map [0:a]', // Используем финальный аудиопоток
+                '-map 0:a?',
+                '-c:v libx264', // Кодируем видео в H.264
+                '-c:a aac', // Копируем аудио без перекодировки
+            ])
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'covered_with_image').run();
     });
 };
