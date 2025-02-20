@@ -1,6 +1,6 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
-import express from 'express';
+import express, {Request, Response} from 'express';
 import qs from 'qs';
 
 import {DelayMS} from './src/constants';
@@ -94,6 +94,74 @@ app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);
 
 app.delete('/ui-clear-proprod-database', clearPreprod);
+
+const DEFAULT_GRAPH_API_ORIGIN = 'https://graph.facebook.com';
+const DEFAULT_GRAPH_API_VERSION = '';
+const REDIRECT_URI = 'http://localhost:3030/callback-instagram';
+
+const {APP_ID, API_SECRET, GRAPH_API_ORIGIN, GRAPH_API_VERSION} = process.env;
+
+const GRAPH_API_BASE_URL =
+    (GRAPH_API_ORIGIN ?? DEFAULT_GRAPH_API_ORIGIN) +
+    '/' +
+    (GRAPH_API_VERSION ? GRAPH_API_VERSION + '/' : DEFAULT_GRAPH_API_VERSION);
+
+const SCOPES = [
+    // 'user_profile',
+    // 'user_media',
+    // 'instagram_basic',
+    'instagram_business_basic',
+    // 'instagram_content_publish',
+    // 'instagram_business_content_publish',
+    // 'instagram_business_manage_comments',
+    // 'instagram_business_manage_messages',
+];
+const STRINGIFIED_SCOPES = SCOPES.join('%2c');
+
+function buildGraphAPIURL(
+    path: string,
+    searchParams: Record<string, string>,
+    accessToken?: string,
+) {
+    const url = new URL(path, GRAPH_API_BASE_URL);
+    // eslint-disable-next-line no-not-accumulator-reassign/no-not-accumulator-reassign
+    Object.keys(searchParams).forEach((key) => !searchParams[key] && delete searchParams[key]);
+    url.search = new URLSearchParams(searchParams).toString();
+    if (accessToken) url.searchParams.append('access_token', accessToken);
+
+    return url.toString();
+}
+
+// Login route using FB OAuth
+app.get('/login-instagram', function (_req: Request, res: Response) {
+    log({REDIRECT_URI});
+    res.redirect(
+        `https://api.instagram.com/oauth/authorize?scope=${STRINGIFIED_SCOPES}&client_id=${APP_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`,
+    );
+});
+
+// Callback route for handling FB OAuth user token And reroute to '/pages'
+app.get('/callback-instagram', async function (req: Request, res: Response) {
+    const code = req.query.code;
+    const uri = buildGraphAPIURL('oauth/access_token', {
+        client_id: APP_ID || '',
+        redirect_uri: REDIRECT_URI || '',
+        client_secret: API_SECRET || '',
+        code: (code as string) || '',
+    });
+    try {
+        const response = await fetch(uri, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+        });
+        console.log(await response.json());
+        res.redirect('/pages');
+    } catch (err) {
+        res.render('index', {
+            error: `There was an error with the request: ${err}`,
+        });
+    }
+});
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
