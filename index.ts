@@ -143,6 +143,12 @@ app.get('/login-instagram', function (_req: Request, res: Response) {
 // Callback route for handling FB OAuth user token And reroute to '/pages'
 app.get('/callback-instagram', async function (req: Request, res: Response) {
     const code = req.query.code;
+    log({
+        client_id: APP_ID || '',
+        redirect_uri: REDIRECT_URI || '',
+        client_secret: API_SECRET || '',
+        code: (code as string) || '',
+    });
     const uri = buildGraphAPIURL('oauth/access_token', {
         client_id: APP_ID || '',
         redirect_uri: REDIRECT_URI || '',
