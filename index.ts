@@ -11,7 +11,7 @@ import {
     publishIntagramV3,
     removePostById,
     removePublishedFromFirebase,
-    reportInterface,
+    // reportInterface,
     uiAddAccount,
     uiAddScenario,
     uiCreateVideoByScenario,
@@ -66,7 +66,7 @@ app.set('query parser', function (str: string) {
 app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
-app.get('/report', reportInterface);
+// app.get('/report', reportInterface);
 app.get('/publish', publishIntagramV3);
 app.get('/remove-published', removePublishedFromFirebase);
 app.get('/yt-auth', youtubeAuth);
@@ -97,7 +97,8 @@ app.delete('/ui-clear-proprod-database', clearPreprod);
 
 const DEFAULT_GRAPH_API_ORIGIN = 'https://api.instagram.com/oauth/authorize';
 const DEFAULT_GRAPH_API_VERSION = '';
-const REDIRECT_URI = 'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
+const REDIRECT_URI =
+    'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
 
 const {APP_ID, API_SECRET, GRAPH_API_ORIGIN, GRAPH_API_VERSION} = process.env;
 
