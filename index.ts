@@ -9,7 +9,7 @@ import {
     messageWebhookV3,
     publishById,
     publishIntagramV3,
-    removePostById,
+    // removePostById,
     removePublishedFromFirebase,
     // reportInterface,
     uiAddAccount,
@@ -83,7 +83,7 @@ app.get('/ui-get-owner-by--media-id', uiGetInstagramUserIdByMediaId);
 app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
 
 app.post('/webhooks', messageWebhookV3);
-app.post('/remove-post-by-id', removePostById);
+// app.post('/remove-post-by-id', removePostById);
 app.post('/publish-by-id', publishById);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
 app.post('/ui-test-green-screen', uiTestGreenScreen);
