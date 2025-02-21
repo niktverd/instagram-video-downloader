@@ -97,7 +97,7 @@ app.delete('/ui-clear-proprod-database', clearPreprod);
 
 const DEFAULT_GRAPH_API_ORIGIN = 'https://api.instagram.com/oauth/authorize';
 const DEFAULT_GRAPH_API_VERSION = '';
-const REDIRECT_URI = 'https://instagram-video-downloader-e0875c65c071.herokuapp.com';
+const REDIRECT_URI = 'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
 
 const {APP_ID, API_SECRET, GRAPH_API_ORIGIN, GRAPH_API_VERSION} = process.env;
 
