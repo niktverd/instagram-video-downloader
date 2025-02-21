@@ -63,7 +63,7 @@ app.set('query parser', function (str: string) {
     });
 });
 
-app.set('view engine', 'ejs');
+// app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
 // app.get('/report', reportInterface);
