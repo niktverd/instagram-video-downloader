@@ -162,6 +162,7 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
         });
+        log(response);
         const responseJson = await response.json();
         log(responseJson);
         res.send(JSON.stringify(responseJson));
