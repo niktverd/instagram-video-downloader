@@ -181,13 +181,13 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
     try {
         const response = await fetch(uri, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: JSON.stringify({
                 client_id: APP_ID,
                 client_secret: API_SECRET,
                 grant_type: 'authorization_code',
                 redirect_uri: REDIRECT_URI_TOKEN,
-                code: code,
+                code,
             }),
         });
         log(response);
