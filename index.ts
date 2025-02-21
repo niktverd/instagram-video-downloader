@@ -95,9 +95,9 @@ app.patch('/ui-patch-account', uiPatchAccount);
 
 app.delete('/ui-clear-proprod-database', clearPreprod);
 
-const DEFAULT_GRAPH_API_ORIGIN = 'https://graph.facebook.com';
+const DEFAULT_GRAPH_API_ORIGIN = 'https://api.instagram.com/oauth/authorize';
 const DEFAULT_GRAPH_API_VERSION = '';
-const REDIRECT_URI = 'http://localhost:3030/callback-instagram';
+const REDIRECT_URI = 'https://instagram-video-downloader-e0875c65c071.herokuapp.com';
 
 const {APP_ID, API_SECRET, GRAPH_API_ORIGIN, GRAPH_API_VERSION} = process.env;
 
