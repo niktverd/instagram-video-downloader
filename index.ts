@@ -32,7 +32,7 @@ import {
     youtubeAuthCallback,
 } from './src/controllers';
 import {clearPreprod, downloadVideoCron, runScenarioCron} from './src/logic';
-import {log} from './src/utils';
+import {log, logError} from './src/utils';
 
 dotenv.config();
 
@@ -95,83 +95,118 @@ app.patch('/ui-patch-account', uiPatchAccount);
 
 app.delete('/ui-clear-proprod-database', clearPreprod);
 
-const DEFAULT_GRAPH_API_ORIGIN = 'https://api.instagram.com/oauth/authorize';
-const DEFAULT_GRAPH_API_VERSION = '';
+// https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1537015991021174&redirect_uri=https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights
+
+// const DEFAULT_GRAPH_API_ORIGIN = 'https://api.instagram.com/oauth/authorize';
+// const DEFAULT_GRAPH_API_VERSION = '';
 const REDIRECT_URI =
     'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
+const REDIRECT_URI_TOKEN =
+    'https://instagram-video-downloader-e0875c65c071.herokuapp.com/token-instagram';
 
-const {APP_ID, API_SECRET, GRAPH_API_ORIGIN, GRAPH_API_VERSION} = process.env;
-
-const GRAPH_API_BASE_URL =
-    (GRAPH_API_ORIGIN ?? DEFAULT_GRAPH_API_ORIGIN) +
-    '/' +
-    (GRAPH_API_VERSION ? GRAPH_API_VERSION + '/' : DEFAULT_GRAPH_API_VERSION);
+const {APP_ID, API_SECRET} = process.env;
 
 const SCOPES = [
     // 'user_profile',
     // 'user_media',
     // 'instagram_basic',
-    'instagram_business_basic',
+    // 'instagram_business_basic',
     // 'instagram_content_publish',
     // 'instagram_business_content_publish',
     // 'instagram_business_manage_comments',
     // 'instagram_business_manage_messages',
+    'instagram_business_basic',
+    'instagram_business_manage_messages',
+    'instagram_business_manage_comments',
+    'instagram_business_content_publish',
+    'instagram_business_manage_insights',
 ];
 const STRINGIFIED_SCOPES = SCOPES.join('%2c');
 
-function buildGraphAPIURL(
-    path: string,
-    searchParams: Record<string, string>,
-    accessToken?: string,
-) {
-    const url = new URL(path, GRAPH_API_BASE_URL);
-    // eslint-disable-next-line no-not-accumulator-reassign/no-not-accumulator-reassign
-    Object.keys(searchParams).forEach((key) => !searchParams[key] && delete searchParams[key]);
-    url.search = new URLSearchParams(searchParams).toString();
-    if (accessToken) url.searchParams.append('access_token', accessToken);
+const getLongLivedToken = async (shortLivedToken: string) => {
+    try {
+        const response = await fetch(
+            `https://graph.instagram.com/access_token
+                ?grant_type=ig_exchange_token
+                &client_secret=${API_SECRET}
+                &access_token=${shortLivedToken}
+            `.replace(/\s+/g, ''),
+            {
+                method: 'GET',
+                headers: {'Content-Type': 'application/json'},
+            },
+        );
 
-    return url.toString();
-}
+        log(response);
+
+        const responseJson = await response.json();
+
+        log('Long-lived Token:', responseJson);
+        return responseJson.access_token;
+    } catch (error) {
+        logError('Error getting long-lived token:', error);
+        console.log(error);
+        return null;
+    }
+};
 
 // Login route using FB OAuth
-app.get('/login-instagram', function (_req: Request, res: Response) {
-    log({REDIRECT_URI});
-    res.redirect(
-        `https://api.instagram.com/oauth/authorize?scope=${STRINGIFIED_SCOPES}&client_id=${APP_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`,
-    );
+app.get('/login', (_req: Request, res: Response) => {
+    const authUrl = `https://api.instagram.com/oauth/authorize
+      ?client_id=${APP_ID}
+      &redirect_uri=${REDIRECT_URI}
+      &scope=${STRINGIFIED_SCOPES}
+      &response_type=code`.replace(/\s+/g, ''); // Убираем пробелы
+
+    res.redirect(authUrl);
 });
 
 // Callback route for handling FB OAuth user token And reroute to '/pages'
 app.get('/callback-instagram', async function (req: Request, res: Response) {
     const code = req.query.code;
+    if (!code) {
+        res.status(400).send('Authorization failed');
+        return;
+    }
+
     log({
         client_id: APP_ID || '',
         redirect_uri: REDIRECT_URI || '',
         client_secret: API_SECRET || '',
         code: (code as string) || '',
     });
-    const uri = buildGraphAPIURL('oauth/access_token', {
-        client_id: APP_ID || '',
-        redirect_uri: REDIRECT_URI || '',
-        client_secret: API_SECRET || '',
-        code: (code as string) || '',
-    });
+    const uri = `https://api.instagram.com/oauth/access_token
+        ?client_id=${APP_ID}
+        &client_secret=${API_SECRET}
+        &grant_type=authorization_code
+        &redirect_uri=${REDIRECT_URI_TOKEN}
+        &code=${code}
+    `.replace(/\s+/g, '');
     log({uri});
+
     try {
         const response = await fetch(uri, {
-            method: 'GET',
+            method: 'POST',
             headers: {'Content-Type': 'application/json'},
         });
         log(response);
         console.log(response);
-        const responseJson = await response.text();
+        const responseJson = await response.json();
         log(responseJson);
-        res.send(JSON.stringify(responseJson));
+        const {access_token: accessToken, user_id: userId} = responseJson;
+        const longLivedToken = await getLongLivedToken(accessToken);
+
+        res.send(JSON.stringify({responseJson, longLivedToken, userId, accessToken}));
     } catch (err) {
         log({err});
         console.log(err);
         res.send(JSON.stringify(err));
     }
+});
+app.get('/token-instagram', async function (req: Request, res: Response) {
+    const query = req.query;
+    const body = req.body;
+    res.send({query, body});
 });
 
 const dynamicPort = Number(process.env.PORT);
