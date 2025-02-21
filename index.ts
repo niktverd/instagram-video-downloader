@@ -167,6 +167,7 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
         res.send(JSON.stringify(responseJson));
     } catch (err) {
         log({err});
+        console.log(err);
         res.send(JSON.stringify(err));
     }
 });
