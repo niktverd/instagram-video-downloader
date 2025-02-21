@@ -159,7 +159,7 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
     log({uri});
     try {
         const response = await fetch(uri, {
-            method: 'POST',
+            method: 'GET',
             headers: {'Content-Type': 'application/json'},
         });
         log(response);
