@@ -186,7 +186,7 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
                 client_id: APP_ID as string,
                 client_secret: API_SECRET as string,
                 grant_type: 'authorization_code',
-                redirect_uri: REDIRECT_URI_TOKEN as string,
+                redirect_uri: REDIRECT_URI as string,
                 code: code as string,
             }).toString(),
         });
