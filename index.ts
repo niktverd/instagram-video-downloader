@@ -171,23 +171,24 @@ app.get('/callback-instagram', async function (req: Request, res: Response) {
 
     log({
         client_id: APP_ID || '',
-        redirect_uri: REDIRECT_URI || '',
+        redirect_uri: REDIRECT_URI_TOKEN || '',
         client_secret: API_SECRET || '',
         code: (code as string) || '',
     });
-    const uri = `https://api.instagram.com/oauth/access_token
-        ?client_id=${APP_ID}
-        &client_secret=${API_SECRET}
-        &grant_type=authorization_code
-        &redirect_uri=${REDIRECT_URI_TOKEN}
-        &code=${code}
-    `.replace(/\s+/g, '');
+    const uri = `https://api.instagram.com/oauth/access_token`.replace(/\s+/g, '');
     log({uri});
 
     try {
         const response = await fetch(uri, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                client_id: APP_ID,
+                client_secret: API_SECRET,
+                grant_type: 'authorization_code',
+                redirect_uri: REDIRECT_URI_TOKEN,
+                code: code,
+            }),
         });
         log(response);
         console.log(response);
