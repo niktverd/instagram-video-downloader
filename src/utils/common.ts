@@ -267,10 +267,10 @@ export const getRandomElementOfArray = <T>(array: T[]) => {
 };
 
 export const prepareCaption = (scenario: ScenarioV3) => {
-    const linkToAnotherAccount = shuffle(scenario.texts.link_to_another_account || [''])[0];
-    const intro = shuffle(scenario.texts.intro || [''])[0];
-    const main = shuffle(scenario.texts.main || [''])[0];
-    const outro = shuffle(scenario.texts.outro || [''])[0];
+    const linkToAnotherAccount = shuffle(scenario.texts?.link_to_another_account || [''])[0];
+    const intro = shuffle(scenario.texts?.intro || [''])[0];
+    const main = shuffle(scenario.texts?.main || [''])[0];
+    const outro = shuffle(scenario.texts?.outro || [''])[0];
 
     return [linkToAnotherAccount, intro, main, outro].filter(Boolean).join('\n');
 };
