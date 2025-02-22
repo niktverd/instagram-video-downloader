@@ -3,6 +3,7 @@ import {Timestamp} from 'firebase/firestore/lite';
 import {
     ScenarioAddBannerAtTheEnd,
     ScenarioBase,
+    ScenarioCoverWithImage,
     ScenarioLongVideoWithInjections,
     ScenarioShortify,
 } from './scenario';
@@ -76,7 +77,12 @@ export type SourceV3 = {
 };
 
 export type ScenarioV3 = ScenarioBase &
-    (ScenarioAddBannerAtTheEnd | ScenarioLongVideoWithInjections | ScenarioShortify);
+    (
+        | ScenarioAddBannerAtTheEnd
+        | ScenarioLongVideoWithInjections
+        | ScenarioShortify
+        | ScenarioCoverWithImage
+    );
 
 export type PreparedVideoV3 = {
     id: string;
