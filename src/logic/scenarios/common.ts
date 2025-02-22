@@ -61,6 +61,7 @@ export const runScenarioAddBannerAtTheEnd = async () => {
         }
     } catch (error) {
         logError(error);
+        console.log(error);
     }
 };
 
