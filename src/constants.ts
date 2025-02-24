@@ -12,6 +12,7 @@ export enum Collection {
     PreparedVideos = 'prepared-videos',
     Accounts = 'accounts',
     AccountMediaContainers = 'account-media-containers',
+    InsightReports = 'insight-reports',
 }
 
 export enum DelayMS {

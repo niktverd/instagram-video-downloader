@@ -6,6 +6,7 @@ import qs from 'qs';
 import {DelayMS} from './src/constants';
 import {
     callbackInstagramLogin,
+    getInsightsInstagramSchedule,
     hubChallangeWebhook,
     instagramLogin,
     messageWebhookV3,
@@ -85,6 +86,7 @@ app.get('/ui-get-owner-by--media-id', uiGetInstagramUserIdByMediaId);
 app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
 app.get('/login-instagram', instagramLogin);
 app.get('/callback-instagram', callbackInstagramLogin);
+app.get('/get-insights-instagram-schedule', getInsightsInstagramSchedule);
 
 app.post('/webhooks', messageWebhookV3);
 // app.post('/remove-post-by-id', removePostById);
