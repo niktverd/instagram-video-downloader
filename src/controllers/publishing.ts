@@ -25,7 +25,7 @@ import {
     stopHerokuApp,
 } from '../logic';
 import {AccountMediaContainerV3, MediaPostModel} from '../types';
-import {delay, getInstagramPropertyName, isTimeToPublishInstagram, log} from '../utils';
+import {delay, getInstagramPropertyName, isTimeToPublishInstagram, log, logError} from '../utils';
 
 export const publishIntagram = async (req: Request, res: Response) => {
     log(req.query);
@@ -139,56 +139,60 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
         const accounts = await getAccounts(true);
 
         for (const account of accounts) {
-            // get random document for every account
-            // get 5 video
-            const preparedContainers = await getRandomMediaContainersForAccount(account.id);
-            log({account, preparedContainers});
-            if (preparedContainers.length < 5) {
-                log('preparation for publishing');
-                // prepare 10 media containers
-                await prepareMediaContainersForAccount(account);
-            }
-            if (!preparedContainers.length) {
-                log('preparedContainers is empty');
-                continue;
-            }
+            try {
+                // get random document for every account
+                // get 5 video
+                const preparedContainers = await getRandomMediaContainersForAccount(account.id);
+                log({account, preparedContainers});
+                if (preparedContainers.length < 5) {
+                    log('preparation for publishing');
+                    // prepare 10 media containers
+                    await prepareMediaContainersForAccount(account);
+                }
+                if (!preparedContainers.length) {
+                    log('preparedContainers is empty');
+                    continue;
+                }
 
-            // publish random container
-            const randomContainer = shuffle(preparedContainers)[0];
-            if (process.env.APP_ENV === 'development2') {
-                log('publishing is blocked in development');
-                continue;
-            }
+                // publish random container
+                const randomContainer = shuffle(preparedContainers)[0];
+                if (process.env.APP_ENV === 'development2') {
+                    log('publishing is blocked in development');
+                    continue;
+                }
 
-            const publishResponse = await publishInstagramPostContainer({
-                containerId: randomContainer.mediaContainerId,
-                accessToken: account.token,
-            });
+                const publishResponse = await publishInstagramPostContainer({
+                    containerId: randomContainer.mediaContainerId,
+                    accessToken: account.token,
+                });
 
-            log({publishResponse});
-            log([Collection.Accounts, account.id, Collection.AccountMediaContainers]);
+                log({publishResponse});
+                log([Collection.Accounts, account.id, Collection.AccountMediaContainers]);
 
-            if (publishResponse.success && !publishResponse.error) {
-                // update container data
-                const docRef = doc(
-                    firestore,
-                    Collection.Accounts,
-                    account.id,
-                    Collection.AccountMediaContainers,
-                    randomContainer.id,
-                );
-                log({docRef});
+                if (publishResponse.success && !publishResponse.error) {
+                    // update container data
+                    const docRef = doc(
+                        firestore,
+                        Collection.Accounts,
+                        account.id,
+                        Collection.AccountMediaContainers,
+                        randomContainer.id,
+                    );
+                    log({docRef});
 
-                await updateDoc(docRef, {
-                    status: 'published',
-                } as AccountMediaContainerV3);
+                    await updateDoc(docRef, {
+                        status: 'published',
+                    } as AccountMediaContainerV3);
+                }
+            } catch (error) {
+                logError('trycatch for one cycle', error);
             }
         }
 
         // update record in db
         res.status(200).send('success');
     } catch (error) {
-        log(error);
+        logError('trycatch for entire publish process', error);
         res.status(200).send('error');
     } finally {
         await delay(1000);
