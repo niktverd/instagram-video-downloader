@@ -26,17 +26,16 @@ const STRINGIFIED_SCOPES = SCOPES.join('%2c');
 
 const getLongLivedToken = async (shortLivedToken: string) => {
     try {
-        const response = await fetch(
-            `https://graph.instagram.com/access_token
+        const url = `https://graph.instagram.com/access_token
                 ?grant_type=ig_exchange_token
                 &client_secret=${API_SECRET}
                 &access_token=${shortLivedToken}
-            `.replace(/\s+/g, ''),
-            {
-                method: 'GET',
-                headers: {'Content-Type': 'application/json'},
-            },
-        );
+            `.replace(/\s+/g, '');
+        log('url', url);
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {'Content-Type': 'application/json'},
+        });
 
         log(response);
 
