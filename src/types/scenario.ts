@@ -9,10 +9,16 @@ export type ScenarioBase = {
 export enum ScenarioName {
     ScenarioAddBannerAtTheEnd1 = 'add-banner-at-the-end-1',
     ScenarioAddBannerAtTheEnd2 = 'add-banner-at-the-end-2',
+    ScenarioAddBannerAtTheEndUnique = 'add-banner-at-the-end-unique',
 }
 
 export type ScenarioAddBannerAtTheEnd = {
     type: 'ScenarioAddBannerAtTheEnd';
+    extraBannerUrl: string;
+};
+
+export type ScenarioAddBannerAtTheEndUnique = {
+    type: 'ScenarioAddBannerAtTheEndUnique';
     extraBannerUrl: string;
 };
 
