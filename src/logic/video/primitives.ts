@@ -79,6 +79,24 @@ export const getVideoDuration = (inputPath: string): Promise<number> => {
     });
 };
 
+export const getVideoResolution = (input: string): Promise<{width: number; height: number}> => {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(input, (err, metadata) => {
+            if (err) {
+                reject(err);
+            } else {
+                const {width, height} =
+                    metadata.streams.find((stream) => stream.codec_type === 'video') || {};
+                if (width && height) {
+                    resolve({width, height});
+                } else {
+                    reject(new Error('Could not determine video resolution'));
+                }
+            }
+        });
+    });
+};
+
 export const logStreamsInfo = async (inputPath: string) => {
     return new Promise((resolve, reject) => {
         ffmpeg.ffprobe(inputPath, (err, dataLocal) => {
@@ -485,5 +503,195 @@ export const overlayImageOnVideo = async ({
             .output(outputPath);
 
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'covered_with_image').run();
+    });
+};
+
+type ApplyVideoColorCorrectionArgs = {
+    input: string;
+    brightness?: number;
+    contrast?: number;
+    saturation?: number;
+    gamma?: number;
+    pathSuffix?: string;
+};
+
+export const applyVideoColorCorrection = async ({
+    input,
+    brightness = 0,
+    contrast = 1,
+    saturation = 1,
+    gamma = 1,
+    pathSuffix = '',
+}: ApplyVideoColorCorrectionArgs): Promise<string> => {
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_corrected' + pathSuffix,
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        const videoFilters: string[] = [];
+
+        // Construct video filters conditionally to avoid empty or invalid filter chains
+        if (brightness !== 0) {
+            // Brightness adjustment (range typically -1 to 1)
+            videoFilters.push(`eq=brightness=${brightness}`);
+        }
+        if (contrast !== 1) {
+            // Contrast adjustment (1 is normal, 0 is grayscale, > 1 increases contrast)
+            videoFilters.push(`eq=contrast=${contrast}`);
+        }
+        if (saturation !== 1) {
+            // Saturation adjustment (1 is normal, 0 is grayscale, > 1 increases color intensity)
+            videoFilters.push(`eq=saturation=${saturation}`);
+        }
+        if (gamma !== 1) {
+            // Gamma correction (1 is normal, < 1 makes image lighter, > 1 makes image darker)
+            videoFilters.push(`eq=gamma=${gamma}`);
+        }
+
+        const ffmpegCommand = ffmpeg(input)
+            // Apply filters only if there are any
+            .videoFilters(videoFilters.length > 0 ? videoFilters : [])
+            .audioCodec('copy') // Preserve original audio
+            .videoCodec('libx264') // Use H.264 video codec for compatibility
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'videoColorCorrection').run();
+    });
+};
+
+export const isolateRedObjects = async ({
+    input,
+    pathSuffix = '',
+    color,
+    similarity = 0.25,
+    blend = 0.3,
+}: {
+    input: string;
+    pathSuffix?: string;
+    color: string;
+    similarity?: number;
+    blend?: number;
+}): Promise<string> => {
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_red_isolated' + pathSuffix,
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        const filter = `colorhold=0x${color}:similarity=${similarity}:blend=${blend}`;
+        const ffmpegCommand = ffmpeg(input)
+            .outputOptions('-vf', filter)
+            .audioCodec('copy') // Preserve original audio
+            .videoCodec('libx264')
+            .output(outputPath); // Use H.264 video codec
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'redObjectIsolation').run();
+    });
+};
+
+export const makeItRed = async ({
+    input,
+    pathSuffix = '',
+}: {
+    input: string;
+    pathSuffix?: string;
+}): Promise<string> => {
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_red_isolated' + pathSuffix,
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        const ffmpegCommand = ffmpeg(input)
+            .videoFilters([
+                // Isolate red channel
+                'split[original][red]',
+                '[red]lutrgb=r=val:g=0:b=0[redchannel]',
+
+                // Convert red channel to grayscale
+                '[redchannel]lutyuv=y=val[isolated]',
+
+                // Overlay the isolated channel
+                '[original][isolated]overlay',
+            ])
+            .audioCodec('copy') // Preserve original audio
+            .videoCodec('libx264') // Use H.264 video codec
+            .outputOptions(['-pix_fmt', 'yuv420p'])
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'redObjectIsolation').run();
+    });
+};
+
+type RotateScaleVideoArgs = {
+    input: string;
+    angle: number;
+    scale?: number;
+    pathSuffix?: string;
+};
+
+export const rotateVideo = async ({
+    input,
+    angle,
+    scale,
+    pathSuffix = '',
+}: RotateScaleVideoArgs): Promise<string> => {
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_rotaded' + pathSuffix,
+        extention: '.mp4',
+    });
+    const {width, height} = await getVideoResolution(input);
+
+    return new Promise((resolve, reject) => {
+        const localScale =
+            scale ??
+            1 +
+                (Math.max(width, height) / Math.min(width, height)) *
+                    ((Math.abs(angle) * Math.PI) / 180);
+
+        const ffmpegCommand = ffmpeg(input)
+            .complexFilter([
+                // Scale the input video to 1280x720 for background
+                '[0:v] scale=iw:ih, setsar=1 [bg]',
+                // Scale and rotate the foreground video
+                `[0:v] scale=iw*${localScale}:ih*${localScale}, rotate=${angle}*PI/180:ow=rotw(iw):oh=roth(ih) [overlay]`,
+                // Overlay the rotated video onto the background at center
+                '[bg][overlay] overlay=(W-w)/2:(H-h)/2 [out]',
+            ])
+            .outputOptions([
+                '-map [out]', // Используем финальный видеопоток
+                '-map 0:a?',
+            ])
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'rotateAndScaleVideo').run();
+    });
+};
+
+type AddTextToVideoArgs = {
+    input: string;
+    text: string;
+};
+
+export const addTextToVideo = async ({input, text = ''}: AddTextToVideoArgs): Promise<string> => {
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_with_text',
+        extention: '.mp4',
+    });
+    const drawTextFilter = text
+        ? `[v0]drawtext=text='${text}':fontcolor=white:fontsize=24:x=(w-text_w)/2:y=h-text_h-10:box=1:boxcolor=black@0.5:boxborderw=0[outv]`
+        : '';
+
+    return new Promise((resolve, reject) => {
+        const ffmpegCommand = ffmpeg(input)
+            .complexFilter([drawTextFilter])
+            .outputOptions([
+                '-map [outv]', // Используем финальный видеопоток
+                '-map 0:a?',
+            ])
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'addTextToVideo').run();
     });
 };
