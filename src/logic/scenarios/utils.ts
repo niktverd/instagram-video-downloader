@@ -42,7 +42,9 @@ export const addRandomEffects = async ({input, countOfEffects = 1, text}: AddRan
         console.log('\n\n', output);
     }
 
-    if (text) {
+    const disableText = true;
+
+    if (text && !disableText) {
         output = await addTextToVideo({input: output, text});
     }
 
