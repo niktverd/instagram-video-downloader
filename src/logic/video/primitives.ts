@@ -1,15 +1,7 @@
 import {writeFileSync} from 'fs';
 import {dirname, join} from 'path';
 
-import dotenv from 'dotenv';
 import ffmpeg, {FfmpegCommand} from 'fluent-ffmpeg';
-
-dotenv.config();
-
-if (process.env.APP_ENV !== 'development') {
-    ffmpeg.setFfmpegPath(join(process.cwd(), 'bin/ffmpeg'));
-    ffmpeg.setFfprobePath(join(process.cwd(), 'bin/ffprobe'));
-}
 
 import {log, logError} from '../../utils/logging';
 
