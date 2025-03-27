@@ -2,6 +2,7 @@ import {Timestamp} from 'firebase/firestore/lite';
 
 import {
     ScenarioAddBannerAtTheEnd,
+    ScenarioAddBannerAtTheEndUnique,
     ScenarioBase,
     ScenarioCoverWithImage,
     ScenarioLongVideoWithInjections,
@@ -82,6 +83,7 @@ export type ScenarioV3 = ScenarioBase &
         | ScenarioLongVideoWithInjections
         | ScenarioShortify
         | ScenarioCoverWithImage
+        | ScenarioAddBannerAtTheEndUnique
     );
 
 export type PreparedVideoV3 = {
@@ -102,6 +104,7 @@ export type AccountV3 = {
     token: string;
     disabled: boolean;
     availableScenarios: string[];
+    accountBackgrounMusic?: string;
 };
 
 export type AccountMediaContainerV3 = {
