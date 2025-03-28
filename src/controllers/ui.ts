@@ -1,3 +1,6 @@
+import {rmSync} from 'fs';
+import {join} from 'path';
+
 import {Request, Response} from 'express';
 import {
     collection,
@@ -16,7 +19,9 @@ import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '../con
 import {
     addAccount,
     addScenario,
+    addSilentAudioStream,
     clearPreprod,
+    createVideoOfFrame,
     downloadVideoCron,
     getAccounts,
     getInstagramInsights,
@@ -24,15 +29,17 @@ import {
     getInstagramUserNameById,
     getScenarios,
     getVideoOwnerByVideoId,
+    normalizeVideo,
     patchAccount,
     patchScenario,
     runInjectionScenraios,
     runScenarioAddBannerAtTheEnd,
     splitVideoInTheMiddle,
     testPIP,
+    uploadFileToServer,
 } from '../logic';
 import {MediaPostModel} from '../types';
-import {log, logError} from '../utils';
+import {getWorkingDirectoryForVideo, log, logError, saveFileToDisk} from '../utils';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
     const {
@@ -287,4 +294,35 @@ export const uiClearPreprod = async (req: Request, res: Response) => {
 export const uiRunInjectionScenraios = async (req: Request, res: Response) => {
     res.status(200).send(req.query);
     await runInjectionScenraios();
+};
+
+export const uiConvertImageToVideo = async (req: Request, res: Response) => {
+    const {imageUrl, duration, pathToSave = ''} = req.body;
+    if (!imageUrl || !duration) {
+        res.status(400).send({message: 'if (!imageUrl || !duration) {'});
+        return;
+    }
+    if (!imageUrl.includes('.jpeg') && !imageUrl.includes('.jpg') && !imageUrl.includes('.png')) {
+        res.status(400).send({message: 'not image'});
+        return;
+    }
+
+    const randomName = Math.random().toString();
+    const basePath = getWorkingDirectoryForVideo(randomName);
+
+    //download videos
+    const temp1 = join(basePath, `frame.img`);
+
+    const imagePath = await saveFileToDisk(imageUrl, temp1);
+
+    const videoFile = await createVideoOfFrame({input: imagePath, duration});
+    const withAudio = await addSilentAudioStream({input: videoFile});
+    const normalized = await normalizeVideo(withAudio);
+    console.log({normalized});
+    const downloadURL = await uploadFileToServer(normalized, `${pathToSave}${randomName}.mp4`);
+
+    // delete tempfiles
+    rmSync(basePath, {recursive: true});
+
+    res.status(200).send({path: downloadURL});
 };

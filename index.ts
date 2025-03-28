@@ -17,6 +17,7 @@ import {
     // reportInterface,
     uiAddAccount,
     uiAddScenario,
+    uiConvertImageToVideo,
     uiCreateVideoByScenario,
     uiDownloadVideoFromSourceV3,
     uiGetAccounts,
@@ -95,6 +96,7 @@ app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
 app.post('/ui-test-green-screen', uiTestGreenScreen);
 app.post('/ui-add-scenario', uiAddScenario);
 app.post('/ui-add-account', uiAddAccount);
+app.post('/ui-convert-image-to-video', uiConvertImageToVideo);
 
 app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);
