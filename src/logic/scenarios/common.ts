@@ -1,5 +1,5 @@
 import {DelayMS} from '../../constants';
-import { getRandomElementOfArray } from '../../utils';
+import {getRandomElementOfArray} from '../../utils';
 import {log, logError} from '../../utils/logging';
 import {getAccounts} from '../firebase/accounts';
 import {getOneRandomVideo} from '../firebase/firebase';
