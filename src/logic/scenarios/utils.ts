@@ -1,6 +1,5 @@
 import {shuffle} from 'lodash';
 
-import {log} from '../../utils';
 import {addTextToVideo, applyVideoColorCorrection, rotateVideo} from '../video';
 import {randomBetween} from '../video/utils';
 
