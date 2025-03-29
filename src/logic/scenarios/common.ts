@@ -8,6 +8,7 @@ import {addBannerInTheEnd} from './AddBannerInTheEnd';
 import {addBannerInTheEndUnique} from './AddBannerInTheEndUnique';
 import {coverWithImage} from './CoverWithImage';
 import {shortify} from './Shortify';
+import {getRandomElementOfArray} from './utils';
 
 export const runScenarioAddBannerAtTheEnd = async () => {
     try {
@@ -106,14 +107,26 @@ export const runScenarioAddBannerAtTheEndUnique = async () => {
                     log({accountsByScenario, scenario, randomVideoId: id});
 
                     if (!firebaseUrl) {
-                        console.log('no firebase url');
+                        log('no firebase url');
+                        return;
+                    }
+
+                    const bannerVideoUrlLocal = getRandomElementOfArray<string>(
+                        scenario.extraBannerUrls,
+                    );
+                    if (!bannerVideoUrlLocal) {
+                        log(
+                            'no bannerVideoUrlLocal',
+                            bannerVideoUrlLocal,
+                            scenario.extraBannerUrls,
+                        );
                         return;
                     }
 
                     await addBannerInTheEndUnique({
                         sourceId: id,
                         mainVideoUrl: firebaseUrl,
-                        bannerVideoUrl: scenario.extraBannerUrl,
+                        bannerVideoUrl: bannerVideoUrlLocal,
                         directoryName: id,
                         scenario,
                         originalHashtags,

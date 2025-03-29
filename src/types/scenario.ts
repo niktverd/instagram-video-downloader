@@ -19,7 +19,8 @@ export type ScenarioAddBannerAtTheEnd = {
 
 export type ScenarioAddBannerAtTheEndUnique = {
     type: 'ScenarioAddBannerAtTheEndUnique';
-    extraBannerUrl: string;
+    extraBannerUrl?: string;
+    extraBannerUrls: string[];
 };
 
 export type ScenarioShortify = {

@@ -50,3 +50,9 @@ export const addRandomEffects = async ({input, countOfEffects = 1, text}: AddRan
 
     return output;
 };
+
+export const getRandomElementOfArray = <T>(array: T[]): T | undefined => {
+    const randomIndex = Math.ceil(Array.length * Math.random());
+
+    return array[randomIndex];
+};

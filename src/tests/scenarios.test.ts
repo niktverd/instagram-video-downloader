@@ -48,8 +48,9 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
             onlyOnce: false,
             enabled: true,
             texts: {},
-            extraBannerUrl:
+            extraBannerUrls: [
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
+            ],
         },
     });
 };
