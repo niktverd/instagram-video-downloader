@@ -1,4 +1,5 @@
 import {DelayMS} from '../../constants';
+import { getRandomElementOfArray } from '../../utils';
 import {log, logError} from '../../utils/logging';
 import {getAccounts} from '../firebase/accounts';
 import {getOneRandomVideo} from '../firebase/firebase';
@@ -8,7 +9,6 @@ import {addBannerInTheEnd} from './AddBannerInTheEnd';
 import {addBannerInTheEndUnique} from './AddBannerInTheEndUnique';
 import {coverWithImage} from './CoverWithImage';
 import {shortify} from './Shortify';
-import {getRandomElementOfArray} from './utils';
 
 export const runScenarioAddBannerAtTheEnd = async () => {
     try {
@@ -91,6 +91,7 @@ export const runScenarioAddBannerAtTheEndUnique = async () => {
                     if (scenario.type !== 'ScenarioAddBannerAtTheEndUnique') {
                         continue;
                     }
+                    log({scenario});
 
                     const accountsByScenario = [account];
 
@@ -110,10 +111,10 @@ export const runScenarioAddBannerAtTheEndUnique = async () => {
                         log('no firebase url');
                         return;
                     }
-
                     const bannerVideoUrlLocal = getRandomElementOfArray<string>(
                         scenario.extraBannerUrls,
                     );
+
                     if (!bannerVideoUrlLocal) {
                         log(
                             'no bannerVideoUrlLocal',

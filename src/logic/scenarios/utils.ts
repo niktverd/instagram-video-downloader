@@ -1,8 +1,8 @@
 import {shuffle} from 'lodash';
 
+import {log} from '../../utils';
 import {addTextToVideo, applyVideoColorCorrection, rotateVideo} from '../video';
 import {randomBetween} from '../video/utils';
-import { log } from '../../utils';
 
 const updateBrightness = async (filePath: string) => {
     return applyVideoColorCorrection({input: filePath, brightness: randomBetween(-0.3, 0.3)});
@@ -50,12 +50,4 @@ export const addRandomEffects = async ({input, countOfEffects = 1, text}: AddRan
     }
 
     return output;
-};
-
-export const getRandomElementOfArray = <T>(array: T[]): T | undefined => {
-    const randomIndex = Math.ceil(Array.length * Math.random());
-
-    log({array, randomIndex});
-
-    return array[randomIndex];
 };
