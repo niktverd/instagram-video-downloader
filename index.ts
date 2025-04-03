@@ -27,9 +27,11 @@ import {
     uiGetInstagramUserIdByMediaId,
     uiGetMediaPosts,
     uiGetScenarios,
+    uiGetUserContent,
     uiPatchAccount,
     uiPatchScenario,
     uiRunInjectionScenraios,
+    uiSavePostForFutherAnalysis,
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
     youtubeAuth,
@@ -85,6 +87,7 @@ app.get('/ui-get-media', uiGetInstagramMedia);
 app.get('/ui-get-user-by-id', uiGetInstagramUserById);
 app.get('/ui-get-owner-by--media-id', uiGetInstagramUserIdByMediaId);
 app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
+app.get('/ui-get-user-content', uiGetUserContent);
 app.get('/login-instagram', instagramLogin);
 app.get('/callback-instagram', callbackInstagramLogin);
 app.get('/get-insights-instagram-schedule', getInsightsInstagramSchedule);
@@ -97,6 +100,7 @@ app.post('/ui-test-green-screen', uiTestGreenScreen);
 app.post('/ui-add-scenario', uiAddScenario);
 app.post('/ui-add-account', uiAddAccount);
 app.post('/ui-convert-image-to-video', uiConvertImageToVideo);
+app.post('/ui-save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
 
 app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);
