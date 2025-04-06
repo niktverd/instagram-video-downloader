@@ -156,7 +156,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
 
                 // publish random container
                 const randomContainer = shuffle(preparedContainers)[0];
-                if (process.env.APP_ENV === 'development2') {
+                if (process.env.APP_ENV === 'dev') {
                     log('publishing is blocked in development');
                     continue;
                 }
