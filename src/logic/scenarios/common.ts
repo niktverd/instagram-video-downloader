@@ -194,7 +194,7 @@ export const runScenarioShortify = async () => {
             await shortify({
                 sourceId: id,
                 mainVideoUrl: firebaseUrl,
-                bannerVideoUrl: scenario.finalBanner,
+                bannerVideoUrls: scenario.extraBannerUrls,
                 directoryName: id,
                 scenario,
                 originalHashtags,

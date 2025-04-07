@@ -7,6 +7,7 @@ import {
     ScenarioCoverWithImage,
     ScenarioLongVideoWithInjections,
     ScenarioShortify,
+    ScenarioShortifyUnique,
 } from './scenario';
 
 export type SourceInstagramReel = {
@@ -84,6 +85,7 @@ export type ScenarioV3 = ScenarioBase &
         | ScenarioShortify
         | ScenarioCoverWithImage
         | ScenarioAddBannerAtTheEndUnique
+        | ScenarioShortifyUnique
     );
 
 export type PreparedVideoV3 = {

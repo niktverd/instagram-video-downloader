@@ -18,7 +18,9 @@ import {
     splitVideo,
 } from '../video/primitives';
 
-type AddBannerInTheEndArgs = {
+import {addRandomEffects} from './utils';
+
+type ShortifyUniqueArgs = {
     sourceId: string;
     directoryName: string;
     mainVideoUrl: string;
@@ -28,7 +30,7 @@ type AddBannerInTheEndArgs = {
     accounts: string[];
 };
 
-export const shortify = async ({
+export const shortifyUnique = async ({
     sourceId,
     directoryName,
     mainVideoUrl,
@@ -36,24 +38,19 @@ export const shortify = async ({
     originalHashtags,
     accounts = [],
     scenario,
-}: AddBannerInTheEndArgs) => {
+}: ShortifyUniqueArgs) => {
     if (!accounts.length || !scenario) {
         throw new Error('Accounts cannot be empty');
     }
 
-    if (scenario.type !== 'ScenarioShortifyType') {
-        log(
-            'scenario.type error',
-            scenario.type,
-            'expect to be',
-            'ScenarioLongVideoWithInjections',
-        );
+    if (scenario.type !== 'ScenarioShortifyUniqueType') {
+        log('scenario.type error', scenario.type, 'expect to be', 'ScenarioShortifyUniqueType');
         return;
     }
 
     const {name: scenarioName, id: scenarioId, minDuration, maxDuration} = scenario;
 
-    // Use a random banner URL from the array
+    // Use the first banner URL from the array
     const bannerVideoUrl = getRandomElementOfArray(bannerVideoUrls);
     log({mainVideoUrl, bannerVideoUrl});
     const basePath = getWorkingDirectoryForVideo(directoryName);
@@ -90,9 +87,16 @@ export const shortify = async ({
         padding: 0,
     });
 
+    // uniqalize
+    const finalFilePath = await addRandomEffects({
+        input: outputFilePath,
+        countOfEffects: 3,
+        text: accounts[0],
+    });
+
     // Upload data to server
     const downloadURL = await uploadFileToServer(
-        outputFilePath,
+        finalFilePath,
         `${directoryName}-${scenarioName}.mp4`,
     );
 
@@ -112,7 +116,7 @@ export const shortify = async ({
             bannerVideoUrl,
             sourceId,
             pauseTime,
-            duration: await getVideoDuration(outputFilePath),
+            duration: await getVideoDuration(finalFilePath),
         },
     });
 
