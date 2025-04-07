@@ -76,5 +76,8 @@ export const addBannerInTheEndUnique = async ({
     });
 
     // delete tempfiles
-    rmSync(basePath, {recursive: true});
+    const deleteTempFiles = true;
+    if (deleteTempFiles) {
+        rmSync(basePath, {recursive: true});
+    }
 };

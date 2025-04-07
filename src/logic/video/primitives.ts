@@ -695,3 +695,40 @@ export const addTextToVideo = async ({input, text = ''}: AddTextToVideoArgs): Pr
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'addTextToVideo').run();
     });
 };
+
+type ChangeVideoSpeedArgs = {
+    input: string;
+    speed: number; // Value > 1 speeds up, < 1 slows down (e.g., 0.5 = half speed, 2 = double speed)
+    outputOverride?: string;
+};
+
+export const changeVideoSpeed = async ({
+    input,
+    speed,
+    outputOverride,
+}: ChangeVideoSpeedArgs): Promise<string> => {
+    if (speed <= 0) {
+        throw new Error('Speed must be greater than 0');
+    }
+
+    const suffix = (speed > 1 ? '_speedup' : '_slowdown') + `-${speed}`;
+    const outputPath = prepareOutputFileName(input, {
+        outputFileName: outputOverride,
+        suffix,
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        const ffmpegCommand = ffmpeg(input)
+            .videoFilters(`setpts=${1 / speed}*PTS`) // Adjust video speed
+            .audioFilters(`atempo=${speed}`) // Adjust audio speed (atempo works best between 0.5 and 2.0)
+            .outputOptions([
+                '-c:v libx264', // Use H.264 codec for video
+                '-c:a aac', // Use AAC codec for audio
+                '-pix_fmt yuv420p', // Standard pixel format for compatibility
+            ])
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'changeVideoSpeed').run();
+    });
+};

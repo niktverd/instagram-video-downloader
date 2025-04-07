@@ -1,6 +1,6 @@
 import {shuffle} from 'lodash';
 
-import {addTextToVideo, applyVideoColorCorrection, rotateVideo} from '../video';
+import {addTextToVideo, applyVideoColorCorrection, changeVideoSpeed, rotateVideo} from '../video';
 import {randomBetween} from '../video/utils';
 
 const updateBrightness = async (filePath: string) => {
@@ -17,6 +17,9 @@ const updateGamma = async (filePath: string) => {
 };
 const updateRotation = async (filePath: string) => {
     return rotateVideo({input: filePath, angle: randomBetween(-10, 10)});
+};
+const updateVideoSpeed = async (filePath: string) => {
+    return changeVideoSpeed({input: filePath, speed: randomBetween(0.87, 1.15)});
 };
 
 const arrayOfEffects = [
@@ -47,6 +50,8 @@ export const addRandomEffects = async ({input, countOfEffects = 1, text}: AddRan
     if (text && !disableText) {
         output = await addTextToVideo({input: output, text});
     }
+
+    output = await updateVideoSpeed(output);
 
     return output;
 };

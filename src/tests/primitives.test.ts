@@ -1,7 +1,13 @@
 import {existsSync, mkdirSync} from 'fs';
 import path from 'path';
 
-import {addTextToVideo, applyVideoColorCorrection, isolateRedObjects, rotateVideo} from '../logic';
+import {
+    addTextToVideo,
+    applyVideoColorCorrection,
+    changeVideoSpeed,
+    isolateRedObjects,
+    rotateVideo,
+} from '../logic';
 import {log, saveFileToDisk} from '../utils';
 
 log('Test primitives');
@@ -177,6 +183,15 @@ const testAddTextToVideo = async (filePath: string) => {
     log('testAddTextToVideo completed');
 };
 
+const testChangeVideoSpeed = async (filePath: string) => {
+    log('testChangeVideoSpeed started');
+
+    await changeVideoSpeed({input: filePath, speed: 0.5});
+    await changeVideoSpeed({input: filePath, speed: 1.5});
+
+    log('testChangeVideoSpeed completed');
+};
+
 const runTests = async () => {
     const files = await prepareVideo();
 
@@ -202,6 +217,11 @@ const runTests = async () => {
     const runAddTextToVideo = false;
     if (runAddTextToVideo) {
         await testAddTextToVideo(files[1]);
+    }
+
+    const runChangeVideoSpeed = false;
+    if (runChangeVideoSpeed) {
+        await testChangeVideoSpeed(files[1]);
     }
 
     log('runTest finished');
