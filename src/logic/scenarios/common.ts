@@ -212,6 +212,77 @@ export const runScenarioShortify = async () => {
     }
 };
 
+export const runScenarioShortifyUnique = async () => {
+    try {
+        const accounts = await getAccounts(true);
+        const scenarios = await getScenarios(true);
+
+        let oneRandomVideo; // Video shared across accounts in this run
+
+        for (const account of accounts) {
+            const accountScenarios = account.availableScenarios || [];
+            for (const accountScenario of accountScenarios) {
+                try {
+                    const scenario = scenarios.find(({name}) => name === accountScenario);
+                    if (!scenario) {
+                        log(['!scenario', scenario, scenarios]);
+                        return;
+                    }
+
+                    // Check for the unique shortify scenario type
+                    if (scenario.type !== 'ScenarioShortifyUniqueType') {
+                        continue;
+                    }
+                    log({scenario});
+
+                    // Process for the current account only
+                    const accountsByScenario = [account];
+
+                    // Get a single random video for this run if not already fetched
+                    if (!oneRandomVideo) {
+                        oneRandomVideo = await getOneRandomVideo(scenario.name);
+                    }
+                    if (!oneRandomVideo) {
+                        log('!oneRandomVideo', oneRandomVideo);
+                        return;
+                    }
+
+                    const {firebaseUrl, id, sources} = oneRandomVideo;
+                    const originalHashtags = sources.instagramReel?.originalHashtags || [];
+                    log({accountsByScenario, scenario, randomVideoId: id});
+
+                    if (!firebaseUrl) {
+                        log('no firebase url');
+                        return;
+                    }
+
+                    // Call the existing shortify function with parameters for a unique run
+                    await shortify({
+                        sourceId: id,
+                        mainVideoUrl: firebaseUrl,
+                        bannerVideoUrls: scenario.extraBannerUrls, // Pass the list of banners
+                        directoryName: id,
+                        scenario,
+                        originalHashtags,
+                        accounts: accountsByScenario.map(({id: accountName}) => accountName), // Pass only the current account
+                    });
+
+                    if (scenario.onlyOnce) {
+                        log('scenario.onlyOnce');
+                        // Register usage, noting the potential issue mentioned in the reference function
+                        await regScenarioUsage(oneRandomVideo, scenario.name);
+                    }
+                } catch (error: unknown) {
+                    logError(String(error));
+                }
+            }
+        }
+    } catch (error) {
+        logError(error);
+        console.log(error);
+    }
+};
+
 export const runScenarioCoverWithImage = async () => {
     log('Started');
     try {
@@ -281,6 +352,7 @@ export const runScenarioCron = (ms: number) => {
         await runScenarioAddBannerAtTheEnd();
         await runScenarioAddBannerAtTheEndUnique();
         await runScenarioShortify();
+        await runScenarioShortifyUnique();
         await runScenarioCoverWithImage();
         runScenarioCron(DelayMS.Min1);
     }, ms);
