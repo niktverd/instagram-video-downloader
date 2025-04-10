@@ -39,14 +39,25 @@ export const shortifyUnique = async ({
     accounts = [],
     scenario,
 }: ShortifyUniqueArgs) => {
+    log('shortifyUnique', {
+        sourceId,
+        directoryName,
+        mainVideoUrl,
+        bannerVideoUrls,
+        originalHashtags,
+        accounts,
+        scenario,
+    });
     if (!accounts.length || !scenario) {
-        throw new Error('Accounts cannot be empty');
+        throw new Error('Accounts and scenario cannot be empty');
     }
 
     if (scenario.type !== 'ScenarioShortifyUniqueType') {
         log('scenario.type error', scenario.type, 'expect to be', 'ScenarioShortifyUniqueType');
         return;
     }
+
+    log('scenario accepted', scenario);
 
     const {name: scenarioName, id: scenarioId, minDuration, maxDuration} = scenario;
 

@@ -9,6 +9,7 @@ import {addBannerInTheEnd} from './AddBannerInTheEnd';
 import {addBannerInTheEndUnique} from './AddBannerInTheEndUnique';
 import {coverWithImage} from './CoverWithImage';
 import {shortify} from './Shortify';
+import {shortifyUnique} from './ShortifyUnique';
 
 export const runScenarioAddBannerAtTheEnd = async () => {
     try {
@@ -187,7 +188,7 @@ export const runScenarioShortify = async () => {
             log({accountsByScenario, scenario, randomVideoId: id});
 
             if (!firebaseUrl) {
-                console.log('no firebase url');
+                log('no firebase url');
                 return;
             }
 
@@ -231,13 +232,14 @@ export const runScenarioShortifyUnique = async () => {
                         log(['!scenario', scenario, scenarios]);
                         return;
                     }
+                    log('scenario found', scenario);
 
                     // Check for the unique shortify scenario type
                     if (scenario.type !== 'ScenarioShortifyUniqueType') {
                         log('!scenario.type', scenario, scenarios);
                         continue;
                     }
-                    log({scenario});
+                    log('scenario type accepted', {scenario});
 
                     // Process for the current account only
                     const accountsByScenario = [account];
@@ -250,6 +252,7 @@ export const runScenarioShortifyUnique = async () => {
                         log('!oneRandomVideo', oneRandomVideo);
                         return;
                     }
+                    log('oneRandomVideo found', oneRandomVideo);
 
                     const {firebaseUrl, id, sources} = oneRandomVideo;
                     const originalHashtags = sources.instagramReel?.originalHashtags || [];
@@ -259,16 +262,16 @@ export const runScenarioShortifyUnique = async () => {
                         log('no firebase url');
                         return;
                     }
-
+                    log('firebaseUrl found', firebaseUrl);
                     // Call the existing shortify function with parameters for a unique run
-                    await shortify({
+                    await shortifyUnique({
                         sourceId: id,
                         mainVideoUrl: firebaseUrl,
                         bannerVideoUrls: scenario.extraBannerUrls, // Pass the list of banners
                         directoryName: id,
                         scenario,
                         originalHashtags,
-                        accounts: accountsByScenario.map(({id: accountName}) => accountName), // Pass only the current account
+                        accounts: [account.id], // Pass only the current account
                     });
 
                     if (scenario.onlyOnce) {
