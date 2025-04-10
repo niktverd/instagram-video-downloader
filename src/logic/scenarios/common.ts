@@ -213,6 +213,7 @@ export const runScenarioShortify = async () => {
 };
 
 export const runScenarioShortifyUnique = async () => {
+    log('Started');
     try {
         const accounts = await getAccounts(true);
         const scenarios = await getScenarios(true);
@@ -272,6 +273,7 @@ export const runScenarioShortifyUnique = async () => {
                         // Register usage, noting the potential issue mentioned in the reference function
                         await regScenarioUsage(oneRandomVideo, scenario.name);
                     }
+                    log('Finished');
                 } catch (error: unknown) {
                     logError(String(error));
                 }
