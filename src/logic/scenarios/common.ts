@@ -221,8 +221,10 @@ export const runScenarioShortifyUnique = async () => {
         let oneRandomVideo; // Video shared across accounts in this run
 
         for (const account of accounts) {
+            log('account', account.id);
             const accountScenarios = account.availableScenarios || [];
             for (const accountScenario of accountScenarios) {
+                log('accountScenario', accountScenario);
                 try {
                     const scenario = scenarios.find(({name}) => name === accountScenario);
                     if (!scenario) {
@@ -232,6 +234,7 @@ export const runScenarioShortifyUnique = async () => {
 
                     // Check for the unique shortify scenario type
                     if (scenario.type !== 'ScenarioShortifyUniqueType') {
+                        log('!scenario.type', scenario, scenarios);
                         continue;
                     }
                     log({scenario});
