@@ -186,6 +186,7 @@ export const publishIntagramV3 = async (req: Request, res: Response) => {
                 }
             } catch (error) {
                 logError('trycatch for one cycle', error);
+                console.log('error', error);
             }
         }
 
