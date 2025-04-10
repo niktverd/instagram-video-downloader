@@ -2,10 +2,12 @@ import {Timestamp} from 'firebase/firestore/lite';
 
 import {
     ScenarioAddBannerAtTheEnd,
+    ScenarioAddBannerAtTheEndUnique,
     ScenarioBase,
     ScenarioCoverWithImage,
     ScenarioLongVideoWithInjections,
     ScenarioShortify,
+    ScenarioShortifyUnique,
 } from './scenario';
 
 export type SourceInstagramReel = {
@@ -82,6 +84,8 @@ export type ScenarioV3 = ScenarioBase &
         | ScenarioLongVideoWithInjections
         | ScenarioShortify
         | ScenarioCoverWithImage
+        | ScenarioAddBannerAtTheEndUnique
+        | ScenarioShortifyUnique
     );
 
 export type PreparedVideoV3 = {
@@ -102,6 +106,7 @@ export type AccountV3 = {
     token: string;
     disabled: boolean;
     availableScenarios: string[];
+    accountBackgrounMusic?: string;
 };
 
 export type AccountMediaContainerV3 = {

@@ -95,7 +95,12 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
         const {access_token: accessToken, user_id: userId} = responseJson;
         const longLivedToken = await getLongLivedToken(accessToken);
 
-        res.send(JSON.stringify({responseJson, longLivedToken, userId, accessToken}));
+        res.send(`
+            longLivedToken: ${longLivedToken}
+            userId: ${userId}
+            accessToken: ${accessToken}
+            responseJson: ${JSON.stringify(responseJson)}
+        `);
     } catch (err) {
         log({err});
         console.log(err);

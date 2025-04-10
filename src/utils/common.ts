@@ -168,13 +168,15 @@ export const preparePostTextFromScenario = ({
     system = '',
     account,
 }: PreparePostTextFromScenarioArgs) => {
-    const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
-    const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
-    const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
+    // const autoHashtags = shuffle(baseHashtags.auto).slice(0, 3);
+    // const partsHashtags = shuffle(baseHashtags.parts).slice(0, 3);
+    // const gasolineHashtags = shuffle(baseHashtags.gasoline).slice(0, 3);
+    const casionHashtags = shuffle(baseHashtags.casino).slice(0, 9);
     const finalText = [
         title,
         '\n\n',
-        [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
+        // [...autoHashtags, ...partsHashtags, ...gasolineHashtags].join(' '),
+        casionHashtags.join(' '),
         '\n\n',
         `@${account}`,
         '\n\n',

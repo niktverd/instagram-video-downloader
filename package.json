@@ -8,6 +8,7 @@
     "watch:port": "tsc-watch --onSuccess \"node dist/server --dev --port 8080\"",
     "dev": "npm run clean && npm run watch",
     "start": "NODE_ENV=production node dist/server",
+    "test": "NODE_ENV=production npm run build && node dist/server/src/tests/index.js",
     "build:compile": "tsc",
     "build": "npm run clean && npm run build:compile",
     "clean": "rm -rf dist/server",

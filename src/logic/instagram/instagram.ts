@@ -19,18 +19,19 @@ import {
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
 
+import casinoAudioNames from '../../config/casino.audioname.json';
 import {firestore, storage} from '../../config/firebase';
-import locations from '../../config/instagram.places.json';
+import {locations} from '../../config/places';
 import {Collection, DelayS} from '../../constants';
 import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, PreparedVideoV3} from '../../types';
 import {
+    getRandomElementOfArray,
     preparePostText,
     preparePostTextFromScenario,
     processAndConcatVideos,
     saveFileToDisk,
 } from '../../utils/common';
 import {log, logError} from '../../utils/logging';
-
 dotenv.config();
 
 // const IG_ID = process.env.IG_ID;
@@ -59,14 +60,17 @@ export async function createInstagramPostContainer({
             throw new Error('Access token not found');
         }
 
-        const locationId = locations[Math.floor(Math.random() * locations.length)].external_id;
+        const randomLocation = getRandomElementOfArray(locations.usa);
+        log({randomLocation});
+
+        const locationId = randomLocation.external_id;
         // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         const postData: any = {
             caption,
             access_token: accessToken,
             location_id: locationId,
             share_to_feed: true,
-            audio_name: 'Автозапчасти по выгодным ценам',
+            audio_name: getRandomElementOfArray<string>(casinoAudioNames),
         };
         // ?media_type=REELS
         // &video_url=<REEL_URL>
