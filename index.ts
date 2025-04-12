@@ -12,6 +12,7 @@ import {
     messageWebhookV3,
     publishById,
     publishIntagramV3,
+    publishVideoFromUrl,
     // removePostById,
     removePublishedFromFirebase,
     // reportInterface,
@@ -95,6 +96,7 @@ app.get('/get-insights-instagram-schedule', getInsightsInstagramSchedule);
 app.post('/webhooks', messageWebhookV3);
 // app.post('/remove-post-by-id', removePostById);
 app.post('/publish-by-id', publishById);
+app.post('/publish-video-from-url', publishVideoFromUrl);
 app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
 app.post('/ui-test-green-screen', uiTestGreenScreen);
 app.post('/ui-add-scenario', uiAddScenario);

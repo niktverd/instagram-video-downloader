@@ -16,6 +16,8 @@ import {shuffle} from 'lodash';
 import {firestore} from '../config/firebase';
 import {Collection, accessTokensArray} from '../constants';
 import {
+    canInstagramPostBePublished,
+    createInstagramPostContainer,
     findUnpublishedContainer,
     getAccounts,
     getRandomMediaContainersForAccount,
@@ -219,6 +221,101 @@ export const publishById = async (req: Request, res: Response) => {
         log(error);
     }
     res.status(200).send('published-by-id');
+};
+
+export const publishVideoFromUrl = async (req: Request, res: Response) => {
+    try {
+        log({body: req.body});
+        const {videoUrl, caption, accessToken} = req.body;
+
+        // Check if videoUrl and accessToken are provided
+        if (!videoUrl || !accessToken) {
+            res.status(400).json({
+                success: false,
+                error: 'Video URL and access token are required',
+            });
+
+            return;
+        }
+
+        // Create a container for the Instagram post
+        const createContainerResponse = await createInstagramPostContainer({
+            videoUrl,
+            caption: caption || '', // Use provided caption or empty string
+            accessToken,
+        });
+
+        if (!createContainerResponse.success || !createContainerResponse.mediaContainerId) {
+            res.status(500).json({
+                success: false,
+                error: createContainerResponse.error || 'Failed to create media container',
+            });
+
+            return;
+        }
+
+        const mediaContainerId = createContainerResponse.mediaContainerId;
+
+        // Check if the container is ready to be published with retries
+        let isReady = false;
+        const maxRetries = 5;
+        const delayBetweenRetries = 10000; // 10 seconds in milliseconds
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            log(`Checking if container is ready (attempt ${attempt}/${maxRetries})`);
+
+            isReady = await canInstagramPostBePublished({
+                mediaContainerId,
+                accessToken,
+            });
+
+            if (isReady) {
+                log(`Container is ready to publish on attempt ${attempt}`);
+                break;
+            }
+
+            if (attempt < maxRetries) {
+                log(
+                    `Container not ready, waiting ${
+                        delayBetweenRetries / 1000
+                    } seconds before retry...`,
+                );
+                await delay(delayBetweenRetries);
+            }
+        }
+
+        if (!isReady) {
+            res.status(202).json({
+                success: false,
+                status: 'pending',
+                mediaContainerId,
+                message: `Media container created but not ready to publish after ${maxRetries} attempts`,
+            });
+
+            return;
+        }
+
+        // Publish the container
+        const publishResponse = await publishInstagramPostContainer({
+            containerId: mediaContainerId,
+            accessToken,
+        });
+
+        res.status(publishResponse.success ? 200 : 500).json({
+            ...publishResponse,
+            mediaContainerId,
+        });
+
+        return;
+    } catch (error: unknown) {
+        logError(error);
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'An unknown error occurred',
+        });
+
+        return;
+    }
 };
 
 export const removePublishedFromFirebase = async (req: Request, res: Response) => {
