@@ -21,6 +21,7 @@ A service to download and process Instagram videos.
 Set up your environment variables in the Google Cloud Console. Go to Cloud Run > Your Service > Edit & Deploy New Revision > Variables.
 
 Required environment variables (see .env.example for a complete list):
+
 - INSTAGRAM_APP_ID
 - INSTAGRAM_APP_SECRET
 - INSTAGRAM_ACCESS_TOKEN
@@ -30,11 +31,13 @@ Required environment variables (see .env.example for a complete list):
 ### Manual Deployment
 
 1. Build the Docker image:
+
    ```
    docker build -t gcr.io/[PROJECT_ID]/instagram-video-downloader .
    ```
 
 2. Push to Google Container Registry:
+
    ```
    docker push gcr.io/[PROJECT_ID]/instagram-video-downloader
    ```
