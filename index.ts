@@ -112,10 +112,10 @@ app.patch('/ui-patch-account', uiPatchAccount);
 app.delete('/ui-clear-proprod-database', clearPreprod);
 
 const dynamicPort = Number(process.env.PORT);
-const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
+const appPort = isNaN(dynamicPort) ? 8080 : dynamicPort;
 
 app.listen(appPort, () => {
-    log(`Example app listening on port ${appPort}`);
+    log(`Server listening on port ${appPort}`);
 });
 
 downloadVideoCron(DelayMS.Sec30);
