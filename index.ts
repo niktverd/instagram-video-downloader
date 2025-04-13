@@ -10,6 +10,7 @@ import {
     hubChallangeWebhook,
     instagramLogin,
     messageWebhookV3,
+    pingPong,
     publishById,
     publishIntagramV3,
     publishVideoFromUrl,
@@ -73,6 +74,7 @@ app.set('query parser', function (str: string) {
 // app.set('view engine', 'ejs');
 
 app.get('/webhooks', hubChallangeWebhook);
+app.get('/ping', pingPong);
 // app.get('/report', reportInterface);
 app.get('/publish', publishIntagramV3);
 app.get('/remove-published', removePublishedFromFirebase);
