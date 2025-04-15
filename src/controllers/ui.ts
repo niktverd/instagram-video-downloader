@@ -337,34 +337,42 @@ export const uiConvertImageToVideo = async (req: Request, res: Response) => {
 
 export const uiGetUserContent = async (req: Request, res: Response) => {
     try {
-        const {accountName} = req.query;
+        const {accountName, accessToken} = req.query;
 
-        if (!accountName || typeof accountName !== 'string') {
-            res.status(400).send({
-                error: 'Bad request: accountName query parameter is required',
-            });
-            return;
-        }
+        let token: string;
+        let account = 'direct_token';
 
-        // Get accounts to verify if the specified account exists
-        const accounts = await getAccounts();
-        const targetAccount = accounts.find(({id}) => id === accountName);
+        if (accessToken && typeof accessToken === 'string') {
+            token = accessToken;
+        } else {
+            if (!accountName || typeof accountName !== 'string') {
+                res.status(400).send({
+                    error: 'Bad request: accountName query parameter is required when accessToken is not provided',
+                });
+                return;
+            }
 
-        if (!targetAccount) {
-            res.status(404).send({
-                error: `Account not found: ${accountName}`,
-            });
-            return;
-        }
+            // Get accounts to verify if the specified account exists
+            const accounts = await getAccounts();
+            const targetAccount = accounts.find(({id}) => id === accountName);
 
-        // Get access token for the account
-        const {token} = targetAccount;
+            if (!targetAccount) {
+                res.status(404).send({
+                    error: `Account not found: ${accountName}`,
+                });
+                return;
+            }
 
-        if (!token) {
-            res.status(500).send({
-                error: `Access token not available for ${accountName}`,
-            });
-            return;
+            // Get access token for the account
+            token = targetAccount.token;
+            account = accountName as string;
+
+            if (!token) {
+                res.status(500).send({
+                    error: `Access token not available for ${accountName}`,
+                });
+                return;
+            }
         }
 
         // Get the Instagram user ID for the authenticated user
@@ -518,7 +526,7 @@ export const uiGetUserContent = async (req: Request, res: Response) => {
 
         // Format the response to include user info and media data with insights
         const responseData = {
-            account: accountName,
+            account,
             ig_user_id: igUserId,
             user_info: {
                 username: userData.username || '',
