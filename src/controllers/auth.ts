@@ -60,6 +60,8 @@ export const instagramLogin = (req: Request, res: Response) => {
       &response_type=code
       &state=${encodeURIComponent(redirectionUri)}`.replace(/\s+/g, '');
 
+    log({authUrl});
+
     res.redirect(authUrl);
 };
 
@@ -112,6 +114,7 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
             userId: ${userId}
             accessToken: ${accessToken}
             responseJson: ${JSON.stringify(responseJson)}
+            state: ${state}
         `);
     } catch (err) {
         log({err});
