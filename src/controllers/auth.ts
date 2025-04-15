@@ -79,6 +79,7 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
         redirect_uri: REDIRECT_URI || '',
         client_secret: API_SECRET || '',
         code: (code as string) || '',
+        state: (state as string) || '',
     });
     const uri = `https://api.instagram.com/oauth/access_token`.replace(/\s+/g, '');
     log({uri});
