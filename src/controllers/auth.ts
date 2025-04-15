@@ -50,18 +50,23 @@ const getLongLivedToken = async (shortLivedToken: string) => {
     }
 };
 
-export const instagramLogin = (_req: Request, res: Response) => {
+export const instagramLogin = (req: Request, res: Response) => {
+    const redirectionUri = (req.query.redirectionUri as string) || '';
+
     const authUrl = `https://api.instagram.com/oauth/authorize
       ?client_id=${APP_ID}
       &redirect_uri=${REDIRECT_URI}
       &scope=${STRINGIFIED_SCOPES}
-      &response_type=code`.replace(/\s+/g, ''); // Убираем пробелы
+      &response_type=code
+      &state=${encodeURIComponent(redirectionUri)}`.replace(/\s+/g, '');
 
     res.redirect(authUrl);
 };
 
 export const callbackInstagramLogin = async (req: Request, res: Response) => {
     const code = req.query.code;
+    const state = (req.query.state as string) || '';
+
     if (!code) {
         res.status(400).send('Authorization failed');
         return;
@@ -95,6 +100,13 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
         const {access_token: accessToken, user_id: userId} = responseJson;
         const longLivedToken = await getLongLivedToken(accessToken);
 
+        if (state) {
+            // If redirectionUri was provided, redirect to it with token
+            res.redirect(`${decodeURIComponent(state)}?token=${longLivedToken}&userId=${userId}`);
+            return;
+        }
+
+        // Default response if no redirection URI
         res.send(`
             longLivedToken: ${longLivedToken}
             userId: ${userId}
