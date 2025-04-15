@@ -248,18 +248,26 @@ export const uiGetInstagramUserIdByMediaId = async (req: Request, res: Response)
 };
 
 export const uiGetInstagramMedia = async (req: Request, res: Response) => {
-    const {id: accountName} = req.query;
+    const {id: accountName, accessToken} = req.query;
 
     try {
-        if (!accountName) {
-            throw new Error('accoutn name is not provided');
+        let token: string;
+
+        if (accessToken && typeof accessToken === 'string') {
+            token = accessToken;
+        } else {
+            if (!accountName) {
+                throw new Error('account name is not provided');
+            }
+            const accounts = await getAccounts();
+            const account = accounts.find(({id}) => id === accountName);
+            if (!account) {
+                throw new Error(`account with name ${accountName} was not found`);
+            }
+            token = account.token;
         }
-        const accounts = await getAccounts();
-        const account = accounts.find(({id}) => id === accountName);
-        if (!account) {
-            throw new Error(`accoutn with name ${accountName} was not found`);
-        }
-        const media = await getInstagramMedia(account.token);
+
+        const media = await getInstagramMedia(token);
 
         log(media);
         res.status(200).send(media);
