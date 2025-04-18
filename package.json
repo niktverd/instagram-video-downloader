@@ -7,7 +7,7 @@
     "watch": "tsc-watch --onSuccess \"node dist/server --dev\"",
     "watch:port": "tsc-watch --onSuccess \"node dist/server --dev --port 8080\"",
     "dev": "npm run clean && npm run watch",
-    "start": "NODE_ENV=production node dist/server",
+    "start": "node dist/server",
     "test": "NODE_ENV=production npm run build && node dist/server/src/tests/index.js",
     "build:compile": "tsc",
     "build": "npm run clean && npm run build:compile",
@@ -18,7 +18,8 @@
     "lint:js:fix": "eslint '**/*.{js,ts}' --max-warnings=0 --fix",
     "lint:prettier": "prettier --check '**/*.{js,ts,json,yaml,yml,md}'",
     "lint:prettier:fix": "prettier --write '**/*.{js,ts,json,yaml,yml,md}'",
-    "typecheck": "tsc -p . --noEmit"
+    "typecheck": "tsc -p . --noEmit",
+    "docker:test": "docker build -t instagram-video-downloader-local . && docker run -p 8080:8080 --env-file .env instagram-video-downloader-local"
   },
   "author": "",
   "license": "ISC",

@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+dist
+.git
+.gitignore
+.env
+.env.*
+*.mp4
+videos-working-directory/
+.tokens*
+README.md
+.todos 

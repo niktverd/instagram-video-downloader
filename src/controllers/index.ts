@@ -5,3 +5,4 @@ export * from './youtube';
 export * from './auth';
 export * from './statistics';
 export * from './ping';
+export * from './pubsub';
