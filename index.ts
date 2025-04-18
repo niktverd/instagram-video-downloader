@@ -14,6 +14,7 @@ import {
     publishById,
     publishIntagramV3,
     publishVideoFromUrl,
+    pubsubHandler,
     // removePostById,
     removePublishedFromFirebase,
     // reportInterface,
@@ -105,6 +106,9 @@ app.post('/ui-add-scenario', uiAddScenario);
 app.post('/ui-add-account', uiAddAccount);
 app.post('/ui-convert-image-to-video', uiConvertImageToVideo);
 app.post('/ui-save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
+
+// Pub/Sub push handler endpoint
+app.post('/pubsub-handler', pubsubHandler);
 
 app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);

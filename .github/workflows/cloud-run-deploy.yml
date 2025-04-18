@@ -11,6 +11,9 @@ env:
   REGION: europe-central2
   ACTIONS_RUNNER_DEBUG: true
   ACTIONS_STEP_DEBUG: true
+  # Pub/Sub configuration
+  TOPIC_NAME: instagram-video-events
+  PUSH_ENDPOINT: /pubsub-handler
 
 jobs:
   build-and-test:
@@ -88,5 +91,55 @@ jobs:
             --timeout 300 \
             --concurrency 80 \
             --update-secrets INSTAGRAM_APP_NAME=INSTAGRAM_APP_NAME:latest,INSTAGRAM_APP_ID=INSTAGRAM_APP_ID:latest,INSTAGRAM_APP_SECRET=INSTAGRAM_APP_SECRET:latest,INSTAGRAM_ACCESS_TOKEN=INSTAGRAM_ACCESS_TOKEN:latest,INSTAGRAM_ACCESS_TOKEN_ARRAY=INSTAGRAM_ACCESS_TOKEN_ARRAY:latest,ALLOWED_SENDER_ID=ALLOWED_SENDER_ID:latest,IG_ID=IG_ID:latest,FIREBASE_CONFIG=FIREBASE_CONFIG:latest,YT_CLOUD_ID=YT_CLOUD_ID:latest,YT_SECRET_ID=YT_SECRET_ID:latest,YT_REDIRECT_URL=YT_REDIRECT_URL:latest,YT_REFRESH_TOKEN=YT_REFRESH_TOKEN:latest \
-            --set-env-vars ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=true,ENABLE_RUN_SCENARIO_VIDEO=true \
+            --set-env-vars ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=true,ENABLE_RUN_SCENARIO_VIDEO=true,PUBSUB_TOPIC_NAME=$TOPIC_NAME,GCP_PROJECT_ID=$PROJECT_ID,ENABLE_PUBSUB=true \
             --allow-unauthenticated
+
+      # Pub/Sub Configuration Steps
+      # Get Cloud Run service URL
+      - name: Get service URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.url)')
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+      
+      # Create or update Pub/Sub topic
+      - name: Create/Update Pub/Sub topic
+        run: |
+          # Check if topic exists, create if not
+          if ! gcloud pubsub topics describe $TOPIC_NAME >/dev/null 2>&1; then
+            echo "Creating topic $TOPIC_NAME"
+            gcloud pubsub topics create $TOPIC_NAME
+          else
+            echo "Topic $TOPIC_NAME already exists"
+          fi
+      
+      # Create or update Pub/Sub subscription with push endpoint
+      - name: Create/Update Pub/Sub subscription
+        run: |
+          SUBSCRIPTION_NAME="${TOPIC_NAME}-push-subscription"
+          PUSH_ENDPOINT="${SERVICE_URL}${PUSH_ENDPOINT}"
+          
+          # Check if subscription exists
+          if gcloud pubsub subscriptions describe $SUBSCRIPTION_NAME >/dev/null 2>&1; then
+            echo "Updating subscription $SUBSCRIPTION_NAME"
+            gcloud pubsub subscriptions delete $SUBSCRIPTION_NAME
+          fi
+          
+          echo "Creating subscription $SUBSCRIPTION_NAME with push endpoint $PUSH_ENDPOINT"
+          gcloud pubsub subscriptions create $SUBSCRIPTION_NAME \
+            --topic $TOPIC_NAME \
+            --push-endpoint=$PUSH_ENDPOINT \
+            --ack-deadline=60 \
+            --expiration-period=never \
+            --message-retention-duration=7d
+      
+      # Set up IAM permissions for Pub/Sub to push to Cloud Run
+      - name: Set up IAM permissions for Pub/Sub
+        run: |
+          # Get the Pub/Sub service account
+          PUBSUB_SERVICE_ACCOUNT="service-$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')@gcp-sa-pubsub.iam.gserviceaccount.com"
+          
+          # Grant the Pub/Sub service account permission to invoke the Cloud Run service
+          gcloud run services add-iam-policy-binding $DEPLOY_SERVICE_NAME \
+            --region=$REGION \
+            --member="serviceAccount:$PUBSUB_SERVICE_ACCOUNT" \
+            --role="roles/run.invoker"
