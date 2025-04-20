@@ -256,9 +256,15 @@ export const publishVideoFromUrl = async (req: Request, res: Response) => {
 
         const mediaContainerId = createContainerResponse.mediaContainerId;
 
+        res.status(200).json({
+            success: true,
+            message:
+                'Media container created successfully. It can take up to 10 minutes to be ready. Please, be patient. Check your Instagram account to see the post later.',
+        });
+
         // Check if the container is ready to be published with retries
         let isReady = false;
-        const maxRetries = 5;
+        const maxRetries = 10;
         const delayBetweenRetries = 10000; // 10 seconds in milliseconds
 
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -285,13 +291,6 @@ export const publishVideoFromUrl = async (req: Request, res: Response) => {
         }
 
         if (!isReady) {
-            res.status(202).json({
-                success: false,
-                status: 'pending',
-                mediaContainerId,
-                message: `Media container created but not ready to publish after ${maxRetries} attempts`,
-            });
-
             return;
         }
 
@@ -301,10 +300,7 @@ export const publishVideoFromUrl = async (req: Request, res: Response) => {
             accessToken,
         });
 
-        res.status(publishResponse.success ? 200 : 500).json({
-            ...publishResponse,
-            mediaContainerId,
-        });
+        log({publishResponse});
 
         return;
     } catch (error: unknown) {
