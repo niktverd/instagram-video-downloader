@@ -18,47 +18,30 @@ export const publishMessageToPubSub = async (
     attributes: Record<string, string> = {},
 ): Promise<boolean> => {
     try {
-        // Convert message to base64
-        const data = Buffer.from(JSON.stringify(message)).toString('base64');
+        log('[pubsub-client] Publishing message to topic:', topicName);
+        log('[pubsub-client] Project ID:', projectId);
 
-        // Endpoint for publishing to Pub/Sub
-        const pubsubEndpoint = `https://pubsub.googleapis.com/v1/projects/${projectId}/topics/${topicName}:publish`;
+        // Import Google Cloud Pub/Sub client
+        const {PubSub} = await import('@google-cloud/pubsub');
 
-        // Get the auth token if available
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-        };
+        // Create a client, it will automatically detect credentials
+        // from GOOGLE_APPLICATION_CREDENTIALS environment variable
+        const pubsubClient = new PubSub({projectId});
+        log('[pubsub-client] Created PubSub client');
 
-        // When running in GCP, auth is handled automatically
-        // For local testing, you'd need to provide auth token manually
+        // Get a reference to the topic
+        const topic = pubsubClient.topic(topicName);
 
-        // Prepare the publish request
-        const pubsubMessage = {
-            messages: [
-                {
-                    data,
-                    attributes,
-                },
-            ],
-        };
+        // Convert message to Buffer
+        const dataBuffer = Buffer.from(JSON.stringify(message));
 
-        // Send the publish request
-        const response = await fetch(pubsubEndpoint, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify(pubsubMessage),
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Failed to publish message: ${response.status} ${errorText}`);
-        }
-
-        const result = await response.json();
-        log('Published message to Pub/Sub:', result);
+        // Publish the message
+        log('[pubsub-client] Publishing message...');
+        const messageId = await topic.publish(dataBuffer, attributes);
+        log('[pubsub-client] Published message with ID:', messageId);
         return true;
     } catch (error) {
-        logError('Error publishing message to Pub/Sub:', error);
+        logError('[pubsub-client] Error publishing message to Pub/Sub:', error);
         return false;
     }
 };

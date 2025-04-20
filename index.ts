@@ -15,6 +15,7 @@ import {
     publishIntagramV3,
     publishVideoFromUrl,
     pubsubHandler,
+    pushMessageToPubSub,
     // removePostById,
     removePublishedFromFirebase,
     // reportInterface,
@@ -95,6 +96,7 @@ app.get('/ui-get-user-content', uiGetUserContent);
 app.get('/login-instagram', instagramLogin);
 app.get('/callback-instagram', callbackInstagramLogin);
 app.get('/get-insights-instagram-schedule', getInsightsInstagramSchedule);
+app.get('/push-pubsub-test', pushMessageToPubSub);
 
 app.post('/webhooks', messageWebhookV3);
 // app.post('/remove-post-by-id', removePostById);
@@ -122,5 +124,7 @@ app.listen(appPort, () => {
     log(`Server listening on port ${appPort}`);
 });
 
-downloadVideoCron(DelayMS.Sec30);
-runScenarioCron(DelayMS.Sec30);
+if (process.env.CRON_ENABLED === 'true') {
+    downloadVideoCron(DelayMS.Sec30);
+    runScenarioCron(DelayMS.Sec30);
+}
