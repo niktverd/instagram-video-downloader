@@ -131,15 +131,4 @@ jobs:
             --ack-deadline=60 \
             --expiration-period=never \
             --message-retention-duration=7d
-      
-      # Set up IAM permissions for Pub/Sub to push to Cloud Run
-      - name: Set up IAM permissions for Pub/Sub
-        run: |
-          # Get the Pub/Sub service account
-          PUBSUB_SERVICE_ACCOUNT="service-$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')@gcp-sa-pubsub.iam.gserviceaccount.com"
-          
-          # Grant the Pub/Sub service account permission to invoke the Cloud Run service
-          gcloud run services add-iam-policy-binding $DEPLOY_SERVICE_NAME \
-            --region=$REGION \
-            --member="serviceAccount:$PUBSUB_SERVICE_ACCOUNT" \
-            --role="roles/run.invoker"
+
