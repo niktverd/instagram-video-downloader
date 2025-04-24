@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import qs from 'qs';
 
+import cloudRunRoutes from './src/cloud-run/routes';
 import {DelayMS} from './src/constants';
 import {
     callbackInstagramLogin,
@@ -116,6 +117,8 @@ app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);
 
 app.delete('/ui-clear-proprod-database', clearPreprod);
+
+app.use('/cloud-run', cloudRunRoutes);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 8080 : dynamicPort;

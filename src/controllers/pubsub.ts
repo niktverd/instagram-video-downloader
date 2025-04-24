@@ -3,14 +3,6 @@ import {Request, Response} from 'express';
 import {PubSubAction, PubSubTopic} from '../utils/constants';
 import {log, logError} from '../utils/logging';
 
-/**
- * Helper function to create a test request URL
- * @returns URL string to use for testing Instagram video events
- */
-export const createTestPubSubRequest = (): string => {
-    return `/api/pubsub/push`;
-};
-
 // eslint-disable-next-line valid-jsdoc
 /**
  * Handler for Pub/Sub push messages
