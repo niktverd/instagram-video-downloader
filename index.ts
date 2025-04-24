@@ -124,7 +124,5 @@ app.listen(appPort, () => {
     log(`Server listening on port ${appPort}`);
 });
 
-if (process.env.CRON_ENABLED === 'true') {
-    downloadVideoCron(DelayMS.Sec30);
-    runScenarioCron(DelayMS.Sec30);
-}
+downloadVideoCron(DelayMS.Sec30);
+runScenarioCron(DelayMS.Sec30);

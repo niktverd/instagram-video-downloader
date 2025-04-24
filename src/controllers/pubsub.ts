@@ -1,13 +1,7 @@
 import {Request, Response} from 'express';
 
+import {PubSubAction, PubSubTopic} from '../utils/constants';
 import {log, logError} from '../utils/logging';
-
-/**
- * Enum for PubSub topics
- */
-export enum PubSubTopics {
-    INSTAGRAM_VIDEO_EVENTS = 'instagram-video-events',
-}
 
 /**
  * Helper function to create a test request URL
@@ -55,16 +49,16 @@ export const pubsubHandler = async (req: Request, res: Response) => {
         log('Message attributes:', messageAttributes);
 
         // Example: Check for message type attribute to determine processing logic
-        const messageType = messageAttributes.type || 'default';
+        const messageType = messageAttributes.type || PubSubAction.DEFAULT;
 
         switch (messageType) {
-            case 'instagram_video_requested':
+            case PubSubAction.INSTAGRAM_VIDEO_REQUESTED:
                 // Handle Instagram video download request
                 log('Processing Instagram video request');
                 // Call your video processing logic here
                 break;
 
-            case 'youtube_upload':
+            case PubSubAction.YOUTUBE_UPLOAD:
                 // Handle YouTube upload request
                 log('Processing YouTube upload request');
                 // Call your YouTube upload logic here
@@ -97,7 +91,7 @@ export const pubsubHandler = async (req: Request, res: Response) => {
 export const pushMessageToPubSub = async (_req: Request, res: Response) => {
     try {
         // Always use the Instagram video events topic
-        const topic = PubSubTopics.INSTAGRAM_VIDEO_EVENTS;
+        const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;
         log('[pubsub] Using topic:', topic);
 
         // Import the PubSub client utility
@@ -131,19 +125,14 @@ export const pushMessageToPubSub = async (_req: Request, res: Response) => {
 
         // Create attributes
         const attributes = {
-            type: 'test',
+            type: PubSubAction.TEST,
             timestamp: new Date().toISOString(),
             source: 'test-endpoint',
         };
         log('[pubsub] Message attributes:', attributes);
 
         // Publish the message using service account authentication
-        const success = await publishMessageToPubSub(
-            pubsubProjectId,
-            topic,
-            testMessage,
-            attributes,
-        );
+        const success = await publishMessageToPubSub(topic, testMessage, attributes);
 
         log('[pubsub] Publish result:', success);
 
