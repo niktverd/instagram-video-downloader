@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
 import {accessSync, constants, existsSync, mkdirSync} from 'fs';
 import {join} from 'path';
 
 import ffmpeg from 'fluent-ffmpeg';
 
+import {log, logError} from '../../../../utils';
 import {templates} from '../templates';
 
 // Common ffmpeg event handlers
@@ -15,17 +15,17 @@ const setupFfmpegEvents = (
 ) => {
     command
         .on('start', (commandLine: string) => {
-            console.log('Encoding with command:', commandLine);
+            log('Encoding with command:', commandLine);
         })
         .on('error', (err: Error) => {
-            console.log('err:', err);
+            log('err:', err);
             reject(err);
         })
         .on('progress', (progress) => {
-            console.log(`Processing: ${progress}% done`);
+            log(`Processing: ${progress}% done`);
         })
         .on('stderr', (stderrLine) => {
-            console.log(2, 'FFmpeg stderr:', stderrLine);
+            log(2, 'FFmpeg stderr:', stderrLine);
         })
         .on('end', () => {
             resolve(outputPath);
@@ -37,21 +37,21 @@ const ensureDirectoryExists = (dirPath: string): boolean => {
     try {
         // First check if directory exists
         if (!existsSync(dirPath)) {
-            console.log(`Directory ${dirPath} does not exist, creating it...`);
+            log(`Directory ${dirPath} does not exist, creating it...`);
             mkdirSync(dirPath, {recursive: true});
         }
 
         try {
             // Check if directory is writable
             accessSync(dirPath, constants.W_OK);
-            console.log(`Directory ${dirPath} is writable`);
+            log(`Directory ${dirPath} is writable`);
             return true;
         } catch (err) {
-            console.error(`Directory ${dirPath} is not writable:`, err);
+            logError(`Directory ${dirPath} is not writable:`, err);
             return false;
         }
     } catch (err) {
-        console.error(`Error creating directory ${dirPath}:`, err);
+        logError(`Error creating directory ${dirPath}:`, err);
         return false;
     }
 };
@@ -73,8 +73,8 @@ export const createVideo = ({
 }): Promise<string> => {
     return new Promise((resolve, reject) => {
         // Debug input params
-        console.log('Create video params:', {folder, template, width, height, paidUser});
-        console.log('Image files count:', imageFiles.length);
+        log('Create video params:', {folder, template, width, height, paidUser});
+        log('Image files count:', imageFiles.length);
 
         // Ensure the output directory exists and is writable
         if (!ensureDirectoryExists(folder)) {
@@ -87,7 +87,7 @@ export const createVideo = ({
         const soundPath = join(process.cwd(), 'assets/audio', templateConfig.sound);
         const outputPath = join(folder, 'output.mp4');
 
-        console.log(`Creating video at: ${outputPath}`);
+        log(`Creating video at: ${outputPath}`);
 
         try {
             // Create our ffmpeg command
@@ -166,7 +166,7 @@ export const createVideo = ({
             // Run the command
             command.run();
         } catch (error) {
-            console.error('Error creating video:', error);
+            logError('Error creating video:', error);
             reject(error);
         }
     });

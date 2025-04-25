@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable no-nested-ternary */
-/* eslint-disable no-console */
 import {mkdirSync, readFileSync} from 'fs';
 import {resolve} from 'path';
 
@@ -12,6 +11,7 @@ import {IncomingForm} from 'formidable';
 import sharp from 'sharp';
 
 import {firestore, storage} from '../../../config/firebase';
+import {log} from '../../../utils';
 
 import {templates} from './templates';
 import {createVideo} from './utils/create-video';
@@ -86,7 +86,7 @@ async function cropMain({
     const height = parseParamInt(params.baseHeight, '100');
 
     const treatingImage = sharp(imgPath);
-    console.log('Getting meta...');
+    log('Getting meta...');
     const metadata = await treatingImage.metadata();
     const {width: widthPixel = 0, height: heightPixel = 0} = metadata;
     if ((!params.x || !params.y || !params.width || params.height) && ratio) {
@@ -106,12 +106,12 @@ async function cropMain({
         cropInfo.top = (cropInfo.top / heightPixel) * 100;
     }
 
-    console.log('Meta', {widthPixel, heightPixel, ...cropInfo});
+    log('Meta', {widthPixel, heightPixel, ...cropInfo});
 
-    console.log('Rotation...');
+    log('Rotation...');
     treatingImage.rotate(rotation);
 
-    console.log('Loading image...');
+    log('Loading image...');
     await sharp(await treatingImage.toBuffer()).metadata();
 
     cropInfo.left = percentToPixels(cropInfo.left, widthPixel);
@@ -119,10 +119,10 @@ async function cropMain({
     cropInfo.top = percentToPixels(cropInfo.top, heightPixel);
     cropInfo.height = percentToPixels(cropInfo.height, heightPixel);
 
-    console.log('Cropping...', cropInfo, {width, height});
+    log('Cropping...', cropInfo, {width, height});
     const treatingImageCropped = treatingImage.extract(cropInfo);
     const finalFilePath = resolve(folderPath, new Date().toISOString() + '-' + fileName + '.png');
-    console.log('Saving image...');
+    log('Saving image...');
     const textSvg = getSvg(fileName, '36px');
     const indexSvg = getSvg(index, '36px');
     const timeSvg = getSvg(time, '36px');
@@ -252,6 +252,8 @@ export const crop = async (req: Request, res: Response) => {
         await uploadBytes(fileRef, fileBuffer);
         const downloadURL = await getDownloadURL(fileRef);
 
+        log('Uploading to firestore...');
+        log({downloadURL});
         const compiledFileRef = collection(firestore, 'videos', tokenId, 'items');
         await addDoc(compiledFileRef, {
             url: downloadURL,

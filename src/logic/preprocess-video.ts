@@ -169,7 +169,7 @@ export const preprocessVideo = (ms: number) => {
 };
 
 export const downloadVideoCron = (ms: number, calledFromApi = false) => {
-    if (!process.env.ENABLE_DOWNLOAD_VIDEO && !calledFromApi) {
+    if (process.env.ENABLE_DOWNLOAD_VIDEO !== 'true' && !calledFromApi) {
         log('downloadVideoCron', 'blocked');
         return;
     }

@@ -351,7 +351,7 @@ export const runScenarioCoverWithImage = async () => {
 };
 
 export const runScenarioCron = (ms: number) => {
-    if (!process.env.ENABLE_RUN_SCENARIO_VIDEO) {
+    if (process.env.ENABLE_RUN_SCENARIO_VIDEO !== 'true') {
         log('runScenarioCron', 'blocked');
         return;
     }
