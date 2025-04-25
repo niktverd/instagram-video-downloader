@@ -86,7 +86,7 @@ jobs:
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
-            --memory 1Gi \
+            --memory 1.5Gi \
             --cpu 1 \
             --timeout 300 \
             --concurrency 80 \
