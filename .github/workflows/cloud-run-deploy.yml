@@ -91,7 +91,7 @@ jobs:
             --timeout 300 \
             --concurrency 80 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest \
-            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
 
       # Pub/Sub Configuration Steps
