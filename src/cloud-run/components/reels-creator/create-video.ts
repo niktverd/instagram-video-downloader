@@ -362,9 +362,6 @@ export const crop = async (req: Request, res: Response) => {
                 log('User is a paid user, skipping ending image');
             }
 
-            log('Sending response to client: check your profile in a few minutes');
-            res.status(200).json({message: 'check your profile in a few minutes'});
-
             log('Starting video creation');
             const width = parseParamInt((req.query.width as string) || '');
             const height = parseParamInt((req.query.height as string) || '');
@@ -380,6 +377,7 @@ export const crop = async (req: Request, res: Response) => {
             });
 
             try {
+                log('Creating video');
                 const outputFilePath = await createVideo({
                     imageFiles: fileSaved,
                     folder: folderPath,
@@ -424,6 +422,9 @@ export const crop = async (req: Request, res: Response) => {
                 log('Document added to Firestore with ID:', docRef.id);
 
                 log('Process completed successfully');
+
+                log('Sending response to client: check your profile in a few minutes');
+                res.status(200).json({message: 'check your profile in a few minutes'});
             } catch (error) {
                 logError('Error during video creation or upload:', error);
             }

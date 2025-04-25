@@ -211,6 +211,7 @@ export const createVideo = ({
             // Setup event handlers
             log('STARTING FFMPEG ENCODING PROCESS');
             setupFfmpegEvents(command, resolve, reject, outputPath);
+            log('FFMPEG EVENTS SETUP COMPLETE');
 
             // Run the command
             command.run();
