@@ -11,9 +11,9 @@ type PrepareOoutputFileNameOptions = {
     extention?: string;
 };
 
-const ENABLE_STDERR = Boolean(process.env.ENABLE_STDERR);
-const ENABLE_PROGRESS = Boolean(process.env.ENABLE_PROGRESS);
-const ENABLE_START = Boolean(process.env.ENABLE_START);
+const ENABLE_STDERR = process.env.ENABLE_STDERR === 'true';
+const ENABLE_PROGRESS = process.env.ENABLE_PROGRESS === 'true';
+const ENABLE_START = process.env.ENABLE_START === 'true';
 
 const ffmpegCommon = (
     ffmpegCommand: FfmpegCommand,

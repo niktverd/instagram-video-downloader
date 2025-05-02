@@ -45,7 +45,7 @@ const getLongLivedToken = async (shortLivedToken: string) => {
         return responseJson.access_token;
     } catch (error) {
         logError('Error getting long-lived token:', error);
-        console.log(error);
+        console.error(error);
         return null;
     }
 };

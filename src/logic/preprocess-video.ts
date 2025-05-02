@@ -18,7 +18,9 @@ import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '../constants
 import {MediaPostModel, SourceV3, Sources} from '../types';
 import {getInstagramPropertyName, preparePostText, uploadFileFromUrl} from '../utils/common';
 import {log} from '../utils/logging';
+import {publishBulkRunScenarioMessages} from '../utils/pubsub-client';
 
+import {getAccounts} from './firebase/accounts';
 import {createInstagramPostContainer, getMergedVideo} from './instagram/instagram';
 import {getVideoDuration} from './video/primitives';
 import {uploadYoutubeVideo} from './youtube';
@@ -167,7 +169,7 @@ export const preprocessVideo = (ms: number) => {
 };
 
 export const downloadVideoCron = (ms: number, calledFromApi = false) => {
-    if (!process.env.ENABLE_DOWNLOAD_VIDEO && !calledFromApi) {
+    if (process.env.ENABLE_DOWNLOAD_VIDEO !== 'true' && !calledFromApi) {
         log('downloadVideoCron', 'blocked');
         return;
     }
@@ -213,6 +215,36 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                         firebaseUrl: downloadURL,
                         duration,
                     });
+
+                    // Get scenarios and accounts to send bulk messages
+                    const scenarioIds =
+                        media.scenarios && media.scenarios.length > 0 ? media.scenarios : [];
+
+                    // Get all enabled accounts
+                    const accounts = await getAccounts(true);
+
+                    // Filter accounts by available scenarios
+                    const accountIds = accounts
+                        .filter((account) =>
+                            account.availableScenarios?.some((scenarioName) =>
+                                scenarioIds.includes(scenarioName),
+                            ),
+                        )
+                        .map((account) => account.id);
+
+                    // Publish bulk messages for each account and scenario pair
+                    if (scenarioIds.length > 0 && accountIds.length > 0) {
+                        const {success, count} = await publishBulkRunScenarioMessages(
+                            firebaseId,
+                            scenarioIds,
+                            accountIds,
+                        );
+                        log(
+                            `Published ${count} messages for ${scenarioIds.length} scenarios and ${accountIds.length} accounts. Success: ${success}`,
+                        );
+                    } else {
+                        log('No scenarios or accounts found for bulk publishing');
+                    }
 
                     break;
                 }

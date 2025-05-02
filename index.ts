@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import qs from 'qs';
 
+import cloudRunRoutes from './src/cloud-run/routes';
 import {DelayMS} from './src/constants';
 import {
     callbackInstagramLogin,
@@ -14,6 +15,8 @@ import {
     publishById,
     publishIntagramV3,
     publishVideoFromUrl,
+    pubsubHandler,
+    pushMessageToPubSub,
     // removePostById,
     removePublishedFromFirebase,
     // reportInterface,
@@ -94,6 +97,7 @@ app.get('/ui-get-user-content', uiGetUserContent);
 app.get('/login-instagram', instagramLogin);
 app.get('/callback-instagram', callbackInstagramLogin);
 app.get('/get-insights-instagram-schedule', getInsightsInstagramSchedule);
+app.get('/push-pubsub-test', pushMessageToPubSub);
 
 app.post('/webhooks', messageWebhookV3);
 // app.post('/remove-post-by-id', removePostById);
@@ -106,16 +110,21 @@ app.post('/ui-add-account', uiAddAccount);
 app.post('/ui-convert-image-to-video', uiConvertImageToVideo);
 app.post('/ui-save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
 
+// Pub/Sub push handler endpoint
+app.post('/pubsub-handler', pubsubHandler);
+
 app.patch('/ui-patch-scenario', uiPatchScenario);
 app.patch('/ui-patch-account', uiPatchAccount);
 
 app.delete('/ui-clear-proprod-database', clearPreprod);
 
+app.use('/cloud-run', cloudRunRoutes);
+
 const dynamicPort = Number(process.env.PORT);
-const appPort = isNaN(dynamicPort) ? 3030 : dynamicPort;
+const appPort = isNaN(dynamicPort) ? 8080 : dynamicPort;
 
 app.listen(appPort, () => {
-    log(`Example app listening on port ${appPort}`);
+    log(`Server listening on port ${appPort}`);
 });
 
 downloadVideoCron(DelayMS.Sec30);
