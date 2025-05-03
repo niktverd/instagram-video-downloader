@@ -79,3 +79,51 @@ npm run docker:test
 ```
 
 This will build and run the Docker container, making it available at http://localhost:8080.
+
+## Finding Unused Code with Knip
+
+This project uses [knip](https://github.com/webpro/knip), a tool for finding unused code in JavaScript/TypeScript projects.
+
+### Available Scripts
+
+```bash
+# Run a full knip analysis
+npm run knip
+
+# Show a more compact report
+npm run knip:unused
+
+# Check only for unused files
+npm run knip:files
+
+# Check only for unused dependencies
+npm run knip:deps
+
+# Check only for unused exports
+npm run knip:exports
+
+# Check only for unused types
+npm run knip:types
+
+# Fix automatically removable issues
+npm run knip:fix
+
+# Trace exports in a specific file
+npm run knip:trace-file src/path/to/your/file.ts
+```
+
+### Pre-commit Hook
+
+This project has a Git pre-commit hook that automatically runs knip before each commit. If new unused code issues are detected, the commit will be blocked until they are fixed.
+
+To bypass the hook in emergency situations:
+
+```bash
+git commit --no-verify
+```
+
+Check the [report/README.md](./report/README.md) file for more details about the knip integration.
+
+### Identified Unused Code
+
+A list of unused code identified by knip is maintained in [UNUSED_CODE.md](./UNUSED_CODE.md).

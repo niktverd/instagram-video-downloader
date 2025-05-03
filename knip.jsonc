@@ -1,0 +1,58 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  
+  // Define entry points
+  "entry": [
+    "index.ts",
+    "src/**/index.ts",
+    "deploy-cloud-run.sh",
+    ".github/workflows/*.yml"
+  ],
+  
+  // Define all files in your project
+  "project": [
+    "src/**/*.ts"
+  ],
+  
+  // Match aliases defined in tsconfig.json
+  "paths": {
+    "#config/*": ["src/config/*"],
+    "#logic": ["src/logic/index.ts"],
+    "#tests/*": ["src/tests/*"],
+    "#types": ["src/types/index.ts"],
+    "#utils": ["src/utils/index.ts"],
+    "#src/*": ["src/*"],
+    "$/*": ["src/sections/*"]
+  },
+  
+  // Files and directories to ignore
+  "ignore": [
+    "**/*.d.ts",
+    "node_modules",
+    "dist",
+    ".git",
+    "*.config.js",
+    ".eslintrc",
+    ".prettierrc.js"
+  ],
+  
+  // Dependencies that are used but not directly imported
+  "ignoreDependencies": ["qs"],
+  
+  // Ignore binaries used in CI/CD
+  "ignoreBinaries": ["gcloud"],
+  
+  // Issues reporting configuration
+  "rules": {
+    "binaries": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "duplicates": "error",
+    "exports": "error",
+    "files": "error",
+    "nsExports": "error",
+    "nsTypes": "error",
+    "types": "error",
+    "unlisted": "error"
+  }
+}

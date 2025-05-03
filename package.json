@@ -28,7 +28,15 @@
     "lint:prettier": "prettier --check '**/*.{js,ts,json,yaml,yml,md}'",
     "lint:prettier:fix": "prettier --write '**/*.{js,ts,json,yaml,yml,md}'",
     "typecheck": "tsc -p . --noEmit",
-    "docker:test": "docker build -t instagram-video-downloader-local . && docker run -p 8080:8080 --env-file .env instagram-video-downloader-local"
+    "docker:test": "docker build -t instagram-video-downloader-local . && docker run -p 8080:8080 --env-file .env instagram-video-downloader-local",
+    "knip": "mkdir -p report && knip --reporter markdown | tee report/knip.md",
+    "knip:check": "mkdir -p report && [ -f report/knip.md ] && cp report/knip.md report/knip.md.prev || touch report/knip.md.prev && npm run knip && diff -q report/knip.md report/knip.md.prev && echo '✅ No new knip issues detected' || (echo '❌ New knip issues detected! Fix them before committing.' && exit 1)",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "npm run knip:check"
+    ]
   },
   "author": "",
   "license": "ISC",
@@ -49,7 +57,6 @@
     "googleapis": "^144.0.0",
     "lodash": "^4.17.21",
     "module-alias": "^2.2.3",
-    "node-cron": "^3.0.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.8.8",
     "sharp": "^0.34.1",
@@ -63,6 +70,8 @@
     "@types/formidable": "^3.4.5",
     "@types/lodash": "^4.17.14",
     "@types/node": "^22.10.7",
-    "@types/node-cron": "^3.0.11"
+    "husky": "^9.1.7",
+    "knip": "^5.52.0",
+    "lint-staged": "^15.5.1"
   }
 }
