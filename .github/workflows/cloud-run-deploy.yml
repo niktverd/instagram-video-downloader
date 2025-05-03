@@ -18,7 +18,7 @@ env:
   ACTIONS_STEP_DEBUG: true
   # Pub/Sub configuration
   TOPIC_NAME: instagram-video-events
-  PUSH_ENDPOINT: /pubsub-handler
+  PUSH_ENDPOINT: /api/pubsub/handler
 
 jobs:
   build-and-test:
