@@ -1,13 +1,8 @@
 import {Request, Response} from 'express';
 
-import {
-    addScenario,
-    clearPreprod,
-    getScenarios,
-    patchScenario,
-    runInjectionScenraios,
-} from '#logic';
 import {logError} from '#utils';
+import {runInjectionScenraios} from '$/cloud-run/components/scenarios';
+import {addScenario, clearPreprod, getScenarios, patchScenario} from '$/shared';
 
 export const uiGetScenarios = async (_req: Request, res: Response) => {
     try {

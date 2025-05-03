@@ -1,7 +1,7 @@
 import {Request, Response} from 'express';
 
-import {addAccount, getAccounts, patchAccount} from '#logic';
 import {log, logError} from '#utils';
+import {addAccount, getAccounts, patchAccount} from '$/shared';
 
 export const uiGetAccounts = async (_req: Request, res: Response) => {
     try {

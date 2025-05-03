@@ -4,9 +4,9 @@ import {collection, doc, getDoc, setDoc} from 'firebase/firestore/lite';
 import {getInstagramInsights} from '../components';
 
 import {firestore} from '#config/firebase';
-import {getAccounts} from '#logic';
 import {Collection} from '#src/constants';
 import {log, logError} from '#utils';
+import {getAccounts} from '$/shared';
 
 export const getInsightsInstagramSchedule = async (_req: Request, res: Response) => {
     res.status(200).send({message: 'statistic started'});

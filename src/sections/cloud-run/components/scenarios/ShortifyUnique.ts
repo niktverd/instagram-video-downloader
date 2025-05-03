@@ -1,17 +1,16 @@
 import {rmSync} from 'fs';
 import {join} from 'path';
 
-import {addRandomEffects} from './utils';
-
 import {
-    addPreparedVideo,
     addSilentAudioStream,
     coverWithGreen,
     getVideoDuration,
     normalizeVideo,
     splitVideo,
-    uploadFileToServer,
-} from '#logic';
+} from '../video';
+
+import {addRandomEffects} from './utils';
+
 import {ScenarioV3} from '#types';
 import {
     getRandomElementOfArray,
@@ -20,6 +19,7 @@ import {
     prepareCaption,
     saveFileToDisk,
 } from '#utils';
+import {addPreparedVideo, uploadFileToServer} from '$/shared';
 
 type ShortifyUniqueArgs = {
     sourceId: string;

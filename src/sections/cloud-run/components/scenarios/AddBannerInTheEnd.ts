@@ -1,15 +1,11 @@
 import {rmSync} from 'fs';
 import {join} from 'path';
 
-import {
-    addPreparedVideo,
-    concatVideoFromList,
-    normalizeVideo,
-    saveFileList,
-    uploadFileToServer,
-} from '#logic';
+import {concatVideoFromList, normalizeVideo, saveFileList} from '../video';
+
 import {ScenarioV3} from '#types';
 import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '#utils';
+import {addPreparedVideo, uploadFileToServer} from '$/shared';
 
 type AddBannerInTheEndArgs = {
     sourceId: string;

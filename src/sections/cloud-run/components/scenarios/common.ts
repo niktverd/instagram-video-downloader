@@ -4,9 +4,9 @@ import {coverWithImage} from './CoverWithImage';
 import {shortify} from './Shortify';
 import {shortifyUnique} from './ShortifyUnique';
 
-import {getAccounts, getOneRandomVideo, getScenarios, regScenarioUsage} from '#logic';
 import {DelayMS} from '#src/constants';
 import {getRandomElementOfArray, log, logError} from '#utils';
+import {getAccounts, getOneRandomVideo, getScenarios, regScenarioUsage} from '$/shared';
 
 export const runScenarioAddBannerAtTheEnd = async () => {
     try {

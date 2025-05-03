@@ -1,13 +1,13 @@
 import {Request, Response} from 'express';
 
-import {getAccounts} from '#logic';
+import {log, logError} from '#utils';
 import {
     getInstagramInsights,
     getInstagramMedia,
     getInstagramUserNameById,
     getVideoOwnerByVideoId,
-} from '#src/sections/instagram/components';
-import {log, logError} from '#utils';
+} from '$/instagram/components';
+import {getAccounts} from '$/shared';
 
 export const uiGetInsights = async (req: Request, res: Response) => {
     const {id: accountName} = req.query;

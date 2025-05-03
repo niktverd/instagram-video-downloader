@@ -13,15 +13,15 @@ import {
     trimVideo,
 } from '../video';
 
+import {ScenarioV3, SourceV3} from '#types';
+import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '#utils';
 import {
     addPreparedVideo,
     getAccounts,
     getNRandomSources,
     getScenarios,
     uploadFileToServer,
-} from '#logic';
-import {ScenarioV3, SourceV3} from '#types';
-import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '#utils';
+} from '$/shared';
 
 type PrepareLongVideoWithShortInjectionsArgs = {
     scenario: ScenarioV3;

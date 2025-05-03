@@ -1,13 +1,15 @@
-import 'module-alias/register';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import 'module-alias/register';
 import qs from 'qs';
 
 import {DelayMS} from './src/constants';
-import {downloadVideoCron, runScenarioCron} from './src/logic';
 import appRoutes from './src/routes';
 import {log} from './src/utils';
+
+import {downloadVideoCron} from '$/chore/components/preprocess-video';
+import {runScenarioCron} from '$/cloud-run/components/scenarios';
 
 dotenv.config();
 

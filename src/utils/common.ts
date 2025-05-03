@@ -10,7 +10,7 @@ import {firestore, storage} from '../config/firebase';
 import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
-import {getScenarios} from '../logic/firebase/scenarios';
+import {getScenarios} from '../sections/shared/scenarios';
 import {MediaPostModel, ScenarioV3, SourceV3} from '../types';
 
 import {log, logError} from './logging';

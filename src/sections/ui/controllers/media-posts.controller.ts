@@ -15,19 +15,21 @@ import {
 import {pick} from 'lodash';
 
 import {firestore} from '#config/firebase';
-import {
-    addSilentAudioStream,
-    createVideoOfFrame,
-    downloadVideoCron,
-    normalizeVideo,
-    runScenarioAddBannerAtTheEnd,
-    splitVideoInTheMiddle,
-    testPIP,
-    uploadFileToServer,
-} from '#logic';
 import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '#src/constants';
 import {MediaPostModel} from '#types';
 import {getWorkingDirectoryForVideo, log, logError, saveFileToDisk} from '#utils';
+import {downloadVideoCron} from '$/chore/components/preprocess-video';
+import {
+    runScenarioAddBannerAtTheEnd,
+    splitVideoInTheMiddle,
+    testPIP,
+} from '$/cloud-run/components/scenarios';
+import {
+    addSilentAudioStream,
+    createVideoOfFrame,
+    normalizeVideo,
+} from '$/cloud-run/components/video';
+import {uploadFileToServer} from '$/shared';
 
 export const uiGetMediaPosts = async (req: Request, res: Response) => {
     const {

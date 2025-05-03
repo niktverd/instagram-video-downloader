@@ -17,7 +17,6 @@ import {getVideoDuration} from '../../cloud-run/components/video/primitives';
 import {uploadYoutubeVideo} from '../../youtube/components/youtube';
 
 import {firestore} from '#config/firebase';
-import {getAccounts} from '#logic';
 import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '#src/constants';
 import {MediaPostModel, SourceV3, Sources} from '#types';
 import {
@@ -28,6 +27,7 @@ import {
     uploadFileFromUrl,
 } from '#utils';
 import {createInstagramPostContainer, getMergedVideo} from '$/instagram/components';
+import {getAccounts} from '$/shared';
 
 dotenv.config();
 

@@ -22,15 +22,11 @@ import {
 } from '../components';
 
 import {firestore} from '#config/firebase';
-import {
-    getAccounts,
-    getRandomMediaContainersForAccount,
-    removePublished,
-    stopHerokuApp,
-} from '#logic';
 import {Collection, accessTokensArray} from '#src/constants';
 import {AccountMediaContainerV3, MediaPostModel} from '#types';
 import {delay, getInstagramPropertyName, isTimeToPublishInstagram, log, logError} from '#utils';
+import {stopHerokuApp} from '$/chore/components/heroku';
+import {getAccounts, getRandomMediaContainersForAccount, removePublished} from '$/shared';
 
 export const publishIntagram = async (req: Request, res: Response) => {
     log(req.query);

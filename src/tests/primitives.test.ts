@@ -1,14 +1,14 @@
 import {existsSync, mkdirSync} from 'fs';
 import path from 'path';
 
+import {log, saveFileToDisk} from '#utils';
 import {
     addTextToVideo,
     applyVideoColorCorrection,
     changeVideoSpeed,
     isolateRedObjects,
     rotateVideo,
-} from '../logic';
-import {log, saveFileToDisk} from '../utils';
+} from '$/cloud-run/components/video';
 
 log('Test primitives');
 

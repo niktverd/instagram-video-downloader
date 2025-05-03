@@ -1,5 +1,7 @@
 import {Router as expressRouter} from 'express';
 
+import {clearPreprod} from '../shared';
+
 import {
     uiAddAccount,
     uiAddScenario,
@@ -21,8 +23,6 @@ import {
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
 } from './controllers';
-
-import {clearPreprod} from '#logic';
 
 const router = expressRouter();
 
