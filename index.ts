@@ -10,6 +10,7 @@ import {log} from './src/utils';
 
 import {downloadVideoCron} from '$/chore/components/preprocess-video';
 import {runScenarioCron} from '$/cloud-run/components/scenarios';
+import {callbackInstagramLogin, hubChallangeWebhook} from '$/instagram/controllers';
 
 dotenv.config();
 
@@ -42,6 +43,11 @@ app.set('query parser', function (str: string) {
 
 // Use the reorganized routes
 app.use('/api', appRoutes);
+
+// instagram handlers
+// leave it here, because they are configured in the instagram app
+app.get('/webhooks', hubChallangeWebhook);
+app.get('/callback-instagram', callbackInstagramLogin);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 8080 : dynamicPort;

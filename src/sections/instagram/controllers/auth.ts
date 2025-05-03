@@ -5,7 +5,7 @@ import {getLongLivedToken} from '../utils';
 import {log} from '#utils';
 
 const REDIRECT_URI =
-    'https://instagram-video-downloader-e0875c65c071.herokuapp.com/api/instagram/callback';
+    'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
 
 const {APP_ID, API_SECRET} = process.env;
 
