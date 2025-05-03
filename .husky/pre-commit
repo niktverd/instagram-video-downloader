@@ -1,8 +1,5 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-# Run lint-staged to execute knip on staged files
-npx lint-staged
-
 # Run knip check on the entire project
 npm run knip:check || (echo "❌ Knip detected new issues. Please fix them before committing." && exit 1)
+
+# Run lint-staged to execute tasks on staged files
+npx lint-staged

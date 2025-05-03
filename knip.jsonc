@@ -39,8 +39,8 @@
   // Dependencies that are used but not directly imported
   "ignoreDependencies": ["qs"],
   
-  // Ignore binaries used in CI/CD
-  "ignoreBinaries": ["gcloud"],
+  // Ignore binaries used in CI/CD and scripts
+  "ignoreBinaries": ["gcloud", "diff", "dot"],
   
   // Issues reporting configuration
   "rules": {

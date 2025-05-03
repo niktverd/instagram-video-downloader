@@ -127,3 +127,86 @@ Check the [report/README.md](./report/README.md) file for more details about the
 ### Identified Unused Code
 
 A list of unused code identified by knip is maintained in [UNUSED_CODE.md](./UNUSED_CODE.md).
+
+## Dependency Analysis with dependency-cruiser
+
+[dependency-cruiser](https://github.com/sverweij/dependency-cruiser) is a powerful tool for visualizing and validating dependencies in JavaScript/TypeScript projects.
+
+### Installation
+
+Install as a dev dependency (recommended):
+
+```bash
+npm install --save-dev dependency-cruiser
+```
+
+If you encounter TypeScript version conflicts (like peer dependency issues between knip and dependency-cruiser), use one of these approaches:
+
+```bash
+# Option 1: Force install with legacy peer deps
+npm install --save-dev dependency-cruiser --legacy-peer-deps
+
+# Option 2: Force install
+npm install --save-dev dependency-cruiser --force
+```
+
+### Setup
+
+Initialize a configuration file:
+
+```bash
+npx dependency-cruiser --init
+```
+
+This creates a `.dependency-cruiser.js` file with default rules.
+
+### Usage
+
+Generate a dependency graph:
+
+```bash
+npx depcruise --include-only "^src" --output-type dot src | dot -T svg > dependency-graph.svg
+```
+
+Validate dependencies against rules:
+
+```bash
+npx depcruise --validate src
+```
+
+### Adding to package.json
+
+```json
+"scripts": {
+  "deps:cruise": "depcruise --include-only \"^src\" --output-type dot src | dot -T svg > dependency-graph.svg",
+  "deps:validate": "depcruise --validate src"
+}
+```
+
+### Configuration
+
+The `.dependency-cruiser.js` file can be customized to:
+
+- Forbid circular dependencies
+- Enforce architecture boundaries
+- Prevent dependency on deprecated modules
+- Restrict dependency reach
+- And much more
+
+Example rule to forbid circular dependencies:
+
+```javascript
+forbidden: [
+  {
+    name: 'no-circular',
+    severity: 'error',
+    comment: 'Circular dependencies are harmful',
+    from: {},
+    to: {
+      circular: true
+    }
+  }
+]
+```
+
+dependency-cruiser helps maintain a clean architecture and prevents dependency issues before they grow into larger problems.

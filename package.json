@@ -31,11 +31,13 @@
     "docker:test": "docker build -t instagram-video-downloader-local . && docker run -p 8080:8080 --env-file .env instagram-video-downloader-local",
     "knip": "mkdir -p report && knip --reporter markdown | tee report/knip.md",
     "knip:check": "mkdir -p report && [ -f report/knip.md ] && cp report/knip.md report/knip.md.prev || touch report/knip.md.prev && npm run knip && diff -q report/knip.md report/knip.md.prev && echo '✅ No new knip issues detected' || (echo '❌ New knip issues detected! Fix them before committing.' && exit 1)",
+    "dc": "npx depcruise --include-only \"^src\" --output-type dot src | dot -T svg > report/dependency-graph.svg",
     "prepare": "husky"
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "npm run knip:check"
+      "eslint --max-warnings=0",
+      "prettier --write"
     ]
   },
   "author": "",
@@ -70,6 +72,7 @@
     "@types/formidable": "^3.4.5",
     "@types/lodash": "^4.17.14",
     "@types/node": "^22.10.7",
+    "dependency-cruiser": "^16.10.1",
     "husky": "^9.1.7",
     "knip": "^5.52.0",
     "lint-staged": "^15.5.1"

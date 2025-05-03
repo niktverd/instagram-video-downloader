@@ -1,10 +1,11 @@
 # Knip report
 
-## Unlisted binaries (1)
+## Unlisted binaries (2)
 
 | Name | Location     | Severity |
 | :--- | :----------- | :------- |
 | diff | package.json | error    |
+| dot  | package.json | error    |
 
 ## Unused exports (4)
 
