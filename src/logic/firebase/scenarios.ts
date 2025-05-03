@@ -1,9 +1,9 @@
 import {addDoc, collection, doc, getDoc, getDocs, updateDoc} from 'firebase/firestore/lite';
 
-import {firestore} from '../../config/firebase';
-import {Collection} from '../../constants';
-import {ScenarioV3, SourceV3} from '../../types';
-import {log} from '../../utils/logging';
+import {firestore} from '#config/firebase';
+import {Collection} from '#src/constants';
+import {ScenarioV3, SourceV3} from '#types';
+import {log} from '#utils';
 
 export const getScenarios = async (onlyEnabled = false) => {
     const collectionRef = collection(firestore, Collection.Scenarios);

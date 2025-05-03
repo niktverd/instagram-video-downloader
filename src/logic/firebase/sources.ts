@@ -9,10 +9,10 @@ import {
     where,
 } from 'firebase/firestore/lite';
 
-import {firestore} from '../../config/firebase';
-import {Collection} from '../../constants';
-import {SourceV3} from '../../types';
-import {log} from '../../utils';
+import {firestore} from '#config/firebase';
+import {Collection} from '#src/constants';
+import {SourceV3} from '#types';
+import {log} from '#utils';
 
 export const getNRandomSources = async (limitVideo: number) => {
     if (limitVideo < 1) {

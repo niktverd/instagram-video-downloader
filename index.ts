@@ -1,48 +1,12 @@
+import 'module-alias/register';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import qs from 'qs';
 
-import cloudRunRoutes from './src/cloud-run/routes';
 import {DelayMS} from './src/constants';
-import {
-    callbackInstagramLogin,
-    getInsightsInstagramSchedule,
-    hubChallangeWebhook,
-    instagramLogin,
-    messageWebhookV3,
-    pingPong,
-    publishById,
-    publishIntagramV3,
-    publishVideoFromUrl,
-    pubsubHandler,
-    pushMessageToPubSub,
-    // removePostById,
-    removePublishedFromFirebase,
-    // reportInterface,
-    uiAddAccount,
-    uiAddScenario,
-    uiConvertImageToVideo,
-    uiCreateVideoByScenario,
-    uiDownloadVideoFromSourceV3,
-    uiGetAccounts,
-    uiGetInsights,
-    uiGetInstagramMedia,
-    uiGetInstagramUserById,
-    uiGetInstagramUserIdByMediaId,
-    uiGetMediaPosts,
-    uiGetScenarios,
-    uiGetUserContent,
-    uiPatchAccount,
-    uiPatchScenario,
-    uiRunInjectionScenraios,
-    uiSavePostForFutherAnalysis,
-    uiSplitVideoInTheMiddle,
-    uiTestGreenScreen,
-    youtubeAuth,
-    youtubeAuthCallback,
-} from './src/controllers';
-import {clearPreprod, downloadVideoCron, runScenarioCron} from './src/logic';
+import {downloadVideoCron, runScenarioCron} from './src/logic';
+import appRoutes from './src/routes';
 import {log} from './src/utils';
 
 dotenv.config();
@@ -74,51 +38,8 @@ app.set('query parser', function (str: string) {
     });
 });
 
-// app.set('view engine', 'ejs');
-
-app.get('/webhooks', hubChallangeWebhook);
-app.get('/ping', pingPong);
-// app.get('/report', reportInterface);
-app.get('/publish', publishIntagramV3);
-app.get('/remove-published', removePublishedFromFirebase);
-app.get('/yt-auth', youtubeAuth);
-app.get('/yt-oauth2-callback', youtubeAuthCallback);
-app.get('/ui-get-media-posts', uiGetMediaPosts);
-app.get('/ui-get-scenarios', uiGetScenarios);
-app.get('/ui-get-accounts', uiGetAccounts);
-app.get('/ui-create-video-by-scenario', uiCreateVideoByScenario);
-app.get('/ui-download-video-from-source-v3', uiDownloadVideoFromSourceV3);
-app.get('/ui-get-insights', uiGetInsights);
-app.get('/ui-get-media', uiGetInstagramMedia);
-app.get('/ui-get-user-by-id', uiGetInstagramUserById);
-app.get('/ui-get-owner-by--media-id', uiGetInstagramUserIdByMediaId);
-app.get('/ui-run-injection-scenarios', uiRunInjectionScenraios);
-app.get('/ui-get-user-content', uiGetUserContent);
-app.get('/login-instagram', instagramLogin);
-app.get('/callback-instagram', callbackInstagramLogin);
-app.get('/get-insights-instagram-schedule', getInsightsInstagramSchedule);
-app.get('/push-pubsub-test', pushMessageToPubSub);
-
-app.post('/webhooks', messageWebhookV3);
-// app.post('/remove-post-by-id', removePostById);
-app.post('/publish-by-id', publishById);
-app.post('/publish-video-from-url', publishVideoFromUrl);
-app.post('/ui-split-video-in-the-middle', uiSplitVideoInTheMiddle);
-app.post('/ui-test-green-screen', uiTestGreenScreen);
-app.post('/ui-add-scenario', uiAddScenario);
-app.post('/ui-add-account', uiAddAccount);
-app.post('/ui-convert-image-to-video', uiConvertImageToVideo);
-app.post('/ui-save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
-
-// Pub/Sub push handler endpoint
-app.post('/pubsub-handler', pubsubHandler);
-
-app.patch('/ui-patch-scenario', uiPatchScenario);
-app.patch('/ui-patch-account', uiPatchAccount);
-
-app.delete('/ui-clear-proprod-database', clearPreprod);
-
-app.use('/cloud-run', cloudRunRoutes);
+// Use the reorganized routes
+app.use('/api', appRoutes);
 
 const dynamicPort = Number(process.env.PORT);
 const appPort = isNaN(dynamicPort) ? 8080 : dynamicPort;

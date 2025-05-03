@@ -4,7 +4,18 @@
     "outDir": "dist/server",
     "sourceMap": true,
     "target": "ES2019",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "#config/*": ["src/config/*"],
+      "#logic": ["src/logic/index.ts"],
+      // "#sections/*": ["src/sections/*"],
+      "#tests/*": ["src/tests/*"],
+      "#types": ["src/types/index.ts"],
+      "#utils": ["src/utils/index.ts"],
+      "#src/*": ["src/*"],
+      "$/*": ["src/sections/*"]
+    }
   },
   "include": ["src", "index.ts"],
   "files": [],

@@ -10,11 +10,10 @@ import {
 } from 'firebase/firestore/lite';
 import {deleteObject, ref} from 'firebase/storage';
 
-import {firestore, storage} from '../../config/firebase';
-import {Collection} from '../../constants';
-import {AccountMediaContainerV3, MediaPostModelOld, SourceV3} from '../../types';
-import {ScenarioName} from '../../types/scenario';
-import {log} from '../../utils/logging';
+import {firestore, storage} from '#config/firebase';
+import {Collection} from '#src/constants';
+import {AccountMediaContainerV3, MediaPostModelOld, ScenarioName, SourceV3} from '#types';
+import {log} from '#utils';
 
 export const removePublished = async () => {
     const collectionRef = collection(firestore, 'media-post');

@@ -1,9 +1,9 @@
 import {existsSync, mkdirSync} from 'fs';
 import path from 'path';
 
-import {addBannerInTheEndUnique} from '../logic/scenarios/AddBannerInTheEndUnique';
-import {shortify} from '../logic/scenarios/Shortify';
-import {shortifyUnique} from '../logic/scenarios/ShortifyUnique';
+import {addBannerInTheEndUnique} from '../sections/cloud-run/components/scenarios/AddBannerInTheEndUnique';
+import {shortify} from '../sections/cloud-run/components/scenarios/Shortify';
+import {shortifyUnique} from '../sections/cloud-run/components/scenarios/ShortifyUnique';
 import {ScenarioName} from '../types/scenario';
 import {log, saveFileToDisk} from '../utils';
 

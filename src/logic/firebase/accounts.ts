@@ -1,9 +1,9 @@
 import {collection, doc, getDocs, setDoc} from 'firebase/firestore/lite';
 
-import {firestore} from '../../config/firebase';
-import {Collection} from '../../constants';
-import {AccountV3} from '../../types';
-import {log} from '../../utils/logging';
+import {firestore} from '#config/firebase';
+import {Collection} from '#src/constants';
+import {AccountV3} from '#types';
+import {log} from '#utils';
 
 type AddAccountArgs = {
     id: string;

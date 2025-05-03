@@ -116,3 +116,5 @@ export type AccountMediaContainerV3 = {
     status: 'created' | 'published';
     preparedVideoId: string;
 };
+
+export * from './scenario';

@@ -1,4 +1,4 @@
-import {randomBetween} from '../logic/video/utils';
+import {randomBetween} from '../sections/cloud-run/components/video/utils';
 import {log} from '../utils';
 
 log('Test utils');

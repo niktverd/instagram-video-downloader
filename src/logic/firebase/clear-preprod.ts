@@ -1,10 +1,10 @@
 import {collection, deleteDoc, getDocs} from 'firebase/firestore/lite';
 
-import {firestore} from '../../config/firebase';
-import {Collection} from '../../constants';
-import {log} from '../../utils/logging';
-
 import {getAccounts} from './accounts';
+
+import {firestore} from '#config/firebase';
+import {Collection} from '#src/constants';
+import {log} from '#utils';
 
 export const clearPreprod = async () => {
     if (process.env.APP_ENV !== 'development') {
