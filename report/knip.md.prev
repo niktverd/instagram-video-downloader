@@ -24,5 +24,3 @@
 | RandomIndex                | src/constants.ts:34:5      | error    |
 | Min2                       | src/constants.ts:22:5      | error    |
 
-# New fake issue
-- some-fake-unused-export in some-file.ts
