@@ -92,18 +92,18 @@ jobs:
       - name: Push the image to the Google Container Registry (GCR)
         run: docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
 
-      - name: Deploy to Cloud Run
-        id: deploy
+      # First deployment
+      - name: Check if service exists
+        id: check_service
         run: |
-          set -o pipefail
-          echo "Deploying with the following configuration:"
-          echo "Service name: $DEPLOY_SERVICE_NAME"
-          echo "Image: gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA"
-          echo "Region: $REGION"
-          echo "Memory: 4Gi"
-          
-          # Шаг 1: Деплой новой ревизии без трафика
-          gcloud run deploy $DEPLOY_SERVICE_NAME \
+          set +e
+          gcloud run services describe $SERVICE_NAME --region $REGION > /dev/null 2>&1
+          echo "service_exists=$?" >> $GITHUB_OUTPUT
+      
+      - name: Deploy service (first time)
+        if: steps.check_service.outputs.service_exists != '0'
+        run: |
+          gcloud run deploy $SERVICE_NAME \
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
@@ -112,36 +112,29 @@ jobs:
             --timeout 300 \
             --concurrency 80 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest \
-            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=true,ENABLE_RUN_SCENARIO_VIDEO=true,ENABLE_PUBSUB=true \
-            --allow-unauthenticated \
-            --no-traffic 2>&1 | tee deploy.log
-          
-          # Check if deployment was successful
-          if [ $? -ne 0 ]; then
-            echo "Deployment failed. See logs above."
-            exit 1
-          fi
-          
-          # Get the URL of the deployed service
-          SERVICE_URL=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.url)')
-          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
-          
-          # Get the latest revision
-          LATEST_REVISION=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.latestReadyRevisionName)')
-          echo "LATEST_REVISION=$LATEST_REVISION" >> $GITHUB_ENV
-          
-          # Шаг 2: Обновление трафика - 100% на новую ревизию
-          echo "Routing 100% traffic to latest revision: $LATEST_REVISION"
-          gcloud run services update-traffic $DEPLOY_SERVICE_NAME \
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
+            --allow-unauthenticated
+
+      - name: Deploy service (update)
+        if: steps.check_service.outputs.service_exists == '0'
+        run: |
+          gcloud run deploy $SERVICE_NAME \
+            --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
+            --platform managed \
             --region $REGION \
-            --to-latest \
-            --platform managed
+            --memory 4Gi \
+            --cpu 1 \
+            --timeout 300 \
+            --concurrency 80 \
+            --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest \
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
+            --allow-unauthenticated
 
       # Pub/Sub Configuration Steps
       # Get Cloud Run service URL
       - name: Get service URL
         run: |
-          SERVICE_URL=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.url)')
+          SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region $REGION --format='value(status.url)')
           echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
 
       # Create or update Pub/Sub topic
