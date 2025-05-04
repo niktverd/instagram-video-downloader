@@ -1,10 +1,11 @@
 # Knip report
 
-## Unused files (3)
+## Unused files (4)
 
 * src/sections/cloud-run/components/scenarios/CoverWithImage.ts
 * src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
 * src/sections/cloud-run/components/scenarios/common.ts
+* src/utils/scenarios.ts
 
 ## Unused exports (4)
 
