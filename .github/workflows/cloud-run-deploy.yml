@@ -102,6 +102,7 @@ jobs:
           echo "Region: $REGION"
           echo "Memory: 4Gi"
           
+          # Шаг 1: Деплой новой ревизии без трафика
           gcloud run deploy $DEPLOY_SERVICE_NAME \
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
@@ -129,7 +130,7 @@ jobs:
           LATEST_REVISION=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.latestReadyRevisionName)')
           echo "LATEST_REVISION=$LATEST_REVISION" >> $GITHUB_ENV
           
-          # Update traffic to 100% to latest revision
+          # Шаг 2: Обновление трафика - 100% на новую ревизию
           echo "Routing 100% traffic to latest revision: $LATEST_REVISION"
           gcloud run services update-traffic $DEPLOY_SERVICE_NAME \
             --region $REGION \
