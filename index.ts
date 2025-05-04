@@ -9,7 +9,11 @@ import appRoutes from './src/routes';
 import {log} from './src/utils';
 
 import {downloadVideoCron} from '$/chore/components/preprocess-video';
-import {callbackInstagramLogin, hubChallangeWebhook} from '$/instagram/controllers';
+import {
+    callbackInstagramLogin,
+    hubChallangeWebhook,
+    messageWebhookV3,
+} from '$/instagram/controllers';
 
 dotenv.config();
 
@@ -45,7 +49,8 @@ app.use('/api', appRoutes);
 
 // instagram handlers
 // leave it here, because they are configured in the instagram app
-app.get('/webhook', hubChallangeWebhook);
+app.get('/webhooks', hubChallangeWebhook);
+app.post('/webhooks', messageWebhookV3);
 app.get('/callback-instagram', callbackInstagramLogin);
 
 const dynamicPort = Number(process.env.PORT);
