@@ -101,8 +101,11 @@ export const publishBulkRunScenarioMessages = async (
     accountIds: string[],
 ): Promise<{success: boolean; count: number}> => {
     try {
+        log('publishBulkRunScenarioMessages');
         const projectId = process.env.GCP_PROJECT_ID;
+        log('projectId:', projectId);
         if (!projectId) {
+            log('projectId is not set');
             throw new Error('GCP_PROJECT_ID environment variable is not set');
         }
 

@@ -213,20 +213,24 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                     log('Файл успешно загружен:', downloadURL);
 
                     const duration = await getVideoDuration(downloadURL);
+                    log('duration:', duration);
 
                     const documentRef = doc(collectionRef, firebaseId);
                     await updateDoc(documentRef, {
                         firebaseUrl: downloadURL,
                         duration,
                     });
+                    log('duration and url updated');
 
                     // Get scenarios and accounts to send bulk messages
                     const scenarioIds =
                         media.scenarios && media.scenarios.length > 0 ? media.scenarios : [];
 
+                    log('scenarioIds:', scenarioIds);
+
                     // Get all enabled accounts
                     const accounts = await getAccounts(true);
-
+                    log('accounts:', accounts);
                     // Filter accounts by available scenarios
                     const accountIds = accounts
                         .filter((account) =>
@@ -236,8 +240,11 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                         )
                         .map((account) => account.id);
 
+                    log('accountIds:', accountIds);
+
                     // Publish bulk messages for each account and scenario pair
                     if (scenarioIds.length > 0 && accountIds.length > 0) {
+                        log('publishing bulk messages...');
                         const {success, count} = await publishBulkRunScenarioMessages(
                             firebaseId,
                             scenarioIds,

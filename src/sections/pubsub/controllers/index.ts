@@ -39,11 +39,11 @@ export const pubsubHandler = async (req: Request, res: Response) => {
 
         // Get the base64-encoded data from the message
         const data = pubsubMessage.data ? Buffer.from(pubsubMessage.data, 'base64').toString() : '';
-
+        const logLocal = log.bind(null, 'local', pubsubMessage.messageId);
         // Log details about the received message
-        log(`Received Pub/Sub message: ${data}`);
-        log(`Message ID: ${pubsubMessage.messageId}`);
-        log(`Publish time: ${pubsubMessage.publishTime}`);
+        logLocal(`Received Pub/Sub message: ${data}`);
+        logLocal(`Message ID: ${pubsubMessage.messageId}`);
+        logLocal(`Publish time: ${pubsubMessage.publishTime}`);
 
         // Parse the message data if it's JSON
         try {
@@ -53,53 +53,53 @@ export const pubsubHandler = async (req: Request, res: Response) => {
                 scenarioId: string;
                 sourceId: string;
             };
-            log('Parsed message data:', {accountId, scenarioId, sourceId});
+            logLocal('Parsed message data:', {accountId, scenarioId, sourceId});
             if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId})) {
-                log('Prepared video already exists');
+                logLocal('Prepared video already exists');
                 res.status(204).send();
                 return;
             }
 
             const scenario = await getScenario(scenarioId);
             if (!scenario) {
-                log('Scenario not found', {scenarioId});
+                logLocal('Scenario not found', {scenarioId});
                 res.status(404).send();
                 return;
             }
 
             const account = await getAccount(accountId);
             if (!account) {
-                log('Account not found', {accountId});
+                logLocal('Account not found', {accountId});
                 res.status(404).send();
                 return;
             }
 
             const source = await getSource(sourceId);
             if (!source) {
-                log('Source not found', {sourceId});
+                logLocal('Source not found', {sourceId});
                 res.status(404).send();
                 return;
             }
 
-            console.log({scenario, account, source});
+            logLocal({scenario, account, source});
 
             const isScenarioInAccount = account.availableScenarios.includes(scenario.name);
             if (!isScenarioInAccount) {
-                log('Scenario not in account', {scenarioId, accountId});
+                logLocal('Scenario not in account', {scenarioId, accountId});
                 res.status(404).send();
                 return;
             }
 
             const isScenarioEnabled = scenario.enabled;
             if (!isScenarioEnabled) {
-                log('Scenario is not enabled', {scenarioId, status: scenario.enabled});
+                logLocal('Scenario is not enabled', {scenarioId, status: scenario.enabled});
                 res.status(404).send();
                 return;
             }
 
             const scenarioWorkflow = ScenarioMap[scenario.type as ScenarioType];
             if (!scenarioWorkflow) {
-                log('Scenario workflow not found', {
+                logLocal('Scenario workflow not found', {
                     scenarioId,
                     scenarioType: scenario.type,
                     ScenarioMap,
@@ -111,21 +111,25 @@ export const pubsubHandler = async (req: Request, res: Response) => {
             const {scenario: scenarioFunction, schema} = scenarioWorkflow;
             const {success, error} = schema.safeParse(scenario);
             if (!success) {
-                log('Scenario is not valid', {scenarioId, error});
+                logLocal('Scenario is not valid', {scenarioId, error});
                 res.status(500).send();
                 return;
             }
 
             if (!scenarioFunction) {
-                log('Scenario function not found', {scenarioId});
+                logLocal('Scenario function not found', {scenarioId});
                 res.status(404).send();
                 return;
             }
 
+            logLocal('Scenario function found', {scenarioId});
+
             const directoryName = `${accountId}-${scenarioId}-${sourceId}`;
 
             const basePath = getWorkingDirectoryForVideo(directoryName);
+            logLocal('basePath', {basePath});
             const finalFilePath = await scenarioFunction({scenario, source, basePath});
+            logLocal('finalFilePath', {finalFilePath});
             const scenarioName = scenario.name;
             const originalHashtags = source.sources.instagramReel?.originalHashtags || [];
 
@@ -134,6 +138,7 @@ export const pubsubHandler = async (req: Request, res: Response) => {
                 finalFilePath,
                 `${directoryName}-${scenarioName}.mp4`,
             );
+            logLocal('downloadURL', {downloadURL});
             // update database
             await addPreparedVideo({
                 firebaseUrl: downloadURL,
@@ -145,13 +150,13 @@ export const pubsubHandler = async (req: Request, res: Response) => {
                 accounts: [account.id],
                 accountsHasBeenUsed: [],
             });
-
+            logLocal('video added to database');
             // delete tempfiles
             const deleteTempFiles = true;
             if (deleteTempFiles) {
                 rmSync(basePath, {recursive: true});
+                logLocal('temp files deleted');
             }
-
             // runCloudRunScenario(parsedData);
         } catch (error) {
             console.log('error', error);
