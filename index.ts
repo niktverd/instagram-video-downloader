@@ -45,7 +45,7 @@ app.use('/api', appRoutes);
 
 // instagram handlers
 // leave it here, because they are configured in the instagram app
-app.get('/webhooks', hubChallangeWebhook);
+app.get('/webhook', hubChallangeWebhook);
 app.get('/callback-instagram', callbackInstagramLogin);
 
 const dynamicPort = Number(process.env.PORT);
