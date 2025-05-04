@@ -60,6 +60,13 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      # Verify gcloud configuration
+      - name: Verify gcloud config
+        run: |
+          gcloud config list
+          gcloud projects describe $PROJECT_ID
+          gcloud auth list
+
       - name: Set branch name for service
         run: |
           # Extract branch name and make it URL-friendly for service name
@@ -86,7 +93,15 @@ jobs:
         run: docker push gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
 
       - name: Deploy to Cloud Run
+        id: deploy
         run: |
+          set -o pipefail
+          echo "Deploying with the following configuration:"
+          echo "Service name: $DEPLOY_SERVICE_NAME"
+          echo "Image: gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA"
+          echo "Region: $REGION"
+          echo "Memory: 4Gi"
+          
           gcloud run deploy $DEPLOY_SERVICE_NAME \
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
@@ -95,10 +110,31 @@ jobs:
             --cpu 1 \
             --timeout 300 \
             --concurrency 80 \
-            --traffic=100 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest \
-            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
-            --allow-unauthenticated
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=true,ENABLE_PROGRESS=true,ENABLE_START=true,ENABLE_DOWNLOAD_VIDEO=true,ENABLE_RUN_SCENARIO_VIDEO=true,ENABLE_PUBSUB=true \
+            --allow-unauthenticated \
+            --no-traffic 2>&1 | tee deploy.log
+          
+          # Check if deployment was successful
+          if [ $? -ne 0 ]; then
+            echo "Deployment failed. See logs above."
+            exit 1
+          fi
+          
+          # Get the URL of the deployed service
+          SERVICE_URL=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.url)')
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+          
+          # Get the latest revision
+          LATEST_REVISION=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.latestReadyRevisionName)')
+          echo "LATEST_REVISION=$LATEST_REVISION" >> $GITHUB_ENV
+          
+          # Update traffic to 100% to latest revision
+          echo "Routing 100% traffic to latest revision: $LATEST_REVISION"
+          gcloud run services update-traffic $DEPLOY_SERVICE_NAME \
+            --region $REGION \
+            --to-latest \
+            --platform managed
 
       # Pub/Sub Configuration Steps
       # Get Cloud Run service URL
