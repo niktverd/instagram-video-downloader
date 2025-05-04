@@ -33,6 +33,8 @@ export const getAccounts = async (onlyEnabled = false) => {
     }
     const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as AccountV3));
 
+    log('getAccounts', {data});
+
     return data.filter(({disabled}) => (onlyEnabled ? !disabled : true));
 };
 

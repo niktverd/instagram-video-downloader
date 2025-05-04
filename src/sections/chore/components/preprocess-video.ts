@@ -27,7 +27,7 @@ import {
     uploadFileFromUrl,
 } from '#utils';
 import {createInstagramPostContainer, getMergedVideo} from '$/instagram/components';
-import {getAccounts} from '$/shared';
+import {getAccounts, getScenarios} from '$/shared';
 
 dotenv.config();
 
@@ -194,6 +194,8 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
         );
         log('sources length:', medias.length);
 
+        const scenarios = await getScenarios();
+
         for (const media of medias) {
             const firebaseId = media.id;
             log('working with source id: ', firebaseId);
@@ -224,7 +226,14 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
 
                     // Get scenarios and accounts to send bulk messages
                     const scenarioIds =
-                        media.scenarios && media.scenarios.length > 0 ? media.scenarios : [];
+                        media.scenarios && media.scenarios.length > 0
+                            ? media.scenarios.map((scenarioName) => {
+                                  const scenario = scenarios.find(
+                                      (scenarioItem) => scenarioItem.name === scenarioName,
+                                  );
+                                  return scenario?.id;
+                              })
+                            : [];
 
                     log('scenarioIds:', scenarioIds);
 

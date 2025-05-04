@@ -19,6 +19,7 @@ export const publishMessageToPubSub = async (
 ): Promise<boolean> => {
     try {
         const projectId = process.env.GCP_PROJECT_ID;
+        log('[pubsub-client] Project ID:', projectId, 'topicName:', topicName);
         if (!projectId) {
             throw new Error('GCP_PROJECT_ID environment variable is not set');
         }
@@ -186,7 +187,7 @@ export const publishBulkRunScenarioMessages = async (
         // Return results
         if (successCount > 0) {
             log(
-                `[pubsub-client] Successfully published ${successCount}/${totalMessages} messages in batch`,
+                `[pubsub-client] Successfully published ${successCount}/${totalMessages} messages in batch, ${projectId}`,
             );
             return {success: true, count: successCount};
         } else {
