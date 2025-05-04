@@ -9,6 +9,7 @@
     "#tests": "dist/server/src/tests",
     "#types": "dist/server/src/types/index.js",
     "#utils": "dist/server/src/utils/index.js",
+    "#schemas": "dist/server/src/schemas",
     "#src": "dist/server/src",
     "$": "dist/server/src/sections"
   },
@@ -17,7 +18,7 @@
     "watch:port": "tsc-watch --onSuccess \"node dist/server --dev --port 8080\"",
     "dev": "npm run clean && npm run watch",
     "start": "node dist/server",
-    "test": "NODE_ENV=production npm run build && node dist/server/src/tests/index.js",
+    "test": "NODE_ENV=production npx ts-node -r ./src/tests/register-paths.ts src/tests/index",
     "build:compile": "tsc",
     "build": "npm run clean && npm run build:compile",
     "clean": "rm -rf dist/server",
@@ -63,7 +64,7 @@
     "prettier": "^2.8.8",
     "sharp": "^0.34.1",
     "tsc-watch": "^6.0.4",
-    "typescript": "^5.0.4"
+    "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
@@ -71,10 +72,13 @@
     "@types/fluent-ffmpeg": "^2.1.27",
     "@types/formidable": "^3.4.5",
     "@types/lodash": "^4.17.14",
+    "@types/module-alias": "^2.0.4",
     "@types/node": "^22.10.7",
     "dependency-cruiser": "^16.10.1",
     "husky": "^9.1.7",
     "knip": "^5.52.0",
-    "lint-staged": "^15.5.1"
+    "lint-staged": "^15.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

@@ -1,5 +1,11 @@
 # Knip report
 
+## Unused files (3)
+
+* src/sections/cloud-run/components/scenarios/CoverWithImage.ts
+* src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
+* src/sections/cloud-run/components/scenarios/common.ts
+
 ## Unused exports (4)
 
 | Name            | Location                                                              | Severity |
@@ -9,12 +15,11 @@
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:53:14               | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
 
-## Unused exported enum members (4)
+## Unused exported enum members (3)
 
-| Name                       | Location                   | Severity |
-| :------------------------- | :------------------------- | :------- |
-| ScenarioAddBannerAtTheEnd1 | src/types/scenario.ts:10:5 | error    |
-| ScenarioAddBannerAtTheEnd2 | src/types/scenario.ts:11:5 | error    |
-| RandomIndex                | src/constants.ts:34:5      | error    |
-| Min2                       | src/constants.ts:22:5      | error    |
+| Name        | Location              | Severity |
+| :---------- | :-------------------- | :------- |
+| RandomIndex | src/constants.ts:34:5 | error    |
+| Min2        | src/constants.ts:22:5 | error    |
+| Min1        | src/constants.ts:23:5 | error    |
 

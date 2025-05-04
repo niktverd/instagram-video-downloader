@@ -19,11 +19,7 @@ import {Collection, DelayMS, MediaPostModelFilters, OrderDirection} from '#src/c
 import {MediaPostModel} from '#types';
 import {getWorkingDirectoryForVideo, log, logError, saveFileToDisk} from '#utils';
 import {downloadVideoCron} from '$/chore/components/preprocess-video';
-import {
-    runScenarioAddBannerAtTheEnd,
-    splitVideoInTheMiddle,
-    testPIP,
-} from '$/cloud-run/components/scenarios';
+import {splitVideoInTheMiddle, testPIP} from '$/cloud-run/components/scenarios';
 import {
     addSilentAudioStream,
     createVideoOfFrame,
@@ -55,7 +51,6 @@ export const uiGetMediaPosts = async (req: Request, res: Response) => {
     const docsnap = await getDocs(q);
 
     const docs = docsnap.docs.map((docSnap) => ({
-        // ...docSnap.data(),
         ...pick(docSnap.data(), 'sources'),
         id: docSnap.id,
     }));
@@ -123,7 +118,6 @@ export const uiTestGreenScreen = async (req: Request, res: Response) => {
 
 export const uiCreateVideoByScenario = async (_req: Request, res: Response) => {
     res.status(200).send({message: ' uiCreateVideoByScenario started'});
-    await runScenarioAddBannerAtTheEnd();
 };
 
 export const uiDownloadVideoFromSourceV3 = async (_req: Request, res: Response) => {

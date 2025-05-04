@@ -1,6 +1,25 @@
+import {rmSync} from 'fs';
+
 import {Request, Response} from 'express';
 
-import {PubSubAction, PubSubTopic, log, logError} from '#utils';
+import {ScenarioType} from '#schemas/scenario';
+import {ScenarioMap} from '#src/sections/cloud-run/components/scenarios/ScenarioMap';
+import {
+    PubSubAction,
+    PubSubTopic,
+    getWorkingDirectoryForVideo,
+    log,
+    logError,
+    prepareCaption,
+} from '#utils';
+import {
+    addPreparedVideo,
+    getAccount,
+    getScenario,
+    getSource,
+    hasPreparedVideoBeenCreated,
+    uploadFileToServer,
+} from '$/shared';
 
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -27,39 +46,123 @@ export const pubsubHandler = async (req: Request, res: Response) => {
         log(`Publish time: ${pubsubMessage.publishTime}`);
 
         // Parse the message data if it's JSON
-        let parsedData;
         try {
-            parsedData = JSON.parse(data);
-            log('Parsed message data:', parsedData);
+            // let parsedData: Record<string, string>;
+            const {accountId, scenarioId, sourceId} = JSON.parse(data) as {
+                accountId: string;
+                scenarioId: string;
+                sourceId: string;
+            };
+            log('Parsed message data:', {accountId, scenarioId, sourceId});
+            if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId})) {
+                log('Prepared video already exists');
+                res.status(204).send();
+                return;
+            }
+
+            const scenario = await getScenario(scenarioId);
+            if (!scenario) {
+                log('Scenario not found', {scenarioId});
+                res.status(404).send();
+                return;
+            }
+
+            const account = await getAccount(accountId);
+            if (!account) {
+                log('Account not found', {accountId});
+                res.status(404).send();
+                return;
+            }
+
+            const source = await getSource(sourceId);
+            if (!source) {
+                log('Source not found', {sourceId});
+                res.status(404).send();
+                return;
+            }
+
+            console.log({scenario, account, source});
+
+            const isScenarioInAccount = account.availableScenarios.includes(scenario.name);
+            if (!isScenarioInAccount) {
+                log('Scenario not in account', {scenarioId, accountId});
+                res.status(404).send();
+                return;
+            }
+
+            const isScenarioEnabled = scenario.enabled;
+            if (!isScenarioEnabled) {
+                log('Scenario is not enabled', {scenarioId, status: scenario.enabled});
+                res.status(404).send();
+                return;
+            }
+
+            const scenarioWorkflow = ScenarioMap[scenario.type as ScenarioType];
+            if (!scenarioWorkflow) {
+                log('Scenario workflow not found', {
+                    scenarioId,
+                    scenarioType: scenario.type,
+                    ScenarioMap,
+                });
+                res.status(500).send();
+                return;
+            }
+
+            const {scenario: scenarioFunction, schema} = scenarioWorkflow;
+            const {success, error} = schema.safeParse(scenario);
+            if (!success) {
+                log('Scenario is not valid', {scenarioId, error});
+                res.status(500).send();
+                return;
+            }
+
+            if (!scenarioFunction) {
+                log('Scenario function not found', {scenarioId});
+                res.status(404).send();
+                return;
+            }
+
+            const directoryName = `${accountId}-${scenarioId}-${sourceId}`;
+
+            const basePath = getWorkingDirectoryForVideo(directoryName);
+            const finalFilePath = await scenarioFunction({scenario, source, basePath});
+            const scenarioName = scenario.name;
+            const originalHashtags = source.sources.instagramReel?.originalHashtags || [];
+
+            // Upload data to server
+            const downloadURL = await uploadFileToServer(
+                finalFilePath,
+                `${directoryName}-${scenarioName}.mp4`,
+            );
+            // update database
+            await addPreparedVideo({
+                firebaseUrl: downloadURL,
+                scenarioName,
+                scenarioId,
+                sourceId,
+                title: prepareCaption(scenario),
+                originalHashtags,
+                accounts: [account.id],
+                accountsHasBeenUsed: [],
+            });
+
+            // delete tempfiles
+            const deleteTempFiles = true;
+            if (deleteTempFiles) {
+                rmSync(basePath, {recursive: true});
+            }
+
+            // runCloudRunScenario(parsedData);
         } catch (error) {
+            console.log('error', error);
             log('Message data is not valid JSON');
         }
+
+        // runCloudRunScenario(parsedData);
 
         // Process the message based on attributes or content
         const messageAttributes = pubsubMessage.attributes || {};
         log('Message attributes:', messageAttributes);
-
-        // Example: Check for message type attribute to determine processing logic
-        const messageType = messageAttributes.type || PubSubAction.DEFAULT;
-
-        switch (messageType) {
-            case PubSubAction.INSTAGRAM_VIDEO_REQUESTED:
-                // Handle Instagram video download request
-                log('Processing Instagram video request');
-                // Call your video processing logic here
-                break;
-
-            case PubSubAction.YOUTUBE_UPLOAD:
-                // Handle YouTube upload request
-                log('Processing YouTube upload request');
-                // Call your YouTube upload logic here
-                break;
-
-            default:
-                // Default processing
-                log(`Processing message with default handler: ${messageType}`);
-            // Implement default logic here
-        }
 
         // Acknowledge the message by sending a success response
         // This tells Pub/Sub the message was processed successfully
@@ -79,7 +182,7 @@ export const pubsubHandler = async (req: Request, res: Response) => {
  * Simplified endpoint to push a test message to a Pub/Sub topic
  * Uses service account authentication via GOOGLE_APPLICATION_CREDENTIALS
  */
-export const pushMessageToPubSub = async (_req: Request, res: Response) => {
+export const pushMessageToPubSub = async (req: Request, res: Response) => {
     try {
         // Always use the Instagram video events topic
         const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;
@@ -107,18 +210,29 @@ export const pushMessageToPubSub = async (_req: Request, res: Response) => {
             return;
         }
 
-        // Create a simple test message
+        // Extract optional parameters from the request query
+        const {accountId, scenarioId, sourceId} = req.query;
+
+        // Create a test message with optional client data
         const testMessage = {
             data: 'This is a test message for Instagram video events',
             timestamp: new Date().toISOString(),
+            // Add client data if provided
+            ...(accountId && {accountId: String(accountId)}),
+            ...(scenarioId && {scenarioId: String(scenarioId)}),
+            ...(sourceId && {sourceId: String(sourceId)}),
         };
         log('[pubsub] Test message:', testMessage);
 
-        // Create attributes
+        // Create attributes including client data if available
         const attributes = {
             type: PubSubAction.TEST,
             timestamp: new Date().toISOString(),
             source: 'test-endpoint',
+            // Include client data in attributes if available
+            ...(accountId && {accountId: String(accountId)}),
+            ...(scenarioId && {scenarioId: String(scenarioId)}),
+            ...(sourceId && {sourceId: String(sourceId)}),
         };
         log('[pubsub] Message attributes:', attributes);
 
@@ -133,6 +247,10 @@ export const pushMessageToPubSub = async (_req: Request, res: Response) => {
                 message: 'Test message published to Pub/Sub',
                 topic: topic,
                 authMethod: 'service_account',
+                // Include client data in response if provided
+                ...(accountId && {accountId: String(accountId)}),
+                ...(scenarioId && {scenarioId: String(scenarioId)}),
+                ...(sourceId && {sourceId: String(sourceId)}),
             });
 
             return;

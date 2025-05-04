@@ -11,7 +11,7 @@ import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
 import {getScenarios} from '../sections/shared/scenarios';
-import {MediaPostModel, ScenarioV3, SourceV3} from '../types';
+import {MediaPostModel, ScenarioV4, SourceV3} from '../types';
 
 import {log, logError} from './logging';
 
@@ -268,7 +268,7 @@ export const getRandomElementOfArray = <T>(array: T[]) => {
     return array[Math.floor(Math.random() * array.length)];
 };
 
-export const prepareCaption = (scenario: ScenarioV3) => {
+export const prepareCaption = (scenario: ScenarioV4) => {
     const linkToAnotherAccount = shuffle(scenario.texts?.link_to_another_account || [''])[0];
     const intro = shuffle(scenario.texts?.intro || [''])[0];
     const main = shuffle(scenario.texts?.main || [''])[0];

@@ -1,7 +1,7 @@
 import {Request, Response} from 'express';
 
 import {logError} from '#utils';
-import {runInjectionScenraios} from '$/cloud-run/components/scenarios';
+// import {runInjectionScenraios} from '$/cloud-run/components/scenarios';
 import {addScenario, clearPreprod, getScenarios, patchScenario} from '$/shared';
 
 export const uiGetScenarios = async (_req: Request, res: Response) => {
@@ -34,5 +34,5 @@ export const uiClearPreprod = async (req: Request, res: Response) => {
 
 export const uiRunInjectionScenraios = async (req: Request, res: Response) => {
     res.status(200).send(req.query);
-    await runInjectionScenraios();
+    // await runInjectionScenraios();
 };

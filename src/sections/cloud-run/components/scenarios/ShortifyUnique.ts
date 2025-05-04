@@ -1,4 +1,3 @@
-import {rmSync} from 'fs';
 import {join} from 'path';
 
 import {
@@ -11,61 +10,33 @@ import {
 
 import {addRandomEffects} from './utils';
 
-import {ScenarioV3} from '#types';
-import {
-    getRandomElementOfArray,
-    getWorkingDirectoryForVideo,
-    log,
-    prepareCaption,
-    saveFileToDisk,
-} from '#utils';
-import {addPreparedVideo, uploadFileToServer} from '$/shared';
+import {ScenarioShortifyUnique, ScenarioV4, SourceV3} from '#types';
+import {getRandomElementOfArray, log, saveFileToDisk} from '#utils';
 
 type ShortifyUniqueArgs = {
-    sourceId: string;
-    directoryName: string;
-    mainVideoUrl: string;
-    bannerVideoUrls: string[];
-    scenario: ScenarioV3;
-    originalHashtags: string[];
-    accounts: string[];
+    scenario: ScenarioV4;
+    source: SourceV3;
+    basePath: string;
 };
 
-export const shortifyUnique = async ({
-    sourceId,
-    directoryName,
-    mainVideoUrl,
-    bannerVideoUrls,
-    originalHashtags,
-    accounts = [],
-    scenario,
-}: ShortifyUniqueArgs) => {
+export const shortifyUnique = async ({scenario, source, basePath}: ShortifyUniqueArgs) => {
     log('shortifyUnique', {
-        sourceId,
-        directoryName,
-        mainVideoUrl,
-        bannerVideoUrls,
-        originalHashtags,
-        accounts,
+        source,
         scenario,
+        basePath,
     });
-    if (!accounts.length || !scenario) {
-        throw new Error('Accounts and scenario cannot be empty');
-    }
 
-    if (scenario.type !== 'ScenarioShortifyUniqueType') {
-        log('scenario.type error', scenario.type, 'expect to be', 'ScenarioShortifyUniqueType');
-        return;
-    }
+    const {firebaseUrl: mainVideoUrl} = source;
 
-    log('scenario accepted', scenario);
-
-    const {name: scenarioName, id: scenarioId, minDuration, maxDuration} = scenario;
+    const {
+        minDuration,
+        maxDuration,
+        extraBannerUrls: bannerVideoUrls,
+    } = scenario as ScenarioShortifyUnique;
 
     // Use the first banner URL from the array
     const bannerVideoUrl = getRandomElementOfArray(bannerVideoUrls);
     log({mainVideoUrl, bannerVideoUrl});
-    const basePath = getWorkingDirectoryForVideo(directoryName);
 
     //download videos
     const tempFilePath1 = join(basePath, 'first.mp4');
@@ -100,41 +71,10 @@ export const shortifyUnique = async ({
     });
 
     // uniqalize
-    const finalFilePath = await addRandomEffects({
+    return await addRandomEffects({
         input: outputFilePath,
         countOfEffects: 3,
-        text: accounts[0],
+        // text: accounts[0],
+        text: '',
     });
-
-    // Upload data to server
-    const downloadURL = await uploadFileToServer(
-        finalFilePath,
-        `${directoryName}-${scenarioName}.mp4`,
-    );
-
-    // update database
-    await addPreparedVideo({
-        firebaseUrl: downloadURL,
-        scenarioName,
-        scenarioId,
-        sourceId,
-        title: prepareCaption(scenario),
-        originalHashtags,
-        accounts,
-        accountsHasBeenUsed: [],
-        parameters: {
-            scenario,
-            mainVideoUrl,
-            bannerVideoUrl,
-            sourceId,
-            pauseTime,
-            duration: await getVideoDuration(finalFilePath),
-        },
-    });
-
-    // delete tempfiles
-    const deleteTempFiles = true;
-    if (deleteTempFiles) {
-        rmSync(basePath, {recursive: true});
-    }
 };

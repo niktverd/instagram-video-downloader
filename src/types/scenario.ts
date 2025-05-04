@@ -1,61 +1,30 @@
-export type ScenarioBase = {
-    id: string;
-    name: ScenarioName;
-    onlyOnce: boolean;
-    enabled: boolean;
-    texts: Record<string, string[]>;
-};
+import {z} from 'zod';
 
-export enum ScenarioName {
-    ScenarioAddBannerAtTheEnd1 = 'add-banner-at-the-end-1',
-    ScenarioAddBannerAtTheEnd2 = 'add-banner-at-the-end-2',
+import {
+    // scenarioAddBannerAtTheEndSchema,
+    scenarioAddBannerAtTheEndUniqueSchema,
+    scenarioBaseSchema,
+    // scenarioCoverWithImageSchema,
+    // scenarioLongVideoWithInjectionsSchema,
+    // scenarioShortifySchema,
+    scenarioShortifyUniqueSchema,
+} from '#src/schemas/scenario';
+
+export enum ScenarioName { // deprecated
+    // ScenarioAddBannerAtTheEnd1 = 'add-banner-at-the-end-1',
+    // ScenarioAddBannerAtTheEnd2 = 'add-banner-at-the-end-2',
     ScenarioAddBannerAtTheEndUnique = 'add-banner-at-the-end-unique',
     ScenarioShortifyUnique = 'shortify-unique',
-    ScenarioShortify = 'shortify',
+    // ScenarioShortify = 'shortify',
 }
 
-export type ScenarioAddBannerAtTheEnd = {
-    type: 'ScenarioAddBannerAtTheEnd';
-    extraBannerUrl: string;
-};
+export type ScenarioBase = z.infer<typeof scenarioBaseSchema>;
+// export type ScenarioAddBannerAtTheEnd = z.infer<typeof scenarioAddBannerAtTheEndSchema>;
+export type ScenarioAddBannerAtTheEndUnique = z.infer<typeof scenarioAddBannerAtTheEndUniqueSchema>;
+// export type ScenarioShortify = z.infer<typeof scenarioShortifySchema>;
+export type ScenarioShortifyUnique = z.infer<typeof scenarioShortifyUniqueSchema>;
+// export type ScenarioCoverWithImage = z.infer<typeof scenarioCoverWithImageSchema>;
+// export type ScenarioLongVideoWithInjections = z.infer<typeof scenarioLongVideoWithInjectionsSchema>;
 
-export type ScenarioAddBannerAtTheEndUnique = {
-    type: 'ScenarioAddBannerAtTheEndUnique';
-    extraBannerUrl?: string;
-    extraBannerUrls: string[];
-};
-
-export type ScenarioShortify = {
-    type: 'ScenarioShortifyType';
-    extraBannerUrls: string[];
-    minDuration: number;
-    maxDuration: number;
-};
-
-export type ScenarioShortifyUnique = {
-    type: 'ScenarioShortifyUniqueType';
-    minDuration: number;
-    maxDuration: number;
-    extraBannerUrls: string[];
-};
-
-export type ScenarioCoverWithImage = {
-    type: 'ScenarioCoverWithImageType';
-    imageUrl: string;
-    imageTop: number;
-    imageLeft: number;
-    imageWidth: number;
-    imageHeight: number;
-    videoTop: number;
-    videoLeft: number;
-    videoWidth: number;
-    videoHeight: number;
-};
-
-export type ScenarioLongVideoWithInjections = {
-    type: 'ScenarioLongVideoWithInjections';
-    adsBannerUrl: string;
-    startBannerUrl: string;
-    injections: string[];
-    limit: number;
-};
+export type ScenarioV4 = ScenarioAddBannerAtTheEndUnique | ScenarioShortifyUnique;
+// | ScenarioCoverWithImage;

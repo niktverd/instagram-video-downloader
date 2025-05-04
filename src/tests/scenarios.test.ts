@@ -1,11 +1,14 @@
 import {existsSync, mkdirSync} from 'fs';
 import path from 'path';
 
-import {addBannerInTheEndUnique} from '../sections/cloud-run/components/scenarios/AddBannerInTheEndUnique';
-import {shortify} from '../sections/cloud-run/components/scenarios/Shortify';
-import {shortifyUnique} from '../sections/cloud-run/components/scenarios/ShortifyUnique';
+import {Timestamp} from 'firebase/firestore/lite';
+
 import {ScenarioName} from '../types/scenario';
-import {log, saveFileToDisk} from '../utils';
+import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../utils';
+
+import {ScenarioType} from '#schemas/scenario';
+import {addBannerInTheEndUnique} from '$/cloud-run/components/scenarios/AddBannerInTheEndUnique';
+import {shortifyUnique} from '$/cloud-run/components/scenarios/ShortifyUnique';
 
 log('Test primitives');
 
@@ -43,62 +46,106 @@ export const prepareVideo = async () => {
 };
 
 const testAddBannerInTheEndUnique = async (filePath: string) => {
+    const directoryName = `test-testAddBannerInTheEndUnique`;
+
+    const basePath = getWorkingDirectoryForVideo(directoryName);
     await addBannerInTheEndUnique({
-        sourceId: '123',
-        directoryName: 'test',
-        mainVideoUrl: filePath,
-        bannerVideoUrl:
-            'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
-        originalHashtags: [],
-        accounts: ['@someaccount.gamble'],
+        source: {
+            id: '123',
+            sources: {
+                instagramReel: {
+                    url: filePath,
+                    senderId: '123',
+                    owner: '123',
+                    title: 'test',
+                    originalHashtags: [],
+                },
+            },
+            createdAt: new Timestamp(new Date().getTime(), 0),
+            firebaseUrl:
+                'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
+            randomIndex: 0,
+            bodyJSONString: '{}',
+            attempt: 0,
+            scenarios: [],
+            lastUsed: new Timestamp(new Date().getTime(), 0),
+            timesUsed: 0,
+            scenariosHasBeenCreated: [],
+        },
         scenario: {
             id: '1',
             name: ScenarioName.ScenarioAddBannerAtTheEndUnique,
-            type: 'ScenarioAddBannerAtTheEndUnique',
+            type: ScenarioType.ScenarioAddBannerAtTheEndUnique,
             onlyOnce: false,
             enabled: true,
             texts: {},
             extraBannerUrls: [
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
             ],
+            extraBannerUrl: '',
         },
+        basePath,
     });
 };
 
-const testShortify = async (filePath: string) => {
-    await shortify({
-        sourceId: '123',
-        directoryName: 'test',
-        mainVideoUrl: filePath,
-        bannerVideoUrls: [bannerVideoUrls[0]],
-        originalHashtags: [],
-        accounts: ['@someaccount.gamble'],
-        scenario: {
-            id: '1',
-            name: ScenarioName.ScenarioShortify,
-            type: 'ScenarioShortifyType',
-            onlyOnce: false,
-            enabled: true,
-            texts: {},
-            extraBannerUrls: [bannerVideoUrls[0]],
-            minDuration: 3,
-            maxDuration: 5,
-        },
-    });
+const testShortify = async (_filePath: string) => {
+    // await shortify({
+    //     sourceId: '123',
+    //     directoryName: 'test',
+    //     mainVideoUrl: filePath,
+    //     bannerVideoUrls: [bannerVideoUrls[0]],
+    //     originalHashtags: [],
+    //     accounts: ['@someaccount.gamble'],
+    //     scenario: {
+    //         id: '1',
+    //         name: ScenarioName.ScenarioShortify,
+    //         type: 'ScenarioShortifyType',
+    //         onlyOnce: false,
+    //         enabled: true,
+    //         texts: {},
+    //         extraBannerUrls: [bannerVideoUrls[0]],
+    //         minDuration: 3,
+    //         maxDuration: 5,
+    //     },
+    // });
 };
 
 const testShortifyUnique = async (filePath: string) => {
+    const directoryName = `test-testShortifyUnique`;
+
+    const basePath = getWorkingDirectoryForVideo(directoryName);
     await shortifyUnique({
-        sourceId: '123',
-        directoryName: 'test',
-        mainVideoUrl: filePath,
-        bannerVideoUrls: [bannerVideoUrls[0]],
-        originalHashtags: [],
-        accounts: ['@someaccount.gamble'],
+        source: {
+            id: '123',
+            sources: {
+                instagramReel: {
+                    url: filePath,
+                    senderId: '123',
+                    owner: '123',
+                    title: 'test',
+                    originalHashtags: [],
+                },
+            },
+            createdAt: new Timestamp(new Date().getTime(), 0),
+            firebaseUrl:
+                'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
+            randomIndex: 0,
+            bodyJSONString: '{}',
+            attempt: 0,
+            scenarios: [],
+            lastUsed: new Timestamp(new Date().getTime(), 0),
+            timesUsed: 0,
+            scenariosHasBeenCreated: [],
+        },
+        // directoryName: 'test',
+        // mainVideoUrl: filePath,
+        // bannerVideoUrls: [bannerVideoUrls[0]],
+        // originalHashtags: [],
+        // accounts: ['@someaccount.gamble'],
         scenario: {
             id: '1',
             name: ScenarioName.ScenarioShortifyUnique,
-            type: 'ScenarioShortifyUniqueType',
+            type: ScenarioType.ScenarioShortifyUnique,
             onlyOnce: false,
             enabled: true,
             texts: {},
@@ -106,6 +153,7 @@ const testShortifyUnique = async (filePath: string) => {
             minDuration: 3,
             maxDuration: 5,
         },
+        basePath,
     });
 };
 
@@ -115,7 +163,7 @@ const runTests = async () => {
         await testAddBannerInTheEndUnique(sources.blackNYellow);
     }
 
-    const runShortify = true;
+    const runShortify = false;
     if (runShortify) {
         await testShortify(sources.blackNYellow);
     }

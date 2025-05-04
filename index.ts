@@ -9,7 +9,6 @@ import appRoutes from './src/routes';
 import {log} from './src/utils';
 
 import {downloadVideoCron} from '$/chore/components/preprocess-video';
-import {runScenarioCron} from '$/cloud-run/components/scenarios';
 import {callbackInstagramLogin, hubChallangeWebhook} from '$/instagram/controllers';
 
 dotenv.config();
@@ -57,4 +56,3 @@ app.listen(appPort, () => {
 });
 
 downloadVideoCron(DelayMS.Sec30);
-runScenarioCron(DelayMS.Sec30);

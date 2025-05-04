@@ -45,4 +45,4 @@ The knip.md report will show you:
 - Unused files
 - Unused types
 
-You can use this information to clean up your codebase and improve its maintainability. 
+You can use this information to clean up your codebase and improve its maintainability.

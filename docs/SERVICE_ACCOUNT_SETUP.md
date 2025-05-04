@@ -86,4 +86,4 @@ If you encounter authentication issues:
 1. Never commit service account keys to version control
 2. Use environment variables or secret management solutions
 3. Limit the permissions of the service account to only what's needed
-4. Regularly rotate service account keys 
+4. Regularly rotate service account keys

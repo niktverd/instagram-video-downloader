@@ -203,10 +203,10 @@ forbidden: [
     comment: 'Circular dependencies are harmful',
     from: {},
     to: {
-      circular: true
-    }
-  }
-]
+      circular: true,
+    },
+  },
+];
 ```
 
 dependency-cruiser helps maintain a clean architecture and prevents dependency issues before they grow into larger problems.

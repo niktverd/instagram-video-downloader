@@ -38,7 +38,7 @@ jobs:
 
       - name: Build docker image
         run: docker build -t $SERVICE_NAME:$GITHUB_SHA .
-  
+
   deploy:
     name: Deploy
     needs: build-and-test
@@ -51,10 +51,10 @@ jobs:
           persist-credentials: false
 
       # Authenticate with Google Cloud
-      - id: "auth"
-        uses: "google-github-actions/auth@v2"
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: "${{ secrets.GCP_SA_KEY }}"
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       # Setup gcloud CLI/SDK
       - name: Set up Cloud SDK
@@ -105,7 +105,7 @@ jobs:
         run: |
           SERVICE_URL=$(gcloud run services describe $DEPLOY_SERVICE_NAME --region $REGION --format='value(status.url)')
           echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
-      
+
       # Create or update Pub/Sub topic
       - name: Create/Update Pub/Sub topic
         run: |
@@ -116,19 +116,19 @@ jobs:
           else
             echo "Topic $TOPIC_NAME already exists"
           fi
-      
+
       # Create or update Pub/Sub subscription with push endpoint
       - name: Create/Update Pub/Sub subscription
         run: |
           SUBSCRIPTION_NAME="${TOPIC_NAME}-push-subscription"
           PUSH_ENDPOINT="${SERVICE_URL}${PUSH_ENDPOINT}"
-          
+
           # Check if subscription exists
           if gcloud pubsub subscriptions describe $SUBSCRIPTION_NAME >/dev/null 2>&1; then
             echo "Updating subscription $SUBSCRIPTION_NAME"
             gcloud pubsub subscriptions delete $SUBSCRIPTION_NAME
           fi
-          
+
           echo "Creating subscription $SUBSCRIPTION_NAME with push endpoint $PUSH_ENDPOINT"
           gcloud pubsub subscriptions create $SUBSCRIPTION_NAME \
             --topic $TOPIC_NAME \
@@ -144,4 +144,3 @@ jobs:
       #     gcloud run services update $DEPLOY_SERVICE_NAME \
       #       --region $REGION \
       #       --set-env-vars ENABLE_MEMORY_MONITORING=true
-

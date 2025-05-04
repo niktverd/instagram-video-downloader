@@ -2,7 +2,7 @@ import {addDoc, collection, doc, getDoc, getDocs, updateDoc} from 'firebase/fire
 
 import {firestore} from '#config/firebase';
 import {Collection} from '#src/constants';
-import {ScenarioV3, SourceV3} from '#types';
+import {ScenarioV4, SourceV3} from '#types';
 import {log} from '#utils';
 
 export const getScenarios = async (onlyEnabled = false) => {
@@ -11,14 +11,25 @@ export const getScenarios = async (onlyEnabled = false) => {
     if (snaps.empty) {
         throw new Error(`Collection ${Collection.Scenarios} is empty`);
     }
-    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV3));
+    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV4));
 
     return data.filter(({enabled}) => (onlyEnabled ? enabled : true));
 };
 
+export const getScenario = async (id: string): Promise<ScenarioV4> => {
+    const colRef = collection(firestore, Collection.Scenarios);
+    const docRef = doc(colRef, id);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) {
+        throw new Error(`Scenario ${id} not found`);
+    }
+
+    return {...snap.data(), id} as ScenarioV4;
+};
+
 type PatchScenarioArgs = {
     id: string;
-    values: ScenarioV3;
+    values: ScenarioV4;
 };
 
 export const patchScenario = async ({id, values}: PatchScenarioArgs) => {
@@ -29,7 +40,7 @@ export const patchScenario = async ({id, values}: PatchScenarioArgs) => {
 
 type AddScenarioArgs = {
     id: string;
-    values: ScenarioV3;
+    values: ScenarioV4;
 };
 
 export const addScenario = async ({values}: AddScenarioArgs) => {

@@ -1,4 +1,4 @@
-import {collection, doc, getDocs, setDoc} from 'firebase/firestore/lite';
+import {collection, doc, getDoc, getDocs, setDoc} from 'firebase/firestore/lite';
 
 import {firestore} from '#config/firebase';
 import {Collection} from '#src/constants';
@@ -34,4 +34,14 @@ export const getAccounts = async (onlyEnabled = false) => {
     const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as AccountV3));
 
     return data.filter(({disabled}) => (onlyEnabled ? !disabled : true));
+};
+
+export const getAccount = async (id: string) => {
+    const collectionRef = collection(firestore, Collection.Accounts);
+    const docRef = doc(collectionRef, id);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) {
+        throw new Error(`Account ${id} not found`);
+    }
+    return snap.data() as AccountV3;
 };

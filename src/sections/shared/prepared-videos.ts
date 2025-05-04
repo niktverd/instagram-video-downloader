@@ -1,6 +1,6 @@
 import {readFileSync} from 'fs';
 
-import {addDoc, collection} from 'firebase/firestore/lite';
+import {addDoc, collection, getDocs, query, where} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 
 import {firestore, storage} from '#config/firebase';
@@ -25,4 +25,36 @@ export const uploadFileToServer = async (outputFilePath: string, uploadFileName:
     log('downloadURL', downloadURL);
 
     return downloadURL;
+};
+
+export const hasPreparedVideoBeenCreated = async ({
+    accountId,
+    scenarioId,
+    sourceId,
+}: {
+    accountId: string;
+    scenarioId: string;
+    sourceId: string;
+}) => {
+    try {
+        log('Checking if prepared video exists:', {accountId, scenarioId, sourceId});
+        const collectionRef = collection(firestore, Collection.PreparedVideos);
+        const q = query(
+            collectionRef,
+            where('sourceId', '==', sourceId),
+            where('scenarioId', '==', scenarioId),
+            where('accountsHasBeenUsed', 'array-contains', accountId),
+        );
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+            log('Prepared video exists:', querySnapshot.docs[0].data());
+            return true;
+        }
+
+        log('Prepared video does not exist');
+        return false;
+    } catch (error) {
+        log('Error checking prepared video:', error);
+        return false;
+    }
 };

@@ -32,10 +32,12 @@ Before using this feature, ensure the following secrets are set in your GitHub r
 ## How It Works
 
 1. **Message Publishing**:
+
    - A client publishes a message to the Pub/Sub topic
    - This can be done using the utility functions in `src/utils/pubsub-client.ts`
 
 2. **Message Delivery**:
+
    - Pub/Sub automatically pushes the message to the configured endpoint `/pubsub-handler`
    - The message is delivered as an HTTP POST request
 
@@ -66,21 +68,21 @@ Messages have the following structure:
 ### 1. Request an Instagram Video Download
 
 ```typescript
-import { requestInstagramVideoDownload } from './src/utils/pubsub-client';
+import {requestInstagramVideoDownload} from './src/utils/pubsub-client';
 
 // In your controller
 await requestInstagramVideoDownload(
   'your-project-id',
   'instagram-video-events',
   'https://www.instagram.com/p/ABCDEF123456/',
-  'user123'
+  'user123',
 );
 ```
 
 ### 2. Request a YouTube Upload
 
 ```typescript
-import { requestYoutubeUpload } from './src/utils/pubsub-client';
+import {requestYoutubeUpload} from './src/utils/pubsub-client';
 
 // In your controller
 await requestYoutubeUpload(
@@ -88,7 +90,7 @@ await requestYoutubeUpload(
   'instagram-video-events',
   '/path/to/video.mp4',
   'Video Title',
-  'Video Description'
+  'Video Description',
 );
 ```
 
@@ -110,14 +112,16 @@ gcloud pubsub topics publish instagram-video-events \
 ## Troubleshooting
 
 1. **Messages not being received**:
+
    - Check the Cloud Run service logs
    - Verify the push subscription is correctly configured
    - Ensure the service account has invoker permissions
 
 2. **Authentication errors**:
+
    - Check IAM permissions for the Pub/Sub service account
    - Ensure the service is publicly accessible or has proper authentication
 
 3. **Invalid message format**:
    - Verify the message data format
-   - Check that base64 encoding/decoding is working correctly 
+   - Check that base64 encoding/decoding is working correctly

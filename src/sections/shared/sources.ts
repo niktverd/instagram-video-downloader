@@ -2,6 +2,8 @@ import {
     DocumentData,
     DocumentSnapshot,
     collection,
+    doc,
+    getDoc,
     getDocs,
     limit,
     orderBy,
@@ -79,4 +81,14 @@ export const getNRandomSources = async (limitVideo: number) => {
     }
 
     return {videoUrls, sourceRefs, ids, originalHashtags};
+};
+
+export const getSource = async (id: string) => {
+    const colRef = collection(firestore, Collection.Sources);
+    const docRef = doc(colRef, id);
+    const snap = await getDoc(docRef);
+    if (!snap.exists()) {
+        throw new Error(`Source ${id} not found`);
+    }
+    return snap.data() as SourceV3;
 };
