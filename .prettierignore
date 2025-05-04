@@ -11,3 +11,6 @@ dist
 
 # Node modules
 node_modules
+
+# Dependency cruiser
+.dependency-cruiser.js

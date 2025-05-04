@@ -1,14 +1,10 @@
 # Knip report
 
-## Unused files (1)
+## Unused files (3)
 
-- src/sections/cloud-run/components/scenarios/CoverWithImage.ts
-
-## Unresolved imports (1)
-
-| Name                | Location                                                 | Severity |
-| :------------------ | :------------------------------------------------------- | :------- |
-| ./AddBannerInTheEnd | src/sections/cloud-run/components/scenarios/index.ts:1:1 | error    |
+* src/sections/cloud-run/components/scenarios/CoverWithImage.ts
+* src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
+* src/sections/cloud-run/components/scenarios/common.ts
 
 ## Unused exports (4)
 
@@ -26,3 +22,4 @@
 | RandomIndex | src/constants.ts:34:5 | error    |
 | Min2        | src/constants.ts:22:5 | error    |
 | Min1        | src/constants.ts:23:5 | error    |
+

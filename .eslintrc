@@ -5,6 +5,7 @@
         "node": true
     },
     "plugins": ["no-not-accumulator-reassign"],
+    "ignorePatterns": [".dependency-cruiser.js"],
     "rules": {
         "no-param-reassign": ["warn", {"props": false}],
         "no-not-accumulator-reassign/no-not-accumulator-reassign": [
