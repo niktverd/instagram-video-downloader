@@ -99,7 +99,7 @@ jobs:
           set +e
           gcloud run services describe $SERVICE_NAME --region $REGION > /dev/null 2>&1
           echo "service_exists=$?" >> $GITHUB_OUTPUT
-      
+
       - name: Deploy service (first time)
         if: steps.check_service.outputs.service_exists != '0'
         run: |
