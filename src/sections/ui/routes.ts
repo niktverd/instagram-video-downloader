@@ -4,6 +4,10 @@ import {clearPreprod} from '../shared';
 
 import {
     createUserPost,
+    deleteUserDelete,
+    getAllUsersGet,
+    getUserByEmailGet,
+    getUserByIdGet,
     uiAddAccount,
     uiAddScenario,
     uiConvertImageToVideo,
@@ -12,7 +16,7 @@ import {
     uiGetAccounts,
     uiGetInsights,
     uiGetInstagramMedia,
-    uiGetInstagramUserById,
+    // uiGetInstagramUserById,
     uiGetInstagramUserIdByMediaId,
     uiGetMediaPosts,
     uiGetScenarios,
@@ -36,10 +40,13 @@ router.get('/create-video-by-scenario', uiCreateVideoByScenario);
 router.get('/download-video-from-source-v3', uiDownloadVideoFromSourceV3);
 router.get('/get-insights', uiGetInsights);
 router.get('/get-media', uiGetInstagramMedia);
-router.get('/get-user-by-id', uiGetInstagramUserById);
+// router.get('/get-user-by-id', uiGetInstagramUserById);
 router.get('/get-owner-by-media-id', uiGetInstagramUserIdByMediaId);
 router.get('/run-injection-scenarios', uiRunInjectionScenraios);
 router.get('/get-user-content', uiGetUserContent);
+router.get('/get-user-by-id', getUserByIdGet);
+router.get('/get-user-by-email', getUserByEmailGet);
+router.get('/get-all-users', getAllUsersGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);
@@ -57,5 +64,6 @@ router.patch('/update-user', updateUserPatch);
 
 // DELETE routes
 router.delete('/clear-proprod-database', clearPreprod);
+router.delete('/delete-user', deleteUserDelete);
 
 export default router;

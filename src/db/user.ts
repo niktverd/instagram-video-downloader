@@ -43,20 +43,55 @@ export async function createUser(
     return user;
 }
 
-export async function getUserById(id: string, trx?: Transaction): Promise<User | undefined> {
-    const user = await User.query(trx || db).findById(id);
+export const GetUserByIdParamsSchema = z.object({
+    id: z.string(),
+});
+
+export type GetUserByIdParams = z.infer<typeof GetUserByIdParamsSchema>;
+export type GetUserByIdResponse = PartialModelObject<User>;
+
+export async function getUserById(
+    params: GetUserByIdParams,
+    trx?: Transaction,
+): Promise<GetUserByIdResponse> {
+    const user = await User.query(trx || db).findById(params.id);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
     return user;
 }
 
-export async function getUserByEmail(email: string, trx?: Transaction): Promise<User | undefined> {
+export const GetUserByEmailParamsSchema = z.object({
+    email: z.string(),
+});
+
+export type GetUserByEmailParams = z.infer<typeof GetUserByEmailParamsSchema>;
+export type GetUserByEmailResponse = PartialModelObject<User>;
+
+export async function getUserByEmail(
+    params: GetUserByEmailParams,
+    trx?: Transaction,
+): Promise<GetUserByEmailResponse> {
     const user = await User.query(trx || db)
-        .where('email', email)
+        .where('email', params.email)
         .first();
 
+    if (!user) {
+        throw new Error('User not found');
+    }
+
     return user;
 }
 
-export async function getAllUsers(trx?: Transaction): Promise<User[]> {
+export const GetAllUsersParamsSchema = z.object({});
+export type GetAllUsersParams = z.infer<typeof GetAllUsersParamsSchema>;
+export type GetAllUsersResponse = PartialModelObject<User>[];
+
+export async function getAllUsers(
+    _params: GetAllUsersParams,
+    trx?: Transaction,
+): Promise<GetAllUsersResponse> {
     const users = await User.query(trx || db);
     return users;
 }
@@ -74,7 +109,17 @@ export async function updateUser(params: UpdateUserParams, trx?: Transaction): P
     return user;
 }
 
-export async function deleteUser(id: string, trx?: Transaction): Promise<number> {
-    const deletedCount = await User.query(trx || db).deleteById(id);
+export const DeleteUserParamsSchema = z.object({
+    id: z.string(),
+});
+
+export type DeleteUserParams = z.infer<typeof DeleteUserParamsSchema>;
+export type DeleteUserResponse = number;
+
+export async function deleteUser(
+    params: DeleteUserParams,
+    trx?: Transaction,
+): Promise<DeleteUserResponse> {
+    const deletedCount = await User.query(trx || db).deleteById(params.id);
     return deletedCount;
 }
