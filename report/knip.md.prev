@@ -2,14 +2,14 @@
 
 ## Unused files (8)
 
-* src/config/database.ts
-* src/models/PreparedVideo.ts
-* src/models/Source.ts
-* src/sections/cloud-run/components/scenarios/CoverWithImage.ts
-* src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
-* src/sections/cloud-run/components/scenarios/common.ts
-* src/services/UserService.ts
-* src/utils/scenarios.ts
+- src/config/database.ts
+- src/models/PreparedVideo.ts
+- src/models/Source.ts
+- src/sections/cloud-run/components/scenarios/CoverWithImage.ts
+- src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
+- src/sections/cloud-run/components/scenarios/common.ts
+- src/services/UserService.ts
+- src/utils/scenarios.ts
 
 ## Unused dependencies (2)
 
@@ -37,9 +37,8 @@
 
 ## Duplicate exports (3)
 
-| Name             | Location               | Severity |
-| :--------------- | :--------------------- | :------- |
-| Scenario|default | src/models/Scenario.ts | error    |
-| Account|default  | src/models/Account.ts  | error    |
-| User|default     | src/models/User.ts     | error    |
-
+| Name     | Location | Severity               |
+| :------- | :------- | :--------------------- | ----- |
+| Scenario | default  | src/models/Scenario.ts | error |
+| Account  | default  | src/models/Account.ts  | error |
+| User     | default  | src/models/User.ts     | error |

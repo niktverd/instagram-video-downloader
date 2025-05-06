@@ -2,12 +2,22 @@ import {
     CreateUserParams,
     CreateUserParamsSchema,
     CreateUserResponse,
-    createUser as dbCreateUser,
+    UpdateUserParams,
+    UpdateUserParamsSchema,
+    UpdateUserResponse,
+    createUser,
+    updateUser,
     wrapper,
 } from '../../../db';
 
-export const createUser = wrapper<CreateUserParams, CreateUserResponse>(
-    dbCreateUser,
+export const createUserPost = wrapper<CreateUserParams, CreateUserResponse>(
+    createUser,
     CreateUserParamsSchema,
     'POST',
+);
+
+export const updateUserPatch = wrapper<UpdateUserParams, UpdateUserResponse>(
+    updateUser,
+    UpdateUserParamsSchema,
+    'PATCH',
 );

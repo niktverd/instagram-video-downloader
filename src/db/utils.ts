@@ -42,7 +42,7 @@ export async function closeConnection(): Promise<void> {
 }
 
 // REST HTTP method type
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 // Enhanced wrapper for route handlers with validation and method checking
 export const wrapper = <RequestArgs, ResponseArgs>(

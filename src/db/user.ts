@@ -61,23 +61,14 @@ export async function getAllUsers(trx?: Transaction): Promise<User[]> {
     return users;
 }
 
-interface UpdateUserParams {
-    email?: string;
-    displayName?: string;
-    photoURL?: string;
-    providerData?: Record<string, any>;
-    providerId?: string;
-    password?: string;
-}
+export const UpdateUserParamsSchema = CreateUserParamsSchema.partial().extend({
+    id: z.string(),
+});
 
-export async function updateUser(
-    id: string,
-    params: UpdateUserParams,
-    trx?: Transaction,
-): Promise<User> {
-    const updateData: PartialModelObject<User> = {
-        ...params,
-    };
+export type UpdateUserParams = z.infer<typeof UpdateUserParamsSchema>;
+export type UpdateUserResponse = PartialModelObject<User>;
+export async function updateUser(params: UpdateUserParams, trx?: Transaction): Promise<User> {
+    const {id, ...updateData} = UpdateUserParamsSchema.parse(params);
 
     const user = await User.query(trx || db).patchAndFetchById(id, updateData);
     return user;

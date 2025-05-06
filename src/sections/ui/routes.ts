@@ -3,7 +3,7 @@ import {Router as expressRouter} from 'express';
 import {clearPreprod} from '../shared';
 
 import {
-    createUser,
+    createUserPost,
     uiAddAccount,
     uiAddScenario,
     uiConvertImageToVideo,
@@ -23,6 +23,7 @@ import {
     uiSavePostForFutherAnalysis,
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
+    updateUserPatch,
 } from './controllers';
 
 const router = expressRouter();
@@ -47,11 +48,12 @@ router.post('/add-scenario', uiAddScenario);
 router.post('/add-account', uiAddAccount);
 router.post('/convert-image-to-video', uiConvertImageToVideo);
 router.post('/save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
-router.post('/create-user', createUser);
+router.post('/create-user', createUserPost);
 
 // PATCH routes
 router.patch('/patch-scenario', uiPatchScenario);
 router.patch('/patch-account', uiPatchAccount);
+router.patch('/update-user', updateUserPatch);
 
 // DELETE routes
 router.delete('/clear-proprod-database', clearPreprod);
