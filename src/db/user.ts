@@ -43,9 +43,11 @@ export async function createUser(
     return user;
 }
 
-export const GetUserByIdParamsSchema = z.object({
-    id: z.string(),
-});
+export const GetUserByIdParamsSchema = z
+    .object({
+        id: z.string(),
+    })
+    .strict();
 
 export type GetUserByIdParams = z.infer<typeof GetUserByIdParamsSchema>;
 export type GetUserByIdResponse = PartialModelObject<User>;
@@ -62,9 +64,11 @@ export async function getUserById(
     return user;
 }
 
-export const GetUserByEmailParamsSchema = z.object({
-    email: z.string(),
-});
+export const GetUserByEmailParamsSchema = z
+    .object({
+        email: z.string(),
+    })
+    .strict();
 
 export type GetUserByEmailParams = z.infer<typeof GetUserByEmailParamsSchema>;
 export type GetUserByEmailResponse = PartialModelObject<User>;
@@ -96,9 +100,11 @@ export async function getAllUsers(
     return users;
 }
 
-export const UpdateUserParamsSchema = CreateUserParamsSchema.partial().extend({
-    id: z.string(),
-});
+export const UpdateUserParamsSchema = CreateUserParamsSchema.partial()
+    .extend({
+        id: z.string(),
+    })
+    .strict();
 
 export type UpdateUserParams = z.infer<typeof UpdateUserParamsSchema>;
 export type UpdateUserResponse = PartialModelObject<User>;
@@ -109,9 +115,11 @@ export async function updateUser(params: UpdateUserParams, trx?: Transaction): P
     return user;
 }
 
-export const DeleteUserParamsSchema = z.object({
-    id: z.string(),
-});
+export const DeleteUserParamsSchema = z
+    .object({
+        id: z.string(),
+    })
+    .strict();
 
 export type DeleteUserParams = z.infer<typeof DeleteUserParamsSchema>;
 export type DeleteUserResponse = number;

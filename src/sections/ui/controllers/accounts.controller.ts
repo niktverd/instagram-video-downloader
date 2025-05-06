@@ -1,32 +1,63 @@
-import {Request, Response} from 'express';
+import {
+    CreateAccountParams,
+    CreateAccountParamsSchema,
+    CreateAccountResponse,
+    DeleteAccountParams,
+    DeleteAccountParamsSchema,
+    DeleteAccountResponse,
+    GetAccountByIdParams,
+    GetAccountByIdParamsSchema,
+    GetAccountByIdResponse,
+    GetAccountBySlugParams,
+    GetAccountBySlugParamsSchema,
+    GetAccountBySlugResponse,
+    GetAllAccountsParams,
+    GetAllAccountsParamsSchema,
+    GetAllAccountsResponse,
+    UpdateAccountParams,
+    UpdateAccountParamsSchema,
+    UpdateAccountResponse,
+    createAccount,
+    deleteAccount,
+    getAccountById,
+    getAccountBySlug,
+    getAllAccounts,
+    updateAccount,
+    wrapper,
+} from '../../../db';
 
-import {log, logError} from '#utils';
-import {addAccount, getAccounts, patchAccount} from '$/shared';
+export const createAccountPost = wrapper<CreateAccountParams, CreateAccountResponse>(
+    createAccount,
+    CreateAccountParamsSchema,
+    'POST',
+);
 
-export const uiGetAccounts = async (_req: Request, res: Response) => {
-    try {
-        const accounts = await getAccounts();
-        log(accounts);
-        res.status(200).send(accounts);
-    } catch (error) {
-        log(error);
-        logError(error);
-        res.status(500).send(error);
-    }
-};
+export const updateAccountPatch = wrapper<UpdateAccountParams, UpdateAccountResponse>(
+    updateAccount,
+    UpdateAccountParamsSchema,
+    'PATCH',
+);
 
-export const uiAddAccount = async (req: Request, res: Response) => {
-    const {
-        values: {id, token, availableScenarios},
-    } = req.body;
-    log(req.body, {id, values: {id, token, availableScenarios}});
-    await addAccount({id, values: {id, token, disabled: false, availableScenarios}});
-    res.status(200).send(req.body);
-};
+export const getAccountByIdGet = wrapper<GetAccountByIdParams, GetAccountByIdResponse>(
+    getAccountById,
+    GetAccountByIdParamsSchema,
+    'GET',
+);
 
-export const uiPatchAccount = async (req: Request, res: Response) => {
-    const {id, values} = req.body;
-    log(values);
-    await patchAccount({id, values});
-    res.status(200).send(req.body);
-};
+export const getAccountBySlugGet = wrapper<GetAccountBySlugParams, GetAccountBySlugResponse>(
+    getAccountBySlug,
+    GetAccountBySlugParamsSchema,
+    'GET',
+);
+
+export const getAllAccountsGet = wrapper<GetAllAccountsParams, GetAllAccountsResponse>(
+    getAllAccounts,
+    GetAllAccountsParamsSchema,
+    'GET',
+);
+
+export const deleteAccountDelete = wrapper<DeleteAccountParams, DeleteAccountResponse>(
+    deleteAccount,
+    DeleteAccountParamsSchema,
+    'DELETE',
+);

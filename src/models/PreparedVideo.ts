@@ -1,7 +1,7 @@
 import {Model} from 'objection';
 import {z} from 'zod';
 
-import Account from './Account';
+import {Account} from './Account';
 import Scenario from './Scenario';
 import Source from './Source';
 

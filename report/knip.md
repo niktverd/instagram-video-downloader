@@ -35,11 +35,10 @@
 | Min2        | src/constants.ts:22:5 | error    |
 | Min1        | src/constants.ts:23:5 | error    |
 
-## Duplicate exports (3)
+## Duplicate exports (2)
 
 | Name             | Location               | Severity |
 | :--------------- | :--------------------- | :------- |
 | Scenario|default | src/models/Scenario.ts | error    |
-| Account|default  | src/models/Account.ts  | error    |
 | User|default     | src/models/User.ts     | error    |
 

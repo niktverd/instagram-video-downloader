@@ -1,47 +1,18 @@
-import {z} from 'zod';
-
 import {BaseModel} from './BaseModel';
 import Scenario from './Scenario';
 
 export class Account extends BaseModel {
     id!: number;
     slug!: string;
-    enabled = true;
+    enabled!: boolean;
     token?: string;
 
-    // Table name is the only required property
     static get tableName() {
         return 'accounts';
     }
 
     static get idColumn() {
         return 'id';
-    }
-
-    // Optional JSON schema for validation
-    static get jsonSchema() {
-        return {
-            type: 'object',
-            required: ['id', 'slug'],
-            properties: {
-                id: {type: 'integer'},
-                slug: {type: 'string'},
-                enabled: {type: 'boolean', default: true},
-                token: {type: ['string', 'null']},
-                createdAt: {type: 'string', format: 'date-time'},
-                updatedAt: {type: 'string', format: 'date-time'},
-            },
-        };
-    }
-
-    // Zod schema for runtime validation
-    static get zodSchema() {
-        return z.object({
-            id: z.number().int().positive(),
-            slug: z.string(),
-            enabled: z.boolean().default(true),
-            token: z.string().optional(),
-        });
     }
 
     static get relationMappings() {
@@ -61,5 +32,3 @@ export class Account extends BaseModel {
         };
     }
 }
-
-export default Account;
