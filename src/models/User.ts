@@ -1,7 +1,8 @@
-import {Model} from 'objection';
 import {z} from 'zod';
 
-export class User extends Model {
+import {BaseModel} from './BaseModel';
+
+export class User extends BaseModel {
     id!: string;
     email!: string;
     displayName?: string;
@@ -9,9 +10,7 @@ export class User extends Model {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     providerData?: Record<string, any>;
     providerId?: string;
-    password?: string;
-    createdAt!: Date;
-    updatedAt!: Date;
+    password!: string;
 
     // Table name is the only required property
     static get tableName() {
@@ -51,8 +50,6 @@ export class User extends Model {
             providerData: z.record(z.any()).optional(),
             providerId: z.string().optional(),
             password: z.string().optional(),
-            createdAt: z.date(),
-            updatedAt: z.date(),
         });
     }
 }

@@ -3,7 +3,7 @@
 import {collection, getDocs, getFirestore} from 'firebase/firestore';
 import {v4 as uuidv4} from 'uuid';
 
-import db from '../db';
+import db from '../db/utils';
 import User from '../models/User';
 
 /**
@@ -39,10 +39,6 @@ export async function migrateUsers(): Promise<void> {
                         photoURL: userData.photoURL,
                         providerData: userData.providerData,
                         providerId: userData.providerId,
-                        createdAt: userData.createdAt
-                            ? new Date(userData.createdAt.toDate())
-                            : new Date(),
-                        updatedAt: new Date(),
                     });
 
                     migratedCount++;

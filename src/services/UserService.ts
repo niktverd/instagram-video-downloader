@@ -22,8 +22,6 @@ export class UserService {
             photoURL: userData.photoURL,
             providerData: userData.providerData,
             providerId: userData.providerId,
-            createdAt: new Date(),
-            updatedAt: new Date(),
         });
 
         return user;
@@ -61,7 +59,6 @@ export class UserService {
     ): Promise<User | undefined> {
         const updatedUser = await User.query().patchAndFetchById(id, {
             ...userData,
-            updatedAt: new Date(),
         });
 
         return updatedUser;

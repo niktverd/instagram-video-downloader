@@ -1,15 +1,13 @@
-import {Model} from 'objection';
 import {z} from 'zod';
 
+import {BaseModel} from './BaseModel';
 import Scenario from './Scenario';
 
-export class Account extends Model {
+export class Account extends BaseModel {
     id!: number;
     slug!: string;
     enabled = true;
     token?: string;
-    createdAt!: Date;
-    updatedAt!: Date;
 
     // Table name is the only required property
     static get tableName() {
@@ -43,15 +41,13 @@ export class Account extends Model {
             slug: z.string(),
             enabled: z.boolean().default(true),
             token: z.string().optional(),
-            createdAt: z.date(),
-            updatedAt: z.date(),
         });
     }
 
     static get relationMappings() {
         return {
             scenarios: {
-                relation: Model.ManyToManyRelation,
+                relation: BaseModel.ManyToManyRelation,
                 modelClass: Scenario,
                 join: {
                     from: 'accounts.id',

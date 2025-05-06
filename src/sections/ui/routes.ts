@@ -3,6 +3,7 @@ import {Router as expressRouter} from 'express';
 import {clearPreprod} from '../shared';
 
 import {
+    createUser,
     uiAddAccount,
     uiAddScenario,
     uiConvertImageToVideo,
@@ -46,6 +47,7 @@ router.post('/add-scenario', uiAddScenario);
 router.post('/add-account', uiAddAccount);
 router.post('/convert-image-to-video', uiConvertImageToVideo);
 router.post('/save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
+router.post('/create-user', createUser);
 
 // PATCH routes
 router.patch('/patch-scenario', uiPatchScenario);

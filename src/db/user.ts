@@ -1,42 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {PartialModelObject, Transaction} from 'objection';
 import {v4 as uuidv4} from 'uuid';
+import {z} from 'zod';
 
 import User from '../models/User';
 
-import db from './index';
+import db from './utils';
 
-interface CreateUserParams {
-    email: string;
-    displayName?: string;
-    photoURL?: string;
-    providerData?: Record<string, any>;
-    providerId?: string;
-    password?: string;
-}
+export const CreateUserParamsSchema = z
+    .object({
+        email: z.string(),
+        displayName: z.string().optional(),
+        photoURL: z.string().optional(),
+        // providerData: z.record(z.any()).optional(),
+        // providerId: z.string().optional(),
+        providerData: z.any().optional(),
+        providerId: z.any().optional(),
+        password: z.string(),
+    })
+    .strict();
 
-interface UpdateUserParams {
-    email?: string;
-    displayName?: string;
-    photoURL?: string;
-    providerData?: Record<string, any>;
-    providerId?: string;
-    password?: string;
-}
+export type CreateUserParams = z.infer<typeof CreateUserParamsSchema>;
+export type CreateUserResponse = PartialModelObject<User>;
 
-export async function createUser(params: CreateUserParams, trx?: Transaction): Promise<User> {
-    const now = new Date();
+export async function createUser(
+    params: CreateUserParams,
+    trx?: Transaction,
+): Promise<CreateUserResponse> {
+    const paramsValidated = CreateUserParamsSchema.parse(params);
 
     const userData: PartialModelObject<User> = {
         id: uuidv4(),
-        email: params.email,
-        displayName: params.displayName,
-        photoURL: params.photoURL,
-        providerData: params.providerData,
-        providerId: params.providerId,
-        password: params.password,
-        createdAt: now.toISOString() as any,
-        updatedAt: now.toISOString() as any,
+        email: paramsValidated.email,
+        displayName: paramsValidated.displayName,
+        photoURL: paramsValidated.photoURL,
+        providerData: paramsValidated.providerData || null,
+        providerId: paramsValidated.providerId || null,
+        password: paramsValidated.password,
     };
 
     const user = await User.query(trx || db).insert(userData);
@@ -61,6 +61,15 @@ export async function getAllUsers(trx?: Transaction): Promise<User[]> {
     return users;
 }
 
+interface UpdateUserParams {
+    email?: string;
+    displayName?: string;
+    photoURL?: string;
+    providerData?: Record<string, any>;
+    providerId?: string;
+    password?: string;
+}
+
 export async function updateUser(
     id: string,
     params: UpdateUserParams,
@@ -68,7 +77,6 @@ export async function updateUser(
 ): Promise<User> {
     const updateData: PartialModelObject<User> = {
         ...params,
-        updatedAt: new Date().toISOString() as any,
     };
 
     const user = await User.query(trx || db).patchAndFetchById(id, updateData);
