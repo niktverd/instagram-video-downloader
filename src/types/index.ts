@@ -71,7 +71,7 @@ export type SourceV3 = {
 export type PreparedVideoV3 = {
     id: string;
     firebaseUrl: string;
-    scenarioName: string;
+    scenarioSlug: string;
     sourceId: string;
     scenarioId: string;
     title: string;

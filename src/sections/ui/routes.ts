@@ -4,17 +4,20 @@ import {clearPreprod} from '../shared';
 
 import {
     createAccountPost,
+    createScenarioPost,
     createUserPost,
     deleteAccountDelete,
+    deleteScenarioDelete,
     deleteUserDelete,
     getAccountByIdGet,
     getAccountBySlugGet,
     getAllAccountsGet,
+    getAllScenariosGet,
     getAllUsersGet,
     getUserByEmailGet,
     getUserByIdGet,
     // uiAddAccount,
-    uiAddScenario,
+    // uiAddScenario,
     uiConvertImageToVideo,
     uiCreateVideoByScenario,
     uiDownloadVideoFromSourceV3,
@@ -24,15 +27,16 @@ import {
     // uiGetInstagramUserById,
     uiGetInstagramUserIdByMediaId,
     uiGetMediaPosts,
-    uiGetScenarios,
+    // uiGetScenarios,
     uiGetUserContent,
     // uiPatchAccount,
-    uiPatchScenario,
-    uiRunInjectionScenraios,
+    // uiPatchScenario,
+    // uiRunInjectionScenraios,
     uiSavePostForFutherAnalysis,
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
     updateAccountPatch,
+    updateScenarioPatch,
     updateUserPatch,
 } from './controllers';
 
@@ -40,7 +44,7 @@ const router = expressRouter();
 
 // GET routes
 router.get('/get-media-posts', uiGetMediaPosts);
-router.get('/get-scenarios', uiGetScenarios);
+router.get('/get-scenarios', getAllScenariosGet);
 router.get('/get-accounts', getAllAccountsGet);
 router.get('/get-account-by-id', getAccountByIdGet);
 router.get('/get-account-by-slug', getAccountBySlugGet);
@@ -50,7 +54,6 @@ router.get('/get-insights', uiGetInsights);
 router.get('/get-media', uiGetInstagramMedia);
 // router.get('/get-user-by-id', uiGetInstagramUserById);
 router.get('/get-owner-by-media-id', uiGetInstagramUserIdByMediaId);
-router.get('/run-injection-scenarios', uiRunInjectionScenraios);
 router.get('/get-user-content', uiGetUserContent);
 router.get('/get-user-by-id', getUserByIdGet);
 router.get('/get-user-by-email', getUserByEmailGet);
@@ -59,14 +62,14 @@ router.get('/get-all-users', getAllUsersGet);
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);
 router.post('/test-green-screen', uiTestGreenScreen);
-router.post('/add-scenario', uiAddScenario);
+router.post('/add-scenario', createScenarioPost);
 router.post('/add-account', createAccountPost);
 router.post('/convert-image-to-video', uiConvertImageToVideo);
 router.post('/save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
 router.post('/create-user', createUserPost);
 
 // PATCH routes
-router.patch('/patch-scenario', uiPatchScenario);
+router.patch('/patch-scenario', updateScenarioPatch);
 router.patch('/patch-account', updateAccountPatch);
 router.patch('/update-user', updateUserPatch);
 
@@ -74,5 +77,6 @@ router.patch('/update-user', updateUserPatch);
 router.delete('/clear-proprod-database', clearPreprod);
 router.delete('/delete-user', deleteUserDelete);
 router.delete('/delete-account', deleteAccountDelete);
+router.delete('/delete-scenario', deleteScenarioDelete);
 
 export default router;

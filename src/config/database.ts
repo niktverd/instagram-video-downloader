@@ -5,7 +5,6 @@ import knexConfig from '../../knexfile';
 
 const environment = process.env.APP_ENV || 'development';
 const connectionConfig = knexConfig[environment];
-console.log('connectionConfig', connectionConfig);
 
 // Initialize knex
 const knexInstance: Knex = knex(connectionConfig);

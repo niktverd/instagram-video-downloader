@@ -12,7 +12,7 @@ export enum ScenarioType {
 export const scenarioBaseSchema = z
     .object({
         id: z.string(),
-        name: z.string(),
+        slug: z.string(),
         onlyOnce: z.boolean(),
         enabled: z.boolean(),
         texts: z.record(z.string(), z.array(z.string())),

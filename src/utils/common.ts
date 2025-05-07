@@ -227,7 +227,7 @@ export const initiateRecordV3 = async (
         randomIndex: Math.random(),
         bodyJSONString,
         attempt: 0,
-        scenarios: scenarios.map(({name}) => name),
+        scenarios: scenarios.map(({slug}) => slug),
         lastUsed: new Timestamp(0, 0),
         timesUsed: 0,
         scenariosHasBeenCreated: [],

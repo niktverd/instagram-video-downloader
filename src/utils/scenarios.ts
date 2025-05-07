@@ -11,9 +11,9 @@ export const getCrossedScenarios = ({
     accountScenarios,
     scenarios,
 }: GetScenariosArgs) => {
-    const foundScenarios = scenarios.filter(({name}) => mediaScenarios.includes(name));
-    const foundAccountScenarios = foundScenarios.filter(({name}) =>
-        accountScenarios.includes(name),
+    const foundScenarios = scenarios.filter(({slug}) => mediaScenarios.includes(slug));
+    const foundAccountScenarios = foundScenarios.filter(({slug}) =>
+        accountScenarios.includes(slug),
     );
 
     return foundAccountScenarios;

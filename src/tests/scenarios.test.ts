@@ -74,7 +74,7 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
         },
         scenario: {
             id: '1',
-            name: ScenarioName.ScenarioAddBannerAtTheEndUnique,
+            slug: ScenarioName.ScenarioAddBannerAtTheEndUnique,
             type: ScenarioType.ScenarioAddBannerAtTheEndUnique,
             onlyOnce: false,
             enabled: true,
@@ -144,7 +144,7 @@ const testShortifyUnique = async (filePath: string) => {
         // accounts: ['@someaccount.gamble'],
         scenario: {
             id: '1',
-            name: ScenarioName.ScenarioShortifyUnique,
+            slug: ScenarioName.ScenarioShortifyUnique,
             type: ScenarioType.ScenarioShortifyUnique,
             onlyOnce: false,
             enabled: true,

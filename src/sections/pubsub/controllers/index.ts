@@ -83,7 +83,7 @@ export const pubsubHandler = async (req: Request, res: Response) => {
 
             logLocal({scenario, account, source});
 
-            const isScenarioInAccount = account.availableScenarios.includes(scenario.name);
+            const isScenarioInAccount = account.availableScenarios.includes(scenario.slug);
             if (!isScenarioInAccount) {
                 logLocal('Scenario not in account', {scenarioId, accountId});
                 res.status(404).send();
@@ -130,19 +130,19 @@ export const pubsubHandler = async (req: Request, res: Response) => {
             logLocal('basePath', {basePath});
             const finalFilePath = await scenarioFunction({scenario, source, basePath});
             logLocal('finalFilePath', {finalFilePath});
-            const scenarioName = scenario.name;
+            const scenarioSlug = scenario.slug;
             const originalHashtags = source.sources.instagramReel?.originalHashtags || [];
 
             // Upload data to server
             const downloadURL = await uploadFileToServer(
                 finalFilePath,
-                `${directoryName}-${scenarioName}.mp4`,
+                `${directoryName}-${scenarioSlug}.mp4`,
             );
             logLocal('downloadURL', {downloadURL});
             // update database
             await addPreparedVideo({
                 firebaseUrl: downloadURL,
-                scenarioName,
+                scenarioSlug,
                 scenarioId,
                 sourceId,
                 title: prepareCaption(scenario),

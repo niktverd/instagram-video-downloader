@@ -73,6 +73,10 @@ export const wrapper = <RequestArgs, ResponseArgs>(
                     ? req.query
                     : req.body;
 
+                if (dataToValidate.id) {
+                    dataToValidate.id = Number(dataToValidate.id);
+                }
+
                 const validatedData = validator.parse(dataToValidate) as RequestArgs;
 
                 const result = await fn(validatedData);
