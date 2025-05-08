@@ -16,6 +16,7 @@ export const CreateScenarioParamsSchema = z
         onlyOnce: z.boolean().optional(),
         copiedFrom: z.number().nullable().optional(),
         options: z.record(z.any()).optional(),
+        texts: z.record(z.any()).optional(),
     })
     .strict();
 

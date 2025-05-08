@@ -12,6 +12,7 @@ exports.up = function (knex) {
         table.boolean('onlyOnce').defaultTo(false);
         table.integer('copiedFrom').references('id').inTable('scenarios').nullable();
         table.jsonb('options').defaultTo('{}');
+        table.jsonb('texts').defaultTo('{}');
         table.timestamp('createdAt').defaultTo(knex.fn.now());
         table.timestamp('updatedAt').defaultTo(knex.fn.now());
     });
