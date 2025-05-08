@@ -23,8 +23,8 @@ export class Account extends BaseModel {
                 join: {
                     from: 'accounts.id',
                     through: {
-                        from: 'account_scenarios.account_id',
-                        to: 'account_scenarios.scenario_id',
+                        from: 'account_scenarios.accountId',
+                        to: 'account_scenarios.scenarioId',
                     },
                     to: 'scenarios.id',
                 },

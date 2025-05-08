@@ -9,7 +9,8 @@ exports.up = function (knex) {
         table.string('slug').notNullable().unique();
         table.string('type').notNullable();
         table.boolean('enabled').defaultTo(true);
-        table.integer('copied_from').references('id').inTable('scenarios').nullable();
+        table.boolean('onlyOnce').defaultTo(false);
+        table.integer('copiedFrom').references('id').inTable('scenarios').nullable();
         table.jsonb('options').defaultTo('{}');
         table.timestamp('createdAt').defaultTo(knex.fn.now());
         table.timestamp('updatedAt').defaultTo(knex.fn.now());

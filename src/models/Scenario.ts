@@ -8,8 +8,9 @@ export class Scenario extends BaseModel {
     id!: number;
     slug!: string;
     enabled = true;
+    onlyOnce!: boolean;
     type!: ScenarioType;
-    copied_from?: number;
+    copiedFrom?: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     options: Record<string, any> = {};
 
@@ -25,22 +26,14 @@ export class Scenario extends BaseModel {
     // Define relations to other models
     static get relationMappings() {
         return {
-            copiedFrom: {
-                relation: Model.BelongsToOneRelation,
-                modelClass: Scenario,
-                join: {
-                    from: 'scenarios.copied_from',
-                    to: 'scenarios.id',
-                },
-            },
             accounts: {
                 relation: Model.ManyToManyRelation,
                 modelClass: Account,
                 join: {
                     from: 'scenarios.id',
                     through: {
-                        from: 'account_scenarios.scenario_id',
-                        to: 'account_scenarios.account_id',
+                        from: 'account_scenarios.scenarioId',
+                        to: 'account_scenarios.accountId',
                     },
                     to: 'accounts.id',
                 },

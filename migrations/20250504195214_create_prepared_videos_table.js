@@ -4,7 +4,7 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-    return knex.schema.createTable('prepared_videos', function (table) {
+    return knex.schema.createTable('preparedVideos', function (table) {
         table.increments('id').primary();
         table.text('firebaseUrl').notNullable();
         table.float('duration').nullable();
@@ -21,5 +21,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    return knex.schema.dropTable('prepared_videos');
+    return knex.schema.dropTable('preparedVideos');
 };

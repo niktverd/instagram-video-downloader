@@ -13,7 +13,8 @@ export const CreateScenarioParamsSchema = z
         slug: z.string(),
         type: z.nativeEnum(ScenarioType),
         enabled: z.boolean().optional(),
-        copied_from: z.number().nullable().optional(),
+        onlyOnce: z.boolean().optional(),
+        copiedFrom: z.number().nullable().optional(),
         options: z.record(z.any()).optional(),
     })
     .strict();
@@ -33,9 +34,9 @@ export async function createScenario(
     };
 
     // Handle nullable field separately using type casting
-    if (params.copied_from !== undefined && params.copied_from !== null) {
+    if (params.copiedFrom !== undefined && params.copiedFrom !== null) {
         // Force type as any to bypass type checking for this property
-        scenarioData.copied_from = params.copied_from;
+        scenarioData.copiedFrom = params.copiedFrom;
     }
 
     console.log('scenarioData', scenarioData);
@@ -104,6 +105,8 @@ export async function getAllScenarios(
 export const UpdateScenarioParamsSchema = CreateScenarioParamsSchema.partial()
     .extend({
         id: z.number(),
+        createdAt: z.string(),
+        updatedAt: z.string(),
     })
     .strict();
 
@@ -118,21 +121,13 @@ export async function updateScenario(
     // Create a clean update object without undefined/null values that might cause type issues
     const cleanUpdateData: any = {};
 
-    if (updateData.slug !== undefined) {
-        cleanUpdateData.slug = updateData.slug;
-    }
+    Object.entries(updateData).forEach(([key, val]) => {
+        if (['createdAt', 'updatedAt'].includes(key)) {
+            return;
+        }
 
-    if (updateData.enabled !== undefined) {
-        cleanUpdateData.enabled = updateData.enabled;
-    }
-
-    if (updateData.copied_from !== undefined) {
-        cleanUpdateData.copied_from = updateData.copied_from;
-    }
-
-    if (updateData.options !== undefined) {
-        cleanUpdateData.options = updateData.options;
-    }
+        cleanUpdateData[key] = val;
+    });
 
     const scenario = await Scenario.query(trx || db).patchAndFetchById(id, cleanUpdateData);
     return scenario;
