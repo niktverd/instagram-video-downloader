@@ -60,12 +60,14 @@ export type SourceV3 = {
     firebaseUrl: string;
     sources: Sources;
     randomIndex: number;
-    bodyJSONString: string;
+    bodyJSONString: object;
     attempt: number;
     scenarios: string[];
     lastUsed: Timestamp;
     timesUsed: number;
     scenariosHasBeenCreated: [];
+    sender?: string;
+    recipient?: string;
 };
 
 export type PreparedVideoV3 = {

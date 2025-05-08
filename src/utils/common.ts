@@ -15,6 +15,8 @@ import {MediaPostModel, ScenarioV4, SourceV3} from '../types';
 
 import {log, logError} from './logging';
 
+import {CreateSourceParams} from '#src/db';
+
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type UploadFileFromUrlArgs = {
@@ -217,21 +219,20 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
 export const initiateRecordV3 = async (
     source: SourceV3['sources'],
     bodyJSONString: SourceV3['bodyJSONString'],
-) => {
+    sender: SourceV3['sender'],
+    recipient: SourceV3['recipient'],
+): Promise<CreateSourceParams> => {
     const scenarios = await getScenarios(true);
     log({scenarios});
     return {
-        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
         firebaseUrl: '',
         sources: source,
-        randomIndex: Math.random(),
         bodyJSONString,
         attempt: 0,
-        scenarios: scenarios.map(({slug}) => slug),
-        lastUsed: new Timestamp(0, 0),
-        timesUsed: 0,
-        scenariosHasBeenCreated: [],
-    } as Omit<SourceV3, 'id'>;
+        lastUsed: new Date('1970-01-01').toISOString(),
+        sender,
+        recipient,
+    };
 };
 
 export const isTimeToPublishInstagram = async () => {

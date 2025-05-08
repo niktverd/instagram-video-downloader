@@ -65,7 +65,7 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
             firebaseUrl:
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
             randomIndex: 0,
-            bodyJSONString: '{}',
+            bodyJSONString: {},
             attempt: 0,
             scenarios: [],
             lastUsed: new Timestamp(new Date().getTime(), 0),
@@ -130,7 +130,7 @@ const testShortifyUnique = async (filePath: string) => {
             firebaseUrl:
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
             randomIndex: 0,
-            bodyJSONString: '{}',
+            bodyJSONString: {},
             attempt: 0,
             scenarios: [],
             lastUsed: new Timestamp(new Date().getTime(), 0),

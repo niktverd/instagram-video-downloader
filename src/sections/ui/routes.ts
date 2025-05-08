@@ -5,15 +5,19 @@ import {clearPreprod} from '../shared';
 import {
     createAccountPost,
     createScenarioPost,
+    createSourcePost,
     createUserPost,
     deleteAccountDelete,
     deleteScenarioDelete,
+    deleteSourceDelete,
     deleteUserDelete,
     getAccountByIdGet,
     getAccountBySlugGet,
     getAllAccountsGet,
     getAllScenariosGet,
+    getAllSourcesGet,
     getAllUsersGet,
+    getOneSourceGet,
     getUserByEmailGet,
     getUserByIdGet,
     // uiAddAccount,
@@ -37,6 +41,7 @@ import {
     uiTestGreenScreen,
     updateAccountPatch,
     updateScenarioPatch,
+    updateSourcePatch,
     updateUserPatch,
 } from './controllers';
 
@@ -58,6 +63,8 @@ router.get('/get-user-content', uiGetUserContent);
 router.get('/get-user-by-id', getUserByIdGet);
 router.get('/get-user-by-email', getUserByEmailGet);
 router.get('/get-all-users', getAllUsersGet);
+router.get('/get-all-sources', getAllSourcesGet);
+router.get('/get-one-source', getOneSourceGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);
@@ -67,16 +74,19 @@ router.post('/add-account', createAccountPost);
 router.post('/convert-image-to-video', uiConvertImageToVideo);
 router.post('/save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
 router.post('/create-user', createUserPost);
+router.post('/create-source', createSourcePost);
 
 // PATCH routes
 router.patch('/patch-scenario', updateScenarioPatch);
 router.patch('/patch-account', updateAccountPatch);
 router.patch('/update-user', updateUserPatch);
+router.patch('/update-source', updateSourcePatch);
 
 // DELETE routes
 router.delete('/clear-proprod-database', clearPreprod);
 router.delete('/delete-user', deleteUserDelete);
 router.delete('/delete-account', deleteAccountDelete);
 router.delete('/delete-scenario', deleteScenarioDelete);
+router.delete('/delete-source', deleteSourceDelete);
 
 export default router;
