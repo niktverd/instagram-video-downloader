@@ -11,26 +11,30 @@ export const CreateAccountParamsSchema = z
         slug: z.string(),
         enabled: z.boolean().optional(),
         token: z.string().optional(),
+        availableScenarios: z.array(z.number()),
     })
     .strict();
 
 export type CreateAccountParams = z.infer<typeof CreateAccountParamsSchema>;
 export type CreateAccountResponse = PartialModelObject<Account>;
 
-export async function createAccount(
-    params: CreateAccountParams,
-    trx?: Transaction,
-): Promise<CreateAccountResponse> {
-    const paramsValidated = CreateAccountParamsSchema.parse(params);
+export async function createAccount(params: CreateAccountParams): Promise<CreateAccountResponse> {
+    const {availableScenarios, ...accountParams} = params;
 
-    const accountData: PartialModelObject<Account> = {
-        slug: paramsValidated.slug,
-        enabled: paramsValidated.enabled ?? true,
-        token: paramsValidated.token,
-    };
+    return await db.transaction(async (trx) => {
+        const account = await Account.query(trx).insert(accountParams);
 
-    const account = await Account.query(trx || db).insert(accountData);
-    return account;
+        if (availableScenarios.length > 0) {
+            const rows = availableScenarios.map((scenarioId) => ({
+                accountId: account.id,
+                scenarioId,
+            }));
+
+            await trx('accountScenarios').insert(rows);
+        }
+
+        return account;
+    });
 }
 
 export const GetAccountByIdParamsSchema = z
@@ -46,7 +50,10 @@ export async function getAccountById(
     params: GetAccountByIdParams,
     trx?: Transaction,
 ): Promise<GetAccountByIdResponse> {
-    const account = await Account.query(trx || db).findById(params.id);
+    const account = await Account.query(trx || db)
+        .findById(params.id)
+        .withGraphFetched('availableScenarios');
+
     if (!account) {
         throw new Error('Account not found');
     }
@@ -69,7 +76,8 @@ export async function getAccountBySlug(
 ): Promise<GetAccountBySlugResponse> {
     const account = await Account.query(trx || db)
         .where('slug', params.slug)
-        .first();
+        .first()
+        .withGraphFetched('availableScenarios');
 
     if (!account) {
         throw new Error('Account not found');
@@ -86,7 +94,7 @@ export async function getAllAccounts(
     _params: GetAllAccountsParams,
     trx?: Transaction,
 ): Promise<GetAllAccountsResponse> {
-    const accounts = await Account.query(trx || db);
+    const accounts = await Account.query(trx || db).withGraphFetched('availableScenarios');
     return accounts;
 }
 
@@ -102,10 +110,30 @@ export async function updateAccount(
     params: UpdateAccountParams,
     trx?: Transaction,
 ): Promise<Account> {
-    const {id, ...updateData} = UpdateAccountParamsSchema.parse(params);
+    const {id, availableScenarios, ...updateData} = UpdateAccountParamsSchema.parse(params);
 
-    const account = await Account.query(trx || db).patchAndFetchById(id, updateData);
-    return account;
+    return await (trx || db).transaction(async (t) => {
+        const account = await Account.query(t).patchAndFetchById(id, updateData);
+
+        if (!account) {
+            throw new Error('Account not found');
+        }
+
+        if (availableScenarios) {
+            await t('accountScenarios').where({accountId: id}).del();
+
+            if (availableScenarios.length > 0) {
+                const inserts = availableScenarios.map((scenarioId) => ({
+                    accountId: id,
+                    scenarioId,
+                }));
+
+                await t('accountScenarios').insert(inserts);
+            }
+        }
+
+        return account;
+    });
 }
 
 export const DeleteAccountParamsSchema = z

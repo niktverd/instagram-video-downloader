@@ -17,14 +17,14 @@ export class Account extends BaseModel {
 
     static get relationMappings() {
         return {
-            scenarios: {
+            availableScenarios: {
                 relation: BaseModel.ManyToManyRelation,
                 modelClass: Scenario,
                 join: {
                     from: 'accounts.id',
                     through: {
-                        from: 'account_scenarios.accountId',
-                        to: 'account_scenarios.scenarioId',
+                        from: 'accountScenarios.accountId',
+                        to: 'accountScenarios.scenarioId',
                     },
                     to: 'scenarios.id',
                 },
