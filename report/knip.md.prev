@@ -26,7 +26,7 @@
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:53:14               | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
-| default         | src/models/Source.ts:22:8                                             | error    |
+| default         | src/models/Source.ts:23:8                                             | error    |
 
 ## Unused exported enum members (3)
 
