@@ -21,11 +21,10 @@ export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve
 
 type UploadFileFromUrlArgs = {
     url: string;
-    firebaseId: string;
-    collectionName?: Collection;
+    fileName: string;
 };
 
-export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs) {
+export async function uploadFileFromUrl({url, fileName}: UploadFileFromUrlArgs) {
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -36,7 +35,7 @@ export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs
         const fileBuffer = await response.arrayBuffer();
         const contentType = response.headers.get('content-type') || undefined;
 
-        const fileRef = ref(storage, `${firebaseId}-${Math.random()}.mp4`);
+        const fileRef = ref(storage, `${fileName}-${Math.random()}.mp4`);
 
         const metadata = {contentType};
         await uploadBytes(fileRef, fileBuffer, metadata);

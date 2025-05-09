@@ -63,7 +63,7 @@ export async function getOneSource(
     const query = Source.query(trx || db);
 
     if (emptyFirebaseUrl) {
-        query.whereNull('firebaseUrl').orWhereRaw("firebaseUrl = ''");
+        query.whereNull('firebaseUrl').orWhere('firebaseUrl', '');
     }
 
     if (random) {
@@ -76,8 +76,8 @@ export async function getOneSource(
 export const UpdateSourceParamsSchema = CreateSourceParamsSchema.partial()
     .extend({
         id: z.number(),
-        createdAt: z.string(),
-        updatedAt: z.string(),
+        createdAt: z.string().optional(),
+        updatedAt: z.string().optional(),
     })
     .strict();
 

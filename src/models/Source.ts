@@ -8,6 +8,7 @@ export class Source extends BaseModel {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     bodyJSONString?: Record<string, any>;
     duration?: number;
+    attempt?: number;
     lastUsed?: string;
 
     static get tableName() {

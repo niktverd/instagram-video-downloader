@@ -1,3 +1,5 @@
+import {PartialModelObject} from 'objection';
+
 import {BaseModel} from './BaseModel';
 import Scenario from './Scenario';
 
@@ -6,6 +8,7 @@ export class Account extends BaseModel {
     slug!: string;
     enabled!: boolean;
     token?: string;
+    availableScenarios?: PartialModelObject<Scenario>[];
 
     static get tableName() {
         return 'accounts';

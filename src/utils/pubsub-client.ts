@@ -6,6 +6,8 @@
 import {PubSubAction, PubSubPayload, PubSubTopic} from './constants';
 import {log, logError} from './logging';
 
+import {GetAllAccountsResponse} from '#src/db';
+
 // eslint-disable-next-line valid-jsdoc
 /**
  * Publishes a message to a Pub/Sub topic via HTTP POST
@@ -97,9 +99,8 @@ export const requestRunScenario = async (
  * This helps reduce API calls when sending similar messages for multiple accounts and scenarios
  */
 export const publishBulkRunScenarioMessages = async (
-    sourceId: string,
-    scenarioIds: string[],
-    accountIds: string[],
+    sourceId: number,
+    accounts: GetAllAccountsResponse,
 ): Promise<{success: boolean; count: number}> => {
     try {
         log('publishBulkRunScenarioMessages');
@@ -120,7 +121,7 @@ export const publishBulkRunScenarioMessages = async (
         const {PubSub} = await import('@google-cloud/pubsub');
 
         // Calculate total number of messages to be sent
-        const totalMessages = scenarioIds.length * accountIds.length;
+        let totalMessages = 0;
 
         // Create a client with batching configuration
         const pubsubClient = new PubSub({projectId});
@@ -140,8 +141,18 @@ export const publishBulkRunScenarioMessages = async (
         const promises: Promise<boolean>[] = [];
 
         // Create all messages and submit them to the batch publisher
-        for (const scenarioId of scenarioIds) {
-            for (const accountId of accountIds) {
+        for (const account of accounts) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const scenario of (account.availableScenarios as any[]) || []) {
+                const accountId = account.id;
+                const scenarioId = scenario.id;
+
+                if (!accountId || !scenarioId) {
+                    continue;
+                }
+
+                totalMessages++;
+
                 const payload = {
                     sourceId,
                     scenarioId,
