@@ -11,7 +11,7 @@ export const getScenarios = async (onlyEnabled = false) => {
     if (snaps.empty) {
         throw new Error(`Collection ${Collection.Scenarios} is empty`);
     }
-    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as ScenarioV4));
+    const data = snaps.docs.map((snap) => ({...snap.data(), id: 1} as ScenarioV4));
 
     return data.filter(({enabled}) => (onlyEnabled ? enabled : true));
 };
@@ -24,7 +24,7 @@ export const getScenario = async (id: string): Promise<ScenarioV4> => {
         throw new Error(`Scenario ${id} not found`);
     }
 
-    return {...snap.data(), id} as ScenarioV4;
+    return {...snap.data(), id: 1} as ScenarioV4;
 };
 
 type PatchScenarioArgs = {

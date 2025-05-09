@@ -1,10 +1,11 @@
 import {readFileSync} from 'fs';
 
-import {addDoc, collection, getDocs, query, where} from 'firebase/firestore/lite';
+import {addDoc, collection} from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 
 import {firestore, storage} from '#config/firebase';
 import {Collection} from '#src/constants';
+import {getOnePreparedVideo} from '#src/db';
 import {PreparedVideoV3} from '#types';
 import {log} from '#utils';
 
@@ -32,28 +33,26 @@ export const hasPreparedVideoBeenCreated = async ({
     scenarioId,
     sourceId,
 }: {
-    accountId: string;
-    scenarioId: string;
-    sourceId: string;
+    accountId: number;
+    scenarioId: number;
+    sourceId: number;
 }) => {
     try {
         log('Checking if prepared video exists:', {accountId, scenarioId, sourceId});
-        const collectionRef = collection(firestore, Collection.PreparedVideos);
-        const q = query(
-            collectionRef,
-            where('sourceId', '==', sourceId),
-            where('scenarioId', '==', scenarioId),
-            where('accountsHasBeenUsed', 'array-contains', accountId),
-        );
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-            log('Prepared video exists:', querySnapshot.docs[0].data());
+        const checkPreparedVideoExists = await getOnePreparedVideo({
+            scenarioId,
+            accountId,
+            sourceId,
+        });
+        if (checkPreparedVideoExists) {
+            log('Prepared video exists:', checkPreparedVideoExists);
             return true;
         }
 
         log('Prepared video does not exist');
         return false;
     } catch (error) {
+        console.log(error);
         log('Error checking prepared video:', error);
         return false;
     }

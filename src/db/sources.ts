@@ -117,3 +117,21 @@ export async function deleteSource(
 
     return deletedCount;
 }
+
+export const GetSourceByIdParamsSchema = z
+    .object({
+        id: z.number(),
+    })
+    .strict();
+
+export type GetSourceByIdParams = z.infer<typeof GetSourceByIdParamsSchema>;
+export type GetSourceByIdResponse = PartialModelObject<Source> | undefined;
+
+export async function getSourceById(
+    params: GetSourceByIdParams,
+    trx?: Transaction,
+): Promise<GetSourceByIdResponse> {
+    const source = await Source.query(trx || db).findById(params.id);
+
+    return source;
+}

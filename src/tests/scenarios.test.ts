@@ -73,16 +73,18 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
             scenariosHasBeenCreated: [],
         },
         scenario: {
-            id: '1',
+            id: 1,
             slug: ScenarioName.ScenarioAddBannerAtTheEndUnique,
             type: ScenarioType.ScenarioAddBannerAtTheEndUnique,
             onlyOnce: false,
             enabled: true,
             texts: {},
-            extraBannerUrls: [
-                'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
-            ],
-            extraBannerUrl: '',
+            options: {
+                extraBannerUrls: [
+                    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
+                ],
+                extraBannerUrl: '',
+            },
         },
         basePath,
     });
@@ -143,15 +145,17 @@ const testShortifyUnique = async (filePath: string) => {
         // originalHashtags: [],
         // accounts: ['@someaccount.gamble'],
         scenario: {
-            id: '1',
+            id: 1,
             slug: ScenarioName.ScenarioShortifyUnique,
             type: ScenarioType.ScenarioShortifyUnique,
             onlyOnce: false,
             enabled: true,
             texts: {},
-            extraBannerUrls: [bannerVideoUrls[0]],
-            minDuration: 3,
-            maxDuration: 5,
+            options: {
+                extraBannerUrls: [bannerVideoUrls[0]],
+                minDuration: 3,
+                maxDuration: 5,
+            },
         },
         basePath,
     });

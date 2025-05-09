@@ -126,9 +126,9 @@ const runPubSubTests = async () => {
     const detailedMessageData = {
         data: 'This is a test message for Instagram video events',
         timestamp: '2025-05-03T11:23:42.763Z',
-        accountId: 'carcar.kz',
-        scenarioId: 'G1QOQCbocDnp3cRo4uNS',
-        sourceId: '01AtVV1730QFJQ1OcVmu',
+        accountId: 1,
+        scenarioId: 1,
+        sourceId: 1,
     };
 
     const detailedMessageReq = {

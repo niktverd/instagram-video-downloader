@@ -11,13 +11,15 @@ export enum ScenarioType {
 
 export const scenarioBaseSchema = z
     .object({
-        id: z.string(),
+        id: z.number(),
         slug: z.string(),
         onlyOnce: z.boolean(),
         enabled: z.boolean(),
         texts: z.record(z.string(), z.array(z.string())),
         type: z.nativeEnum(ScenarioType),
-        copiedFrom: z.string().optional(),
+        copiedFrom: z.string().optional().nullable(),
+        createdAt: z.any(),
+        updatedAt: z.any(),
     })
     .strict();
 
@@ -28,8 +30,10 @@ export const scenarioBaseSchema = z
 
 export const scenarioAddBannerAtTheEndUniqueSchema = scenarioBaseSchema.extend({
     type: z.literal(ScenarioType.ScenarioAddBannerAtTheEndUnique),
-    extraBannerUrl: z.string(),
-    extraBannerUrls: z.array(z.string()),
+    options: z.object({
+        extraBannerUrl: z.string(),
+        extraBannerUrls: z.array(z.string()),
+    }),
 });
 
 // export const scenarioShortifySchema = scenarioBaseSchema.extend({
@@ -41,9 +45,11 @@ export const scenarioAddBannerAtTheEndUniqueSchema = scenarioBaseSchema.extend({
 
 export const scenarioShortifyUniqueSchema = scenarioBaseSchema.extend({
     type: z.literal(ScenarioType.ScenarioShortifyUnique),
-    minDuration: z.number(),
-    maxDuration: z.number(),
-    extraBannerUrls: z.array(z.string()),
+    options: z.object({
+        minDuration: z.number(),
+        maxDuration: z.number(),
+        extraBannerUrls: z.array(z.string()),
+    }),
 });
 
 // export const scenarioCoverWithImageSchema = scenarioBaseSchema.extend({

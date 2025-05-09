@@ -60,6 +60,7 @@ export const getBufferVideo = async (url: string) => {
 };
 
 export const saveFileToDisk = async (url: string, filePath: string) => {
+    log('saveFileToDisk', {url});
     const response = await fetch(url, {
         method: 'GET',
         responseType: 'arraybuffer',
