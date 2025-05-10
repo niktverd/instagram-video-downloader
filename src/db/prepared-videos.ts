@@ -1,23 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {PartialModelObject, Transaction} from 'objection';
+import {Transaction} from 'objection';
 import {z} from 'zod';
 
 import {PreparedVideo} from '../models/PreparedVideo';
 
 import db from './utils';
 
-export const CreatePreparedVideoParamsSchema = z
-    .object({
-        firebaseUrl: z.string(),
-        scenarioId: z.number(),
-        sourceId: z.number(),
-        accountId: z.number(),
-        duration: z.number().optional(),
-    })
-    .strict();
+import {IPreparedVideo, PreparedVideoSchema} from '#src/models/types';
 
-export type CreatePreparedVideoParams = z.infer<typeof CreatePreparedVideoParamsSchema>;
-export type CreatePreparedVideoResponse = PartialModelObject<PreparedVideo>;
+export const CreatePreparedVideoParamsSchema = PreparedVideoSchema;
+
+export type CreatePreparedVideoParams = Omit<IPreparedVideo, 'id'>;
+export type CreatePreparedVideoResponse = IPreparedVideo;
 
 export async function createPreparedVideo(
     params: CreatePreparedVideoParams,
@@ -36,7 +30,7 @@ export const GetPreparedVideoByIdParamsSchema = z
     .strict();
 
 export type GetPreparedVideoByIdParams = z.infer<typeof GetPreparedVideoByIdParamsSchema>;
-export type GetPreparedVideoByIdResponse = PartialModelObject<PreparedVideo>;
+export type GetPreparedVideoByIdResponse = IPreparedVideo;
 
 export async function getPreparedVideoById(
     params: GetPreparedVideoByIdParams,
@@ -53,7 +47,7 @@ export async function getPreparedVideoById(
 
 export const GetAllPreparedVideosParamsSchema = z.object({}).strict();
 export type GetAllPreparedVideosParams = z.infer<typeof GetAllPreparedVideosParamsSchema>;
-export type GetAllPreparedVideosResponse = PartialModelObject<PreparedVideo>[];
+export type GetAllPreparedVideosResponse = IPreparedVideo[];
 
 export async function getAllPreparedVideos(
     _params: GetAllPreparedVideosParams,
@@ -70,7 +64,7 @@ export const UpdatePreparedVideoParamsSchema = CreatePreparedVideoParamsSchema.p
     .strict();
 
 export type UpdatePreparedVideoParams = z.infer<typeof UpdatePreparedVideoParamsSchema>;
-export type UpdatePreparedVideoResponse = PartialModelObject<PreparedVideo>;
+export type UpdatePreparedVideoResponse = IPreparedVideo;
 export async function updatePreparedVideo(
     params: UpdatePreparedVideoParams,
     trx?: Transaction,
@@ -107,22 +101,43 @@ export async function deletePreparedVideo(
 
 export const GetOnePreparedVideoParamsSchema = z
     .object({
+        hasFirebaseUrl: z.boolean().optional(),
         firebaseUrl: z.string().optional(),
         duration: z.number().optional(),
         scenarioId: z.number().optional(),
         sourceId: z.number().optional(),
         accountId: z.number().optional(),
+        random: z.boolean().optional(),
+        notInInstagramMediaContainers: z.boolean().optional(),
+        fetchGraphAccount: z.boolean().optional(),
+        fetchGraphScenario: z.boolean().optional(),
+        fetchGraphSource: z.boolean().optional(),
     })
     .strict();
 
 export type GetOnePreparedVideoParams = z.infer<typeof GetOnePreparedVideoParamsSchema>;
-export type GetOnePreparedVideoResponse = PartialModelObject<PreparedVideo> | undefined;
+export type GetOnePreparedVideoResponse = IPreparedVideo | undefined;
 
 export async function getOnePreparedVideo(
     params: GetOnePreparedVideoParams,
 ): Promise<GetOnePreparedVideoResponse> {
-    const {firebaseUrl, accountId, scenarioId, sourceId} = params;
+    const {
+        hasFirebaseUrl,
+        firebaseUrl,
+        accountId,
+        scenarioId,
+        sourceId,
+        random,
+        notInInstagramMediaContainers,
+        fetchGraphAccount,
+        fetchGraphScenario,
+        fetchGraphSource,
+    } = params;
     const query = PreparedVideo.query(db);
+
+    if (hasFirebaseUrl) {
+        query.whereNotNull('firebaseUrl');
+    }
 
     if (firebaseUrl) {
         query.where('firebaseUrl', firebaseUrl);
@@ -133,6 +148,28 @@ export async function getOnePreparedVideo(
             .where('accountId', accountId)
             .andWhere('scenarioId', scenarioId)
             .andWhere('scenarioId', sourceId);
+    } else if (accountId) {
+        query.where('accountId', accountId);
+    }
+
+    if (random) {
+        query.orderByRaw('RANDOM()');
+    }
+
+    if (notInInstagramMediaContainers) {
+        query.whereNotIn('id', db('instagram_media_containers').select('preparedVideoId'));
+    }
+
+    if (fetchGraphAccount) {
+        query.withGraphFetched('account');
+    }
+
+    if (fetchGraphScenario) {
+        query.withGraphFetched('scenario');
+    }
+
+    if (fetchGraphSource) {
+        query.withGraphFetched('source');
     }
 
     const preparedVideo = await query.first();

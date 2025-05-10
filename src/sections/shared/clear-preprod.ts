@@ -16,7 +16,7 @@ export const clearPreprod = async () => {
         const mediaContainersRef = collection(
             firestore,
             Collection.Accounts,
-            account.id,
+            account.id.toString(),
             Collection.AccountMediaContainers,
         );
 

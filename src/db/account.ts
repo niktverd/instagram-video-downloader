@@ -1,22 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {PartialModelObject, Transaction} from 'objection';
+import {Transaction} from 'objection';
 import {z} from 'zod';
 
 import {Account} from '../models/Account';
 
 import db from './utils';
 
-export const CreateAccountParamsSchema = z
-    .object({
-        slug: z.string(),
-        enabled: z.boolean().optional(),
-        token: z.string().optional(),
-        availableScenarios: z.array(z.number()),
-    })
-    .strict();
+import {AccountSchema, IAccount} from '#src/models/types';
 
-export type CreateAccountParams = z.infer<typeof CreateAccountParamsSchema>;
-export type CreateAccountResponse = PartialModelObject<Account>;
+export const CreateAccountParamsSchema = AccountSchema;
+export type CreateAccountParams = IAccount;
+export type CreateAccountResponse = IAccount;
 
 export async function createAccount(params: CreateAccountParams): Promise<CreateAccountResponse> {
     const {availableScenarios, ...accountParams} = params;
@@ -25,7 +19,7 @@ export async function createAccount(params: CreateAccountParams): Promise<Create
         const account = await Account.query(trx).insert(accountParams);
 
         if (availableScenarios.length > 0) {
-            const rows = availableScenarios.map((scenarioId) => ({
+            const rows = availableScenarios.map((scenarioId: number) => ({
                 accountId: account.id,
                 scenarioId,
             }));
@@ -44,7 +38,7 @@ export const GetAccountByIdParamsSchema = z
     .strict();
 
 export type GetAccountByIdParams = z.infer<typeof GetAccountByIdParamsSchema>;
-export type GetAccountByIdResponse = PartialModelObject<Account>;
+export type GetAccountByIdResponse = IAccount;
 
 export async function getAccountById(
     params: GetAccountByIdParams,
@@ -68,7 +62,7 @@ export const GetAccountBySlugParamsSchema = z
     .strict();
 
 export type GetAccountBySlugParams = z.infer<typeof GetAccountBySlugParamsSchema>;
-export type GetAccountBySlugResponse = PartialModelObject<Account>;
+export type GetAccountBySlugResponse = IAccount;
 
 export async function getAccountBySlug(
     params: GetAccountBySlugParams,
@@ -88,7 +82,7 @@ export async function getAccountBySlug(
 
 export const GetAllAccountsParamsSchema = z.object({}).strict();
 export type GetAllAccountsParams = z.infer<typeof GetAllAccountsParamsSchema>;
-export type GetAllAccountsResponse = PartialModelObject<Account>[];
+export type GetAllAccountsResponse = IAccount[];
 
 export async function getAllAccounts(
     _params: GetAllAccountsParams,
@@ -105,7 +99,7 @@ export const UpdateAccountParamsSchema = CreateAccountParamsSchema.partial()
     .strict();
 
 export type UpdateAccountParams = z.infer<typeof UpdateAccountParamsSchema>;
-export type UpdateAccountResponse = PartialModelObject<Account>;
+export type UpdateAccountResponse = IAccount;
 export async function updateAccount(
     params: UpdateAccountParams,
     trx?: Transaction,
@@ -123,7 +117,7 @@ export async function updateAccount(
             await t('accountScenarios').where({accountId: id}).del();
 
             if (availableScenarios.length > 0) {
-                const inserts = availableScenarios.map((scenarioId) => ({
+                const inserts = availableScenarios.map((scenarioId: number) => ({
                     accountId: id,
                     scenarioId,
                 }));

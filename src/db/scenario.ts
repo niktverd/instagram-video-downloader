@@ -1,42 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {PartialModelObject, Transaction} from 'objection';
+import {Transaction} from 'objection';
 import {z} from 'zod';
 
 import {Scenario} from '../models/Scenario';
 
 import db from './utils';
 
-import {ScenarioType} from '#schemas/scenario';
+import {IScenario, ScenarioSchema} from '#src/models/types';
 
-export const CreateScenarioParamsSchema = z
-    .object({
-        slug: z.string(),
-        type: z.nativeEnum(ScenarioType),
-        enabled: z.boolean().optional(),
-        onlyOnce: z.boolean().optional(),
-        copiedFrom: z.number().nullable().optional(),
-        options: z.record(z.any()).optional(),
-        texts: z.record(z.any()).optional(),
-    })
-    .strict();
+export const CreateScenarioParamsSchema = ScenarioSchema;
+export type CreateScenarioParams = IScenario;
 
-export type CreateScenarioParams = z.infer<typeof CreateScenarioParamsSchema>;
-export type CreateScenarioResponse = PartialModelObject<Scenario>;
+export type CreateScenarioResponse = IScenario;
 
 export async function createScenario(
     params: CreateScenarioParams,
     trx?: Transaction,
 ): Promise<CreateScenarioResponse> {
-    const scenarioData: PartialModelObject<Scenario> = {
+    const scenarioData: Record<string, any> = {
         slug: params.slug,
         enabled: params.enabled ?? true,
         options: params.options || {},
         type: params.type,
     };
 
-    // Handle nullable field separately using type casting
-    if (params.copiedFrom !== undefined && params.copiedFrom !== null) {
-        // Force type as any to bypass type checking for this property
+    if (typeof params.copiedFrom === 'number') {
         scenarioData.copiedFrom = params.copiedFrom;
     }
 
@@ -53,7 +41,7 @@ export const GetScenarioByIdParamsSchema = z
     .strict();
 
 export type GetScenarioByIdParams = z.infer<typeof GetScenarioByIdParamsSchema>;
-export type GetScenarioByIdResponse = PartialModelObject<Scenario>;
+export type GetScenarioByIdResponse = IScenario;
 
 export async function getScenarioById(
     params: GetScenarioByIdParams,
@@ -74,7 +62,7 @@ export const GetScenarioBySlugParamsSchema = z
     .strict();
 
 export type GetScenarioBySlugParams = z.infer<typeof GetScenarioBySlugParamsSchema>;
-export type GetScenarioBySlugResponse = PartialModelObject<Scenario>;
+export type GetScenarioBySlugResponse = IScenario;
 
 export async function getScenarioBySlug(
     params: GetScenarioBySlugParams,
@@ -93,7 +81,7 @@ export async function getScenarioBySlug(
 
 export const GetAllScenariosParamsSchema = z.object({}).strict();
 export type GetAllScenariosParams = z.infer<typeof GetAllScenariosParamsSchema>;
-export type GetAllScenariosResponse = PartialModelObject<Scenario>[];
+export type GetAllScenariosResponse = IScenario[];
 
 export async function getAllScenarios(
     _params: GetAllScenariosParams,
@@ -112,7 +100,7 @@ export const UpdateScenarioParamsSchema = CreateScenarioParamsSchema.partial()
     .strict();
 
 export type UpdateScenarioParams = z.infer<typeof UpdateScenarioParamsSchema>;
-export type UpdateScenarioResponse = PartialModelObject<Scenario>;
+export type UpdateScenarioResponse = IScenario;
 export async function updateScenario(
     params: UpdateScenarioParams,
     trx?: Transaction,

@@ -11,11 +11,12 @@ import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
 import {getScenarios} from '../sections/shared/scenarios';
-import {MediaPostModel, ScenarioV4, SourceV3} from '../types';
+import {MediaPostModel, SourceV3} from '../types';
 
 import {log, logError} from './logging';
 
 import {CreateSourceParams} from '#src/db';
+import {IScenario} from '#src/models/types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -269,11 +270,11 @@ export const getRandomElementOfArray = <T>(array: T[]) => {
     return array[Math.floor(Math.random() * array.length)];
 };
 
-export const prepareCaption = (scenario: ScenarioV4) => {
-    const linkToAnotherAccount = shuffle(scenario.texts?.link_to_another_account || [''])[0];
-    const intro = shuffle(scenario.texts?.intro || [''])[0];
-    const main = shuffle(scenario.texts?.main || [''])[0];
-    const outro = shuffle(scenario.texts?.outro || [''])[0];
+export const prepareCaption = (texts: IScenario['texts'] | undefined) => {
+    const linkToAnotherAccount = shuffle(texts?.linkToAnotherAccount || [''])[0];
+    const intro = shuffle(texts?.intro || [''])[0];
+    const main = shuffle(texts?.main || [''])[0];
+    const outro = shuffle(texts?.outro || [''])[0];
 
     return [linkToAnotherAccount, intro, main, outro].filter(Boolean).join('\n');
 };

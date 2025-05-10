@@ -7,7 +7,7 @@ import {
     instagramLogin,
     messageWebhookV3,
     publishById,
-    publishIntagramV3,
+    publishIntagramV4,
     publishVideoFromUrl,
     removePublishedFromFirebase,
 } from './controllers';
@@ -16,7 +16,7 @@ const router = expressRouter();
 
 // GET routes
 router.get('/webhooks', hubChallangeWebhook);
-router.get('/publish', publishIntagramV3);
+router.get('/publish', publishIntagramV4);
 router.get('/remove-published', removePublishedFromFirebase);
 router.get('/login', instagramLogin);
 router.get('/callback', callbackInstagramLogin);

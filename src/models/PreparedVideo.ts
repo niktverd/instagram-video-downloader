@@ -2,8 +2,9 @@ import {Account} from './Account';
 import {BaseModel} from './BaseModel';
 import Scenario from './Scenario';
 import Source from './Source';
+import {IAccount, IPreparedVideo, IScenario, ISource} from './types';
 
-export class PreparedVideo extends BaseModel {
+export class PreparedVideo extends BaseModel implements IPreparedVideo {
     id!: number;
     firebaseUrl!: string;
     duration?: number;
@@ -12,9 +13,9 @@ export class PreparedVideo extends BaseModel {
     accountId!: number;
 
     // Define relationships
-    source?: Source;
-    scenario?: Scenario;
-    account?: Account;
+    source?: ISource;
+    scenario?: IScenario;
+    account?: IAccount;
 
     // Table name is the only required property
     static get tableName() {
@@ -32,7 +33,7 @@ export class PreparedVideo extends BaseModel {
                 relation: BaseModel.BelongsToOneRelation,
                 modelClass: Source,
                 join: {
-                    from: 'prepared_videos.sourceId',
+                    from: 'preparedVideos.sourceId',
                     to: 'sources.id',
                 },
             },
@@ -40,7 +41,7 @@ export class PreparedVideo extends BaseModel {
                 relation: BaseModel.BelongsToOneRelation,
                 modelClass: Scenario,
                 join: {
-                    from: 'prepared_videos.scenarioId',
+                    from: 'preparedVideos.scenarioId',
                     to: 'scenarios.id',
                 },
             },
@@ -48,7 +49,7 @@ export class PreparedVideo extends BaseModel {
                 relation: BaseModel.BelongsToOneRelation,
                 modelClass: Account,
                 join: {
-                    from: 'prepared_videos.accountId',
+                    from: 'preparedVideos.accountId',
                     to: 'accounts.id',
                 },
             },

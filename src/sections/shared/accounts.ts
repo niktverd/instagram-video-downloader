@@ -7,7 +7,8 @@ import {log} from '#utils';
 
 type AddAccountArgs = {
     id: string;
-    values: AccountV3;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    values: any;
 };
 
 export const addAccount = async ({id, values}: AddAccountArgs) => {
@@ -31,7 +32,7 @@ export const getAccounts = async (onlyEnabled = false) => {
     if (snaps.empty) {
         throw new Error(`Collection ${Collection.Accounts} is empty`);
     }
-    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as AccountV3));
+    const data = snaps.docs.map((snap) => ({...snap.data(), id: snap.id} as unknown as AccountV3));
 
     log('getAccounts', {data});
 

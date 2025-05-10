@@ -3,18 +3,13 @@ import path from 'path';
 
 import dotenv from 'dotenv';
 import {
-    Timestamp,
-    addDoc,
     collection,
     deleteDoc,
     doc,
     getDoc,
     getDocs,
-    limit,
-    query,
     setDoc,
     updateDoc,
-    where,
 } from 'firebase/firestore/lite';
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
@@ -22,14 +17,19 @@ import {shuffle} from 'lodash';
 import {firestore, storage} from '#config/firebase';
 import {locations} from '#config/places';
 import casinoAudioNames from '#src/config/casino.audioname.json';
-import {Collection, DelayS} from '#src/constants';
-import {AccountMediaContainerV3, AccountV3, MediaPostModelOld, PreparedVideoV3} from '#types';
+import {DelayS} from '#src/constants';
+import {
+    getLimitedInstagramMediaContainers,
+    getOnePreparedVideo,
+    updateInstagramMediaContainer,
+} from '#src/db';
+import {IAccount} from '#src/models/types';
+import {MediaPostModelOld} from '#types';
 import {
     getRandomElementOfArray,
     log,
     logError,
-    preparePostText,
-    preparePostTextFromScenario,
+    prepareCaption,
     processAndConcatVideos,
     saveFileToDisk,
 } from '#utils';
@@ -46,6 +46,7 @@ type CreateInstagramPostContainerArgs = {
     caption: string;
     firebaseId?: string;
     imageUrl?: string;
+    locationId?: string;
     videoUrl?: string;
 };
 
@@ -55,16 +56,12 @@ export async function createInstagramPostContainer({
     videoUrl,
     // firebaseId,
     accessToken,
+    locationId,
 }: CreateInstagramPostContainerArgs) {
     try {
         if (!accessToken) {
             throw new Error('Access token not found');
         }
-
-        const randomLocation = getRandomElementOfArray(locations.usa);
-        log({randomLocation});
-
-        const locationId = randomLocation.external_id;
         // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         const postData: any = {
             caption,
@@ -129,7 +126,9 @@ export async function getMergedVideo({
     videoUrl,
     finalVideoUrl,
     firebaseId,
-}: Required<Omit<CreateInstagramPostContainerArgs, 'imageUrl' | 'accessToken' | 'caption'>> & {
+}: Required<
+    Omit<CreateInstagramPostContainerArgs, 'imageUrl' | 'accessToken' | 'caption' | 'locationId'>
+> & {
     finalVideoUrl: string;
 }) {
     // download video from instagram
@@ -172,6 +171,7 @@ export async function publishInstagramPostContainer({
     containerId,
     accessToken,
 }: CublishInstagramPostContainerArgs) {
+    let lastCheckedIGStatus = 'UNKNOWN';
     try {
         log({containerId, accessToken});
         if (!accessToken || !containerId) {
@@ -186,6 +186,7 @@ export async function publishInstagramPostContainer({
         const statusResponseJson = await statusResponse.json();
         log({statusResponseJson});
 
+        lastCheckedIGStatus = statusResponseJson.status_code;
         if (statusResponseJson.status_code !== 'FINISHED') {
             throw new Error('Media is not ready to be published');
         }
@@ -207,6 +208,7 @@ export async function publishInstagramPostContainer({
         return {
             success: true,
             postId: publishResponseJson.id,
+            lastCheckedIGStatus,
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
@@ -214,6 +216,7 @@ export async function publishInstagramPostContainer({
         return {
             success: false,
             error: error.response?.data || error.message,
+            lastCheckedIGStatus,
         };
     }
 }
@@ -308,53 +311,99 @@ export const canInstagramPostBePublished = async ({
     }
 };
 
-export const prepareMediaContainersForAccount = async (account: AccountV3) => {
-    const colRef = collection(firestore, Collection.PreparedVideos);
-    const q = query(colRef, where('accounts', 'array-contains', account.id), limit(10));
-    const preparedVideoSnaps = await getDocs(q);
-    for (const snap of preparedVideoSnaps.docs) {
-        const preparedVideo = snap.data() as PreparedVideoV3;
+export const prepareMediaContainersForAccount = async (account: IAccount) => {
+    const mediaContainers = await getLimitedInstagramMediaContainers({
+        accountId: account.id,
+        random: true,
+        notPublished: true,
+        limit: 10,
+    });
 
-        const caption =
-            preparePostTextFromScenario({
-                title: preparedVideo.title,
-                originalHashtags: preparedVideo.originalHashtags || [],
-                system: `${preparedVideo.scenarioId} ${snap.id}`,
-                account: account.id,
-            }) ||
-            preparePostText({
-                originalHashtags: preparedVideo.originalHashtags || [],
-                system: `${preparedVideo.scenarioId} ${snap.id}`,
-                account: account.id,
-            });
+    if (mediaContainers.length) {
+        log('Not necessary to prepare media containers', mediaContainers);
+        return;
+    }
 
-        log({caption});
+    const preparedVideo = await getOnePreparedVideo({
+        accountId: account.id,
+        hasFirebaseUrl: true,
+        random: true,
+        notInInstagramMediaContainers: true,
+        fetchGraphScenario: true,
+        fetchGraphSource: true,
+    });
 
-        const {mediaContainerId} = await createInstagramPostContainer({
-            videoUrl: preparedVideo.firebaseUrl,
-            caption: caption || '',
+    if (!preparedVideo) {
+        log('Has no prepared video', preparedVideo);
+        return;
+    }
+
+    const caption = prepareCaption(preparedVideo.scenario?.texts);
+    const videoUrl = preparedVideo.firebaseUrl;
+    // const hashtags = [];
+
+    const randomLocation = getRandomElementOfArray(locations.usa);
+    log({randomLocation});
+
+    const locationId = randomLocation.external_id;
+    if (account.token) {
+        const result = await createInstagramPostContainer({
+            caption,
+            videoUrl,
+            locationId,
             accessToken: account.token,
         });
 
-        // save container data to subcollection
-        const subcolRef = collection(
-            firestore,
-            Collection.Accounts,
-            account.id,
-            Collection.AccountMediaContainers,
-        );
-        await addDoc(subcolRef, {
-            mediaContainerId,
-            createdAt: new Timestamp(new Date().getTime() / 1000, 0),
-            status: 'created',
-            preparedVideoId: snap.id,
-        } as Omit<AccountMediaContainerV3, 'id'>);
-        // remove accoutn from prepared video accoutn list
-        await updateDoc(snap.ref, {
-            accounts: preparedVideo.accounts.filter((accName) => accName !== account.id),
-            accountsHasBeenUsed: preparedVideo.accountsHasBeenUsed
-                ? [...preparedVideo.accountsHasBeenUsed, account.id]
-                : [account.id],
-        } as PreparedVideoV3);
+        log(result);
+    }
+};
+
+export const publishRandomInstagramContainerForAccount = async (account: IAccount) => {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+        const mediaContainers = await getLimitedInstagramMediaContainers({
+            accountId: account.id,
+            random: true,
+            notPublished: true,
+            limit: 1,
+        });
+
+        if (!mediaContainers.length) {
+            return {
+                success: false,
+                message: 'no_media_containers',
+            };
+        }
+
+        const mediaContainer = mediaContainers[0];
+        const {containerId} = mediaContainer;
+
+        const publishResponse = await publishInstagramPostContainer({
+            containerId: containerId as string,
+            accessToken: account.token || '',
+        });
+
+        if (publishResponse.success) {
+            await updateInstagramMediaContainer({
+                id: mediaContainer.id as number,
+                attempts: ((mediaContainer.attempts || 0) as number) + 1,
+                error: publishResponse.error || '',
+                mediaId: publishResponse.postId || '',
+                lastCheckedIGStatus: publishResponse.lastCheckedIGStatus || '',
+                isPublished: true,
+            });
+
+            return publishResponse;
+        } else {
+            const newAttempts = ((mediaContainer.attempts || 0) as number) + 1;
+            await updateInstagramMediaContainer({
+                id: mediaContainer.id as number,
+                attempts: newAttempts,
+                error: publishResponse.error || '',
+                lastCheckedIGStatus: publishResponse.lastCheckedIGStatus || '',
+                isBlocked: newAttempts > 3,
+                blockedReason: newAttempts > 3 ? 'Too many attempts' : undefined,
+            });
+        }
     }
 };

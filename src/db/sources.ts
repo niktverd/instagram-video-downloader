@@ -1,41 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {PartialModelObject, Transaction} from 'objection';
+import {Transaction} from 'objection';
 import {z} from 'zod';
 
 import {Source} from '../models/Source';
 
 import db from './utils';
 
-export const CreateSourceParamsSchema = z
-    .object({
-        firebaseUrl: z.string().optional(),
-        sources: z.record(z.any()),
-        bodyJSONString: z.record(z.any()).optional(),
-        duration: z.number().optional(),
-        attempt: z.number().optional(),
-        lastUsed: z.string().optional(),
-        sender: z.string().optional(),
-        recipient: z.string().optional(),
-    })
-    .strict();
+import {ISource, SourceSchema} from '#src/models/types';
 
-export type CreateSourceParams = z.infer<typeof CreateSourceParamsSchema>;
-export type CreateSourceResponse = PartialModelObject<Source>;
+export const CreateSourceParamsSchema = SourceSchema;
+export type CreateSourceParams = Omit<ISource, 'id'>;
+export type CreateSourceResponse = ISource;
 
 export async function createSource(
     params: CreateSourceParams,
     trx?: Transaction,
 ): Promise<CreateSourceResponse> {
-    const typedParams: PartialModelObject<Source> = params;
-
-    const source = await Source.query(trx || db).insert(typedParams);
+    const source = await Source.query(trx || db).insert(params);
 
     return source;
 }
 
 export const GetAllSourcesParamsSchema = z.object({}).strict();
 export type GetAllSourcesParams = z.infer<typeof GetAllSourcesParamsSchema>;
-export type GetAllSourcesResponse = PartialModelObject<Source>[];
+export type GetAllSourcesResponse = ISource[];
 
 export async function getAllSources(
     _params: GetAllSourcesParams,
@@ -53,7 +41,7 @@ export const GetOneSourceParamsSchema = z
     })
     .strict();
 export type GetOneSourceParams = z.infer<typeof GetOneSourceParamsSchema>;
-export type GetOneSourceResponse = PartialModelObject<Source> | undefined;
+export type GetOneSourceResponse = ISource | undefined;
 
 export async function getOneSource(
     params: GetOneSourceParams,
@@ -82,7 +70,7 @@ export const UpdateSourceParamsSchema = CreateSourceParamsSchema.partial()
     .strict();
 
 export type UpdateSourceParams = z.infer<typeof UpdateSourceParamsSchema>;
-export type UpdateSourceResponse = PartialModelObject<Source>;
+export type UpdateSourceResponse = ISource;
 export async function updateSource(params: UpdateSourceParams, trx?: Transaction): Promise<Source> {
     const {id, ...updateData} = UpdateSourceParamsSchema.parse(params);
 
@@ -125,7 +113,7 @@ export const GetSourceByIdParamsSchema = z
     .strict();
 
 export type GetSourceByIdParams = z.infer<typeof GetSourceByIdParamsSchema>;
-export type GetSourceByIdResponse = PartialModelObject<Source> | undefined;
+export type GetSourceByIdResponse = ISource | undefined;
 
 export async function getSourceById(
     params: GetSourceByIdParams,
