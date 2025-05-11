@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Transaction} from 'objection';
+import {OrderByDirection, Transaction} from 'objection';
 import {z} from 'zod';
 
 import {Source} from '../models/Source';
@@ -21,21 +21,49 @@ export async function createSource(
     return source;
 }
 
-export const GetAllSourcesParamsSchema = z.object({}).strict();
+export const GetAllSourcesParamsSchema = z
+    .object({
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sortBy: z.string().optional(),
+        sortOrder: z.string().optional(),
+    })
+    .strict();
 export type GetAllSourcesParams = z.infer<typeof GetAllSourcesParamsSchema>;
-export type GetAllSourcesResponse = ISource[];
+export type GetAllSourcesResponse = {sources: ISource[]; count: number};
 
 export async function getAllSources(
-    _params: GetAllSourcesParams,
+    params: GetAllSourcesParams,
     trx?: Transaction,
 ): Promise<GetAllSourcesResponse> {
-    const sources = await Source.query(trx || db);
+    const {
+        page = 1,
+        limit = 10,
+        sortBy,
+        sortOrder = 'desc',
+    } = GetAllSourcesParamsSchema.parse(params);
+    const query = Source.query(trx || db);
 
-    return sources;
+    if (sortBy) {
+        query.orderBy(sortBy, sortOrder as OrderByDirection);
+    }
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    // Execute the query with pagination
+    const result = await query.page(pageNumber - 1, limitNumber); // Objection uses 0-based page indexing
+
+    // Result contains 'results' (array of data) and 'total' (total count)
+    return {
+        sources: result.results,
+        count: result.total,
+    };
 }
 
 export const GetOneSourceParamsSchema = z
     .object({
+        id: z.number().optional(),
         random: z.boolean().optional(),
         emptyFirebaseUrl: z.boolean().optional(),
     })
@@ -47,8 +75,12 @@ export async function getOneSource(
     params: GetOneSourceParams,
     trx?: Transaction,
 ): Promise<GetOneSourceResponse> {
-    const {emptyFirebaseUrl, random} = params;
+    const {emptyFirebaseUrl, random, id} = params;
     const query = Source.query(trx || db);
+
+    if (id) {
+        query.where('id', id);
+    }
 
     if (emptyFirebaseUrl) {
         query.whereNull('firebaseUrl').orWhere('firebaseUrl', '');
