@@ -123,8 +123,34 @@ export const publishBulkRunScenarioMessages = async (
         // Calculate total number of messages to be sent
         let totalMessages = 0;
 
-        // Create a client with batching configuration
-        const pubsubClient = new PubSub({projectId});
+        // Create a client with proper authentication
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pubsubOptions: {projectId: string; keyFilename?: string; credentials?: any} = {
+            projectId,
+        };
+
+        // Try to use GOOGLE_APPLICATION_CREDENTIALS
+        if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+            try {
+                // Try to parse as JSON first
+                pubsubOptions.credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+                log(
+                    '[pubsub-client] Using credentials from GOOGLE_APPLICATION_CREDENTIALS as JSON',
+                );
+            } catch (e) {
+                // If can't parse as JSON, treat as file path
+                pubsubOptions.keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+                log(
+                    '[pubsub-client] Using credentials from GOOGLE_APPLICATION_CREDENTIALS as file path',
+                );
+            }
+        } else {
+            log(
+                '[pubsub-client] No explicit credentials provided, falling back to default authentication',
+            );
+        }
+
+        const pubsubClient = new PubSub(pubsubOptions);
 
         // Configure batch publisher with appropriate settings
         const batchPublisher = pubsubClient.topic(PubSubTopic.INSTAGRAM_VIDEO_EVENTS, {
