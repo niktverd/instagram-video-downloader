@@ -3,8 +3,9 @@ import {Model} from 'objection';
 
 import knexConfig from '../../knexfile';
 
-const environment = process.env.APP_ENV || 'development';
-const connectionConfig = knexConfig[environment];
+type Environment = 'development' | 'server-production' | 'cloud-run';
+const environment = (process.env.APP_ENV || 'development') as Environment;
+const connectionConfig = knexConfig[environment] as Knex.Config;
 
 // Initialize knex
 const knexInstance: Knex = knex(connectionConfig);

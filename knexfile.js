@@ -4,15 +4,22 @@ require('dotenv').config();
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
+const {
+    host = 'localhost',
+    port = 5432,
+    user = 'postgres',
+    password = 'postgres',
+    database = 'postgres',
+} = JSON.parse(process.env.POSTGRES_CONFIG || '{}');
 module.exports = {
     development: {
         client: 'pg',
         connection: {
-            host: process.env.DB_HOST || 'localhost',
-            port: process.env.DB_PORT || 5432,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+            host,
+            port,
+            user,
+            password,
+            database,
             ssl: {rejectUnauthorized: false}, // Add this line
         },
         migrations: {
@@ -30,11 +37,11 @@ module.exports = {
     ['server-production']: {
         client: 'pg',
         connection: {
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT || 5432,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+            host,
+            port,
+            user,
+            password,
+            database,
             ssl: {rejectUnauthorized: false}, // Add this line
         },
         migrations: {
@@ -51,11 +58,11 @@ module.exports = {
     ['cloud-run']: {
         client: 'pg',
         connection: {
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT || 5432,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASSWORD,
-            database: process.env.DB_NAME,
+            host,
+            port,
+            user,
+            password,
+            database,
             ssl: {rejectUnauthorized: false}, // Add this line
         },
         migrations: {
