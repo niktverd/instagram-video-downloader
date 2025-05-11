@@ -182,6 +182,7 @@ export const publishBulkRunScenarioMessages = async (
                             );
                             return true;
                         } catch (error) {
+                            console.log('error...', error);
                             logError(
                                 `[pubsub-client] Failed to publish message for scenario ${scenarioId} and account ${accountId}:`,
                                 error,
