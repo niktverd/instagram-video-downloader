@@ -171,6 +171,8 @@ export const publishBulkRunScenarioMessages = async (
                 promises.push(
                     (async () => {
                         try {
+                            log('publishing message...');
+                            log({payload, attributes});
                             const messageId = await batchPublisher.publishMessage({
                                 data: dataBuffer,
                                 attributes,
