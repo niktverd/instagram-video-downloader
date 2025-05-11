@@ -9,6 +9,7 @@ export class Account extends BaseModel implements IAccount {
     slug!: string;
     enabled!: boolean;
     token?: string;
+    userIdIG?: string;
     availableScenarios?: PartialModelObject<Scenario>[];
 
     static get tableName() {
