@@ -14,3 +14,7 @@ node_modules
 
 # Dependency cruiser
 .dependency-cruiser.js
+
+# knip
+report/knip.md
+report/knip.md.prev

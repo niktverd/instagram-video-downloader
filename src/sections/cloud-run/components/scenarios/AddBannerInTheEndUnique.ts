@@ -18,7 +18,9 @@ export const addBannerInTheEndUnique = async ({
     source,
     basePath,
 }: AddBannerInTheEndUniqueArgs): Promise<string> => {
-    const {extraBannerUrl} = scenario as ScenarioAddBannerAtTheEndUnique;
+    const {
+        options: {extraBannerUrl},
+    } = scenario as ScenarioAddBannerAtTheEndUnique;
     const {firebaseUrl: mainVideoUrl} = source;
     log('addBannerInTheEndUnique', {mainVideoUrl, extraBannerUrl});
 

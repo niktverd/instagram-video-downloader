@@ -60,18 +60,20 @@ export type SourceV3 = {
     firebaseUrl: string;
     sources: Sources;
     randomIndex: number;
-    bodyJSONString: string;
+    bodyJSONString: object;
     attempt: number;
     scenarios: string[];
     lastUsed: Timestamp;
     timesUsed: number;
     scenariosHasBeenCreated: [];
+    sender?: string;
+    recipient?: string;
 };
 
 export type PreparedVideoV3 = {
     id: string;
     firebaseUrl: string;
-    scenarioName: string;
+    scenarioSlug: string;
     sourceId: string;
     scenarioId: string;
     title: string;
@@ -82,7 +84,7 @@ export type PreparedVideoV3 = {
 };
 
 export type AccountV3 = {
-    id: string;
+    id: number;
     token: string;
     disabled: boolean;
     availableScenarios: string[];

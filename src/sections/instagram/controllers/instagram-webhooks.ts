@@ -1,9 +1,7 @@
 import dotenv from 'dotenv';
 import {Request, Response} from 'express';
-import {addDoc, collection} from 'firebase/firestore/lite';
 
-import {firestore} from '#config/firebase';
-import {Collection} from '#src/constants';
+import {createSource} from '#src/db';
 import {initiateRecordV3, log, logError} from '#utils';
 
 dotenv.config();
@@ -38,7 +36,8 @@ const getAttachment = (body: Request['body']) => {
 
     const [messaging] = entry.messaging;
     const senderId = messaging.sender?.id;
-    log({senderId, messaging});
+    const recipientId = messaging.recipient?.id;
+    log({senderId, recipientId, messaging});
 
     if (!availableSenders.includes(senderId?.toString())) {
         log({availableSenders, senderId});
@@ -57,7 +56,7 @@ const getAttachment = (body: Request['body']) => {
         throw new Error('attachment is undefined');
     }
 
-    return {senderId, attachment};
+    return {senderId, recipientId, attachment};
 };
 
 export const hubChallangeWebhook = (req: Request, res: Response) => {
@@ -73,31 +72,33 @@ export const messageWebhookV3 = async (req: Request, res: Response) => {
         log(req.query);
         log(req.body?.entry?.length);
 
-        const {senderId, attachment} = getAttachment(req.body);
+        const {senderId, recipientId, attachment} = getAttachment(req.body);
         const {type, payload} = attachment;
         log({senderId, type, payload});
 
         const {url, title = ''} = payload;
         const originalHashtags: string[] = title?.match(/#\w+/g) || [];
 
-        const collectionRef = collection(firestore, Collection.Sources);
-        const firestoreDoc = await addDoc(
-            collectionRef,
-            await initiateRecordV3(
-                {
-                    instagramReel: {
-                        url,
-                        senderId,
-                        title,
-                        originalHashtags,
-                        owner: '',
-                    },
+        const data = await initiateRecordV3(
+            {
+                instagramReel: {
+                    url,
+                    senderId,
+                    title,
+                    originalHashtags,
+                    owner: '',
                 },
-                req.body,
-            ),
+            },
+            req.body,
+            senderId,
+            recipientId,
         );
 
-        log('firestoreDoc', firestoreDoc.id);
+        console.log('before create source');
+        const sourceRecord = await createSource(data);
+        console.log('after create source');
+
+        log('firestoreDoc', sourceRecord);
         res.status(200).send('success');
     } catch (error) {
         logError('Error: ', error);

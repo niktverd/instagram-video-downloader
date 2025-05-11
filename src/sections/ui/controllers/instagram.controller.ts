@@ -17,7 +17,7 @@ export const uiGetInsights = async (req: Request, res: Response) => {
             throw new Error('accoutn name is not provided');
         }
         const accounts = await getAccounts();
-        const account = accounts.find(({id}) => id === accountName);
+        const account = accounts.find(({id}) => id.toString() === accountName);
         if (!account) {
             throw new Error(`accoutn with name ${accountName} was not found`);
         }
@@ -40,7 +40,7 @@ export const uiGetInstagramUserById = async (req: Request, res: Response) => {
             throw new Error('accoutn name or userId are not provided');
         }
         const accounts = await getAccounts();
-        const account = accounts.find(({id}) => id === accountName);
+        const account = accounts.find(({id}) => id.toString() === accountName);
         if (!account) {
             throw new Error(`accoutn with name ${accountName} was not found`);
         }
@@ -63,7 +63,7 @@ export const uiGetInstagramUserIdByMediaId = async (req: Request, res: Response)
             throw new Error('accoutn name or reelVideoId are not provided');
         }
         const accounts = await getAccounts();
-        const account = accounts.find(({id}) => id === accountName);
+        const account = accounts.find(({id}) => id.toString() === accountName);
         if (!account) {
             throw new Error(`accoutn with name ${accountName} was not found`);
         }
@@ -94,7 +94,7 @@ export const uiGetInstagramMedia = async (req: Request, res: Response) => {
                 throw new Error('account name is not provided');
             }
             const accounts = await getAccounts();
-            const account = accounts.find(({id}) => id === accountName);
+            const account = accounts.find(({id}) => id.toString() === accountName);
             if (!account) {
                 throw new Error(`account with name ${accountName} was not found`);
             }
@@ -131,7 +131,7 @@ export const uiGetUserContent = async (req: Request, res: Response) => {
 
             // Get accounts to verify if the specified account exists
             const accounts = await getAccounts();
-            const targetAccount = accounts.find(({id}) => id === accountName);
+            const targetAccount = accounts.find(({id}) => id.toString() === accountName);
 
             if (!targetAccount) {
                 res.status(404).send({

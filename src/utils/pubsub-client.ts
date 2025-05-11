@@ -6,6 +6,8 @@
 import {PubSubAction, PubSubPayload, PubSubTopic} from './constants';
 import {log, logError} from './logging';
 
+import {GetAllAccountsResponse} from '#src/db';
+
 // eslint-disable-next-line valid-jsdoc
 /**
  * Publishes a message to a Pub/Sub topic via HTTP POST
@@ -19,6 +21,7 @@ export const publishMessageToPubSub = async (
 ): Promise<boolean> => {
     try {
         const projectId = process.env.GCP_PROJECT_ID;
+        log('[pubsub-client] Project ID:', projectId, 'topicName:', topicName);
         if (!projectId) {
             throw new Error('GCP_PROJECT_ID environment variable is not set');
         }
@@ -96,9 +99,8 @@ export const requestRunScenario = async (
  * This helps reduce API calls when sending similar messages for multiple accounts and scenarios
  */
 export const publishBulkRunScenarioMessages = async (
-    sourceId: string,
-    scenarioIds: string[],
-    accountIds: string[],
+    sourceId: number,
+    accounts: GetAllAccountsResponse,
 ): Promise<{success: boolean; count: number}> => {
     try {
         log('publishBulkRunScenarioMessages');
@@ -119,10 +121,36 @@ export const publishBulkRunScenarioMessages = async (
         const {PubSub} = await import('@google-cloud/pubsub');
 
         // Calculate total number of messages to be sent
-        const totalMessages = scenarioIds.length * accountIds.length;
+        let totalMessages = 0;
 
-        // Create a client with batching configuration
-        const pubsubClient = new PubSub({projectId});
+        // Create a client with proper authentication
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pubsubOptions: {projectId: string; keyFilename?: string; credentials?: any} = {
+            projectId,
+        };
+
+        // Try to use GOOGLE_APPLICATION_CREDENTIALS
+        if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+            try {
+                // Try to parse as JSON first
+                pubsubOptions.credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+                log(
+                    '[pubsub-client] Using credentials from GOOGLE_APPLICATION_CREDENTIALS as JSON',
+                );
+            } catch (e) {
+                // If can't parse as JSON, treat as file path
+                pubsubOptions.keyFilename = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+                log(
+                    '[pubsub-client] Using credentials from GOOGLE_APPLICATION_CREDENTIALS as file path',
+                );
+            }
+        } else {
+            log(
+                '[pubsub-client] No explicit credentials provided, falling back to default authentication',
+            );
+        }
+
+        const pubsubClient = new PubSub(pubsubOptions);
 
         // Configure batch publisher with appropriate settings
         const batchPublisher = pubsubClient.topic(PubSubTopic.INSTAGRAM_VIDEO_EVENTS, {
@@ -139,8 +167,18 @@ export const publishBulkRunScenarioMessages = async (
         const promises: Promise<boolean>[] = [];
 
         // Create all messages and submit them to the batch publisher
-        for (const scenarioId of scenarioIds) {
-            for (const accountId of accountIds) {
+        for (const account of accounts) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            for (const scenario of (account.availableScenarios as any[]) || []) {
+                const accountId = account.id;
+                const scenarioId = scenario.id;
+
+                if (!accountId || !scenarioId) {
+                    continue;
+                }
+
+                totalMessages++;
+
                 const payload = {
                     sourceId,
                     scenarioId,
@@ -159,6 +197,8 @@ export const publishBulkRunScenarioMessages = async (
                 promises.push(
                     (async () => {
                         try {
+                            log('publishing message...');
+                            log({payload, attributes});
                             const messageId = await batchPublisher.publishMessage({
                                 data: dataBuffer,
                                 attributes,
@@ -168,6 +208,7 @@ export const publishBulkRunScenarioMessages = async (
                             );
                             return true;
                         } catch (error) {
+                            console.log('error...', error);
                             logError(
                                 `[pubsub-client] Failed to publish message for scenario ${scenarioId} and account ${accountId}:`,
                                 error,
@@ -186,7 +227,7 @@ export const publishBulkRunScenarioMessages = async (
         // Return results
         if (successCount > 0) {
             log(
-                `[pubsub-client] Successfully published ${successCount}/${totalMessages} messages in batch`,
+                `[pubsub-client] Successfully published ${successCount}/${totalMessages} messages in batch, ${projectId}`,
             );
             return {success: true, count: successCount};
         } else {

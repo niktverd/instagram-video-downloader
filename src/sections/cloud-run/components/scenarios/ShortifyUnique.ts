@@ -29,9 +29,7 @@ export const shortifyUnique = async ({scenario, source, basePath}: ShortifyUniqu
     const {firebaseUrl: mainVideoUrl} = source;
 
     const {
-        minDuration,
-        maxDuration,
-        extraBannerUrls: bannerVideoUrls,
+        options: {minDuration, maxDuration, extraBannerUrls: bannerVideoUrls},
     } = scenario as ScenarioShortifyUnique;
 
     // Use the first banner URL from the array

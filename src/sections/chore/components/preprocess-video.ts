@@ -18,7 +18,8 @@ import {uploadYoutubeVideo} from '../../youtube/components/youtube';
 
 import {firestore} from '#config/firebase';
 import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '#src/constants';
-import {MediaPostModel, SourceV3, Sources} from '#types';
+import {deleteSource, getAllAccounts, getOneSource, updateSource} from '#src/db';
+import {MediaPostModel, Sources} from '#types';
 import {
     getInstagramPropertyName,
     log,
@@ -27,7 +28,6 @@ import {
     uploadFileFromUrl,
 } from '#utils';
 import {createInstagramPostContainer, getMergedVideo} from '$/instagram/components';
-import {getAccounts} from '$/shared';
 
 dotenv.config();
 
@@ -180,34 +180,30 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
     log('downloadVideoCron', 'started in', ms, 'ms');
 
     setTimeout(async () => {
-        const collectionRef = collection(firestore, Collection.Sources);
-        const queryRef = query(collectionRef, where('firebaseUrl', '==', ''), limit(10));
-        const docSnaps = await getDocs(queryRef);
-        if (docSnaps.empty) {
-            log('doc snap is empty');
+        const randomSource = await getOneSource({random: true, emptyFirebaseUrl: true});
+        if (!randomSource) {
+            log('all videos are downloaded');
             downloadVideoCron(DelayMS.Min5);
             return;
         }
+        const medias = [randomSource];
 
-        const medias = shuffle(
-            docSnaps.docs.map((snap) => ({...snap.data(), id: snap.id} as SourceV3)),
-        );
         log('sources length:', medias.length);
 
         for (const media of medias) {
-            const firebaseId = media.id;
-            log('working with source id: ', firebaseId);
+            const mediaId = media.id as number;
+            log('working with source id: ', mediaId);
             try {
                 for (let attempt = 0; attempt < 2; attempt++) {
-                    const sourceUrl = media.sources.instagramReel?.url;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const sourceUrl = (media.sources as any)?.instagramReel?.url;
                     if (!sourceUrl) {
                         throw new Error('media.sources.instagramReel is empty');
                     }
 
                     const downloadURL = await uploadFileFromUrl({
                         url: sourceUrl,
-                        collectionName: Collection.Sources,
-                        firebaseId,
+                        fileName: `instagramReel-id-${media.id}`,
                     });
 
                     log('Файл успешно загружен:', downloadURL);
@@ -215,43 +211,25 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                     const duration = await getVideoDuration(downloadURL);
                     log('duration:', duration);
 
-                    const documentRef = doc(collectionRef, firebaseId);
-                    await updateDoc(documentRef, {
+                    const updatedSource = await updateSource({
+                        id: mediaId,
                         firebaseUrl: downloadURL,
                         duration,
                     });
-                    log('duration and url updated');
+                    log('duration and url updated', updatedSource);
 
                     // Get scenarios and accounts to send bulk messages
-                    const scenarioIds =
-                        media.scenarios && media.scenarios.length > 0 ? media.scenarios : [];
-
-                    log('scenarioIds:', scenarioIds);
-
-                    // Get all enabled accounts
-                    const accounts = await getAccounts(true);
-                    log('accounts:', accounts);
-                    // Filter accounts by available scenarios
-                    const accountIds = accounts
-                        .filter((account) =>
-                            account.availableScenarios?.some((scenarioName) =>
-                                scenarioIds.includes(scenarioName),
-                            ),
-                        )
-                        .map((account) => account.id);
-
-                    log('accountIds:', accountIds);
+                    const accounts = await getAllAccounts({});
 
                     // Publish bulk messages for each account and scenario pair
-                    if (scenarioIds.length > 0 && accountIds.length > 0) {
+                    if (accounts.length > 0) {
                         log('publishing bulk messages...');
                         const {success, count} = await publishBulkRunScenarioMessages(
-                            firebaseId,
-                            scenarioIds,
-                            accountIds,
+                            mediaId,
+                            accounts,
                         );
                         log(
-                            `Published ${count} messages for ${scenarioIds.length} scenarios and ${accountIds.length} accounts. Success: ${success}`,
+                            `Published ${count} messages for ${accounts.length} accounts. Success: ${success}`,
                         );
                     } else {
                         log('No scenarios or accounts found for bulk publishing');
@@ -261,20 +239,15 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                 }
             } catch (error) {
                 log({preprocessVideoCatch: error});
-                const documentRef = doc(collectionRef, firebaseId);
 
                 if (media.attempt) {
-                    // delete media
-                    await deleteDoc(documentRef);
+                    await deleteSource({id: mediaId});
                 } else {
-                    // save attempt to media
-                    await updateDoc(documentRef, {
-                        attempt: 2,
-                    });
+                    await updateSource({id: mediaId, attempt: 2});
                 }
             } finally {
-                if (existsSync(firebaseId)) {
-                    rmSync(firebaseId, {maxRetries: 2, force: true, recursive: true});
+                if (existsSync(mediaId.toString())) {
+                    rmSync(mediaId.toString(), {maxRetries: 2, force: true, recursive: true});
                 }
             }
         }

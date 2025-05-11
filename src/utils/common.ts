@@ -11,19 +11,21 @@ import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
 import {getScenarios} from '../sections/shared/scenarios';
-import {MediaPostModel, ScenarioV4, SourceV3} from '../types';
+import {MediaPostModel, SourceV3} from '../types';
 
 import {log, logError} from './logging';
+
+import {CreateSourceParams} from '#src/db';
+import {IScenario} from '#src/models/types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 type UploadFileFromUrlArgs = {
     url: string;
-    firebaseId: string;
-    collectionName?: Collection;
+    fileName: string;
 };
 
-export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs) {
+export async function uploadFileFromUrl({url, fileName}: UploadFileFromUrlArgs) {
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -34,7 +36,7 @@ export async function uploadFileFromUrl({url, firebaseId}: UploadFileFromUrlArgs
         const fileBuffer = await response.arrayBuffer();
         const contentType = response.headers.get('content-type') || undefined;
 
-        const fileRef = ref(storage, `${firebaseId}-${Math.random()}.mp4`);
+        const fileRef = ref(storage, `${fileName}-${Math.random()}.mp4`);
 
         const metadata = {contentType};
         await uploadBytes(fileRef, fileBuffer, metadata);
@@ -59,6 +61,7 @@ export const getBufferVideo = async (url: string) => {
 };
 
 export const saveFileToDisk = async (url: string, filePath: string) => {
+    log('saveFileToDisk', {url});
     const response = await fetch(url, {
         method: 'GET',
         responseType: 'arraybuffer',
@@ -217,21 +220,20 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
 export const initiateRecordV3 = async (
     source: SourceV3['sources'],
     bodyJSONString: SourceV3['bodyJSONString'],
-) => {
+    sender: SourceV3['sender'],
+    recipient: SourceV3['recipient'],
+): Promise<CreateSourceParams> => {
     const scenarios = await getScenarios(true);
     log({scenarios});
     return {
-        createdAt: new Timestamp(new Date().getTime() / 1000, 0),
         firebaseUrl: '',
         sources: source,
-        randomIndex: Math.random(),
         bodyJSONString,
         attempt: 0,
-        scenarios: scenarios.map(({name}) => name),
-        lastUsed: new Timestamp(0, 0),
-        timesUsed: 0,
-        scenariosHasBeenCreated: [],
-    } as Omit<SourceV3, 'id'>;
+        lastUsed: new Date('1970-01-01').toISOString(),
+        sender,
+        recipient,
+    };
 };
 
 export const isTimeToPublishInstagram = async () => {
@@ -268,11 +270,11 @@ export const getRandomElementOfArray = <T>(array: T[]) => {
     return array[Math.floor(Math.random() * array.length)];
 };
 
-export const prepareCaption = (scenario: ScenarioV4) => {
-    const linkToAnotherAccount = shuffle(scenario.texts?.link_to_another_account || [''])[0];
-    const intro = shuffle(scenario.texts?.intro || [''])[0];
-    const main = shuffle(scenario.texts?.main || [''])[0];
-    const outro = shuffle(scenario.texts?.outro || [''])[0];
+export const prepareCaption = (texts: IScenario['texts'] | undefined) => {
+    const linkToAnotherAccount = shuffle(texts?.linkToAnotherAccount || [''])[0];
+    const intro = shuffle(texts?.intro || [''])[0];
+    const main = shuffle(texts?.main || [''])[0];
+    const outro = shuffle(texts?.outro || [''])[0];
 
     return [linkToAnotherAccount, intro, main, outro].filter(Boolean).join('\n');
 };

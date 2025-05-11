@@ -65,7 +65,7 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
             firebaseUrl:
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
             randomIndex: 0,
-            bodyJSONString: '{}',
+            bodyJSONString: {},
             attempt: 0,
             scenarios: [],
             lastUsed: new Timestamp(new Date().getTime(), 0),
@@ -73,16 +73,18 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
             scenariosHasBeenCreated: [],
         },
         scenario: {
-            id: '1',
-            name: ScenarioName.ScenarioAddBannerAtTheEndUnique,
+            id: 1,
+            slug: ScenarioName.ScenarioAddBannerAtTheEndUnique,
             type: ScenarioType.ScenarioAddBannerAtTheEndUnique,
             onlyOnce: false,
             enabled: true,
             texts: {},
-            extraBannerUrls: [
-                'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
-            ],
-            extraBannerUrl: '',
+            options: {
+                extraBannerUrls: [
+                    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsiimple_scenario_img%2F1.png?alt=media&token=269f0e5b-bfbb-49c3-b395-faba9c86573a',
+                ],
+                extraBannerUrl: '',
+            },
         },
         basePath,
     });
@@ -130,7 +132,7 @@ const testShortifyUnique = async (filePath: string) => {
             firebaseUrl:
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
             randomIndex: 0,
-            bodyJSONString: '{}',
+            bodyJSONString: {},
             attempt: 0,
             scenarios: [],
             lastUsed: new Timestamp(new Date().getTime(), 0),
@@ -143,15 +145,17 @@ const testShortifyUnique = async (filePath: string) => {
         // originalHashtags: [],
         // accounts: ['@someaccount.gamble'],
         scenario: {
-            id: '1',
-            name: ScenarioName.ScenarioShortifyUnique,
+            id: 1,
+            slug: ScenarioName.ScenarioShortifyUnique,
             type: ScenarioType.ScenarioShortifyUnique,
             onlyOnce: false,
             enabled: true,
             texts: {},
-            extraBannerUrls: [bannerVideoUrls[0]],
-            minDuration: 3,
-            maxDuration: 5,
+            options: {
+                extraBannerUrls: [bannerVideoUrls[0]],
+                minDuration: 3,
+                maxDuration: 5,
+            },
         },
         basePath,
     });

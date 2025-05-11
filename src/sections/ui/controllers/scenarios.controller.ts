@@ -1,38 +1,64 @@
-import {Request, Response} from 'express';
+// import {Request, Response} from 'express';
 
-import {logError} from '#utils';
-// import {runInjectionScenraios} from '$/cloud-run/components/scenarios';
-import {addScenario, clearPreprod, getScenarios, patchScenario} from '$/shared';
+import {
+    CreateScenarioParams,
+    CreateScenarioParamsSchema,
+    CreateScenarioResponse,
+    DeleteScenarioParams,
+    DeleteScenarioParamsSchema,
+    DeleteScenarioResponse,
+    GetAllScenariosParams,
+    GetAllScenariosParamsSchema,
+    GetAllScenariosResponse,
+    UpdateScenarioParams,
+    UpdateScenarioParamsSchema,
+    UpdateScenarioResponse,
+    createScenario,
+    deleteScenario,
+    getAllScenarios,
+    updateScenario,
+    wrapper,
+} from '../../../db';
 
-export const uiGetScenarios = async (_req: Request, res: Response) => {
-    try {
-        const scenarios = await getScenarios();
-        res.status(200).send(scenarios);
-    } catch (error) {
-        logError(error);
-        console.log(error);
-        res.status(500).send(error);
-    }
-};
+// import {logError} from '#utils';
+// import {clearPreprod} from '$/shared';
 
-export const uiPatchScenario = async (req: Request, res: Response) => {
-    const {id, values} = req.body;
-    await patchScenario({id, values});
-    res.status(200).send(req.body);
-};
+export const getAllScenariosGet = wrapper<GetAllScenariosParams, GetAllScenariosResponse>(
+    getAllScenarios,
+    GetAllScenariosParamsSchema,
+    'GET',
+);
 
-export const uiAddScenario = async (req: Request, res: Response) => {
-    const {id, values} = req.body;
-    await addScenario({id, values});
-    res.status(200).send(req.body);
-};
+export const updateScenarioPatch = wrapper<UpdateScenarioParams, UpdateScenarioResponse>(
+    updateScenario,
+    UpdateScenarioParamsSchema,
+    'PATCH',
+);
 
-export const uiClearPreprod = async (req: Request, res: Response) => {
-    await clearPreprod();
-    res.status(200).send(req.query);
-};
+export const createScenarioPost = wrapper<CreateScenarioParams, CreateScenarioResponse>(
+    createScenario,
+    CreateScenarioParamsSchema,
+    'POST',
+);
 
-export const uiRunInjectionScenraios = async (req: Request, res: Response) => {
-    res.status(200).send(req.query);
-    // await runInjectionScenraios();
-};
+export const deleteScenarioDelete = wrapper<DeleteScenarioParams, DeleteScenarioResponse>(
+    deleteScenario,
+    DeleteScenarioParamsSchema,
+    'DELETE',
+);
+
+// export const uiClearPreprod = async (req: Request, res: Response) => {
+//     try {
+//         await clearPreprod();
+//         res.status(200).send(req.query);
+//     } catch (error) {
+//         logError(error);
+//         console.log(error);
+//         res.status(500).send(error);
+//     }
+// };
+
+// export const uiRunInjectionScenraios = async (req: Request, res: Response) => {
+//     res.status(200).send(req.query);
+//     // await runInjectionScenraios();
+// };

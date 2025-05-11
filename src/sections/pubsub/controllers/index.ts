@@ -3,23 +3,12 @@ import {rmSync} from 'fs';
 import {Request, Response} from 'express';
 
 import {ScenarioType} from '#schemas/scenario';
+import {createPreparedVideo, getAccountById, getScenarioById, getSourceById} from '#src/db';
+import {Scenario} from '#src/models';
 import {ScenarioMap} from '#src/sections/cloud-run/components/scenarios/ScenarioMap';
-import {
-    PubSubAction,
-    PubSubTopic,
-    getWorkingDirectoryForVideo,
-    log,
-    logError,
-    prepareCaption,
-} from '#utils';
-import {
-    addPreparedVideo,
-    getAccount,
-    getScenario,
-    getSource,
-    hasPreparedVideoBeenCreated,
-    uploadFileToServer,
-} from '$/shared';
+import {getVideoDuration} from '#src/sections/cloud-run/components/video';
+import {PubSubAction, PubSubTopic, getWorkingDirectoryForVideo, log, logError} from '#utils';
+import {hasPreparedVideoBeenCreated, uploadFileToServer} from '$/shared';
 
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -49,9 +38,9 @@ export const pubsubHandler = async (req: Request, res: Response) => {
         try {
             // let parsedData: Record<string, string>;
             const {accountId, scenarioId, sourceId} = JSON.parse(data) as {
-                accountId: string;
-                scenarioId: string;
-                sourceId: string;
+                accountId: number;
+                scenarioId: number;
+                sourceId: number;
             };
             logLocal('Parsed message data:', {accountId, scenarioId, sourceId});
             if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId})) {
@@ -60,21 +49,21 @@ export const pubsubHandler = async (req: Request, res: Response) => {
                 return;
             }
 
-            const scenario = await getScenario(scenarioId);
+            const scenario = await getScenarioById({id: scenarioId});
             if (!scenario) {
                 logLocal('Scenario not found', {scenarioId});
                 res.status(404).send();
                 return;
             }
 
-            const account = await getAccount(accountId);
+            const account = await getAccountById({id: accountId});
             if (!account) {
                 logLocal('Account not found', {accountId});
                 res.status(404).send();
                 return;
             }
 
-            const source = await getSource(sourceId);
+            const source = await getSourceById({id: sourceId});
             if (!source) {
                 logLocal('Source not found', {sourceId});
                 res.status(404).send();
@@ -83,7 +72,11 @@ export const pubsubHandler = async (req: Request, res: Response) => {
 
             logLocal({scenario, account, source});
 
-            const isScenarioInAccount = account.availableScenarios.includes(scenario.name);
+            const isScenarioInAccount = Boolean(
+                (account.availableScenarios as Scenario[])?.find(
+                    (accountScenario: Scenario) => accountScenario.slug === scenario.slug,
+                ),
+            );
             if (!isScenarioInAccount) {
                 logLocal('Scenario not in account', {scenarioId, accountId});
                 res.status(404).send();
@@ -130,27 +123,26 @@ export const pubsubHandler = async (req: Request, res: Response) => {
             logLocal('basePath', {basePath});
             const finalFilePath = await scenarioFunction({scenario, source, basePath});
             logLocal('finalFilePath', {finalFilePath});
-            const scenarioName = scenario.name;
-            const originalHashtags = source.sources.instagramReel?.originalHashtags || [];
+            const scenarioSlug = scenario.slug;
+
+            const duration = await getVideoDuration(finalFilePath);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
             // Upload data to server
             const downloadURL = await uploadFileToServer(
                 finalFilePath,
-                `${directoryName}-${scenarioName}.mp4`,
+                `${directoryName}-${scenarioSlug}.mp4`,
             );
             logLocal('downloadURL', {downloadURL});
             // update database
-            await addPreparedVideo({
+            const savedPreparedVideo = await createPreparedVideo({
                 firebaseUrl: downloadURL,
-                scenarioName,
                 scenarioId,
                 sourceId,
-                title: prepareCaption(scenario),
-                originalHashtags,
-                accounts: [account.id],
-                accountsHasBeenUsed: [],
+                accountId,
+                duration,
             });
-            logLocal('video added to database');
+            logLocal('video added to database', savedPreparedVideo);
             // delete tempfiles
             const deleteTempFiles = true;
             if (deleteTempFiles) {
