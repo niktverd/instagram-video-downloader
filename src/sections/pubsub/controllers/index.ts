@@ -18,6 +18,7 @@ import {hasPreparedVideoBeenCreated, uploadFileToServer} from '$/shared';
  */
 export const pubsubHandler = async (req: Request, res: Response) => {
     try {
+        writeFileSync('reqId.log', uniqueId());
         // Pub/Sub messages are received as base64-encoded strings
         if (!req.body || !req.body.message) {
             logError('Invalid Pub/Sub message format');

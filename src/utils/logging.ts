@@ -43,9 +43,7 @@ export const log = (...messages: unknown[]) => {
     let reqId = '';
     try {
         reqId = readFileSync('reqId.log', 'utf8');
-    } catch (error) {
-        console.error('Error reading reqId.log', error);
-    }
+    } catch {}
     const isDevelopment = process.env.APP_ENV === 'development';
     const groupLabels = getGroupLabels();
     console.group(...groupLabels);
@@ -61,9 +59,7 @@ export const logError = (...messages: unknown[]) => {
     let reqId = '';
     try {
         reqId = readFileSync('reqId.log', 'utf8');
-    } catch (error) {
-        console.error('Error reading reqId.log', error);
-    }
+    } catch {}
     const isDevelopment = process.env.APP_ENV === 'development';
     const groupLabels = getGroupLabels();
     console.group(chalk.bgRed('ERROR'));
