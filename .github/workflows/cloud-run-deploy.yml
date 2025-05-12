@@ -111,6 +111,7 @@ jobs:
             --cpu 4 \
             --timeout 1000 \
             --concurrency 1 \
+            --max-instances=20 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
@@ -126,6 +127,7 @@ jobs:
             --cpu 4 \
             --timeout 1000 \
             --concurrency 1 \
+            --max-instances=20 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
