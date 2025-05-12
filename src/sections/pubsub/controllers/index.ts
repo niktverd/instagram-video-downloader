@@ -1,7 +1,7 @@
+import {randomUUID} from 'crypto';
 import {rmSync, writeFileSync} from 'fs';
 
 import {Request, Response} from 'express';
-import {uniqueId} from 'lodash';
 
 import {ScenarioType} from '#schemas/scenario';
 import {createPreparedVideo, getAccountById, getScenarioById, getSourceById} from '#src/db';
@@ -18,7 +18,7 @@ import {hasPreparedVideoBeenCreated, uploadFileToServer} from '$/shared';
  */
 export const pubsubHandler = async (req: Request, res: Response) => {
     try {
-        writeFileSync('reqId.log', uniqueId());
+        writeFileSync('reqId.log', randomUUID());
         // Pub/Sub messages are received as base64-encoded strings
         if (!req.body || !req.body.message) {
             logError('Invalid Pub/Sub message format');
@@ -182,7 +182,7 @@ export const pubsubHandler = async (req: Request, res: Response) => {
  * Uses service account authentication via GOOGLE_APPLICATION_CREDENTIALS
  */
 export const pushMessageToPubSub = async (req: Request, res: Response) => {
-    writeFileSync('reqId.log', uniqueId());
+    writeFileSync('reqId.log', randomUUID());
     try {
         // Always use the Instagram video events topic
         const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;
