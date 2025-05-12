@@ -1,6 +1,7 @@
-import {rmSync} from 'fs';
+import {rmSync, writeFileSync} from 'fs';
 
 import {Request, Response} from 'express';
+import {uniqueId} from 'lodash';
 
 import {ScenarioType} from '#schemas/scenario';
 import {createPreparedVideo, getAccountById, getScenarioById, getSourceById} from '#src/db';
@@ -180,6 +181,7 @@ export const pubsubHandler = async (req: Request, res: Response) => {
  * Uses service account authentication via GOOGLE_APPLICATION_CREDENTIALS
  */
 export const pushMessageToPubSub = async (req: Request, res: Response) => {
+    writeFileSync('reqId.log', uniqueId());
     try {
         // Always use the Instagram video events topic
         const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;

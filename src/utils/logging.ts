@@ -1,3 +1,5 @@
+import {readFileSync} from 'fs';
+
 import chalk from 'chalk';
 
 const chalkMap = [
@@ -38,26 +40,38 @@ const getGroupLabels = () => {
 };
 
 export const log = (...messages: unknown[]) => {
+    let reqId = '';
+    try {
+        reqId = readFileSync('reqId.log', 'utf8');
+    } catch (error) {
+        console.error('Error reading reqId.log', error);
+    }
     const isDevelopment = process.env.APP_ENV === 'development';
     const groupLabels = getGroupLabels();
     console.group(...groupLabels);
     if (isDevelopment) {
-        console.log(...messages);
+        console.log(reqId, ...messages);
     } else {
-        console.log(JSON.stringify(messages));
+        console.log(JSON.stringify({reqId, ...messages}));
     }
     console.groupEnd();
 };
 
 export const logError = (...messages: unknown[]) => {
+    let reqId = '';
+    try {
+        reqId = readFileSync('reqId.log', 'utf8');
+    } catch (error) {
+        console.error('Error reading reqId.log', error);
+    }
     const isDevelopment = process.env.APP_ENV === 'development';
     const groupLabels = getGroupLabels();
     console.group(chalk.bgRed('ERROR'));
     console.group(...groupLabels);
     if (isDevelopment) {
-        console.error(...messages);
+        console.error(reqId, ...messages);
     } else {
-        console.error(JSON.stringify(messages));
+        console.error(JSON.stringify({reqId, ...messages}));
     }
     console.groupEnd();
     console.groupEnd();
