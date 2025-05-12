@@ -50,7 +50,7 @@ export const log = (...messages: unknown[]) => {
     if (isDevelopment) {
         console.log(reqId, ...messages);
     } else {
-        console.log(JSON.stringify({reqId, ...messages}));
+        console.log(JSON.stringify([`reqId_${reqId}`, ...messages]));
     }
     console.groupEnd();
 };
@@ -67,7 +67,7 @@ export const logError = (...messages: unknown[]) => {
     if (isDevelopment) {
         console.error(reqId, ...messages);
     } else {
-        console.error(JSON.stringify({reqId, ...messages}));
+        console.error(JSON.stringify([`reqId_${reqId}`, ...messages]));
     }
     console.groupEnd();
     console.groupEnd();
