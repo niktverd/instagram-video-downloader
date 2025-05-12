@@ -19,6 +19,7 @@ import {locations} from '#config/places';
 import casinoAudioNames from '#src/config/casino.audioname.json';
 import {DelayS} from '#src/constants';
 import {
+    createInstagramMediaContainer,
     getLimitedInstagramMediaContainers,
     getOnePreparedVideo,
     updateInstagramMediaContainer,
@@ -353,6 +354,14 @@ export const prepareMediaContainersForAccount = async (account: IAccount) => {
             locationId,
             accessToken: account.token,
         });
+
+        if (result.success) {
+            await createInstagramMediaContainer({
+                accountId: account.id,
+                preparedVideoId: preparedVideo.id,
+                containerId: result.mediaContainerId,
+            });
+        }
 
         log(result);
     }

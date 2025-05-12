@@ -6,6 +6,7 @@
 exports.up = function (knex) {
     return knex.schema.createTable('instagramMediaContainers', function (table) {
         table.increments('id').primary();
+        table.integer('accountId').references('id').inTable('accounts').onDelete('CASCADE');
         table
             .integer('preparedVideoId')
             .references('id')

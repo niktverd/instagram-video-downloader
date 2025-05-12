@@ -18,9 +18,10 @@ export const InstagramMediaContainerSchema = z
     .object({
         id: z.number(),
         preparedVideoId: z.number(),
-        lastCheckedIGStatus: z.string(),
-        isPublished: z.boolean(),
-        attempts: z.number(),
+        accountId: z.number(),
+        lastCheckedIGStatus: z.string().optional(),
+        isPublished: z.boolean().optional(),
+        attempts: z.number().optional(),
         error: z.string().optional(),
         containerId: z.string().optional(),
         mediaId: z.string().optional(),
@@ -28,7 +29,7 @@ export const InstagramMediaContainerSchema = z
         audioName: z.string().optional(),
         location: z.any().optional(),
         hashtags: z.array(z.string()).optional(),
-        isBlocked: z.boolean(),
+        isBlocked: z.boolean().optional(),
         blockedReason: z.string().optional(),
     })
     .strict();

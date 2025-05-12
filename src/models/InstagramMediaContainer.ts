@@ -5,6 +5,7 @@ import {IInstagramMediaContainer} from './types';
 export class InstagramMediaContainer extends BaseModel implements IInstagramMediaContainer {
     id!: number;
     preparedVideoId!: number;
+    accountId!: number;
     lastCheckedIGStatus!: string;
     isPublished!: boolean;
     attempts!: number;

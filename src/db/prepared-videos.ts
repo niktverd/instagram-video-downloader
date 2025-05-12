@@ -157,7 +157,7 @@ export async function getOnePreparedVideo(
     }
 
     if (notInInstagramMediaContainers) {
-        query.whereNotIn('id', db('instagram_media_containers').select('preparedVideoId'));
+        query.whereNotIn('id', db('instagramMediaContainers').select('preparedVideoId'));
     }
 
     if (fetchGraphAccount) {

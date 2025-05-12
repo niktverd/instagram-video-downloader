@@ -8,8 +8,10 @@ import db from './utils';
 
 import {IInstagramMediaContainer, InstagramMediaContainerSchema} from '#src/models/types';
 
-export const CreateInstagramMediaContainerParamsSchema = InstagramMediaContainerSchema;
-export type CreateInstagramMediaContainerParams = IInstagramMediaContainer;
+export const CreateInstagramMediaContainerParamsSchema = InstagramMediaContainerSchema.omit({
+    id: true,
+});
+export type CreateInstagramMediaContainerParams = Omit<IInstagramMediaContainer, 'id'>;
 export type CreateInstagramMediaContainerResponse = IInstagramMediaContainer;
 
 export async function createInstagramMediaContainer(
