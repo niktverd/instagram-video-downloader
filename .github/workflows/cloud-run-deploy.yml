@@ -107,7 +107,7 @@ jobs:
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
-            --memory 8Gi \
+            --memory 4Gi \
             --cpu 4 \
             --timeout 1000 \
             --concurrency 1 \
@@ -123,7 +123,7 @@ jobs:
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
-            --memory 8Gi \
+            --memory 4Gi \
             --cpu 4 \
             --timeout 1000 \
             --concurrency 1 \
