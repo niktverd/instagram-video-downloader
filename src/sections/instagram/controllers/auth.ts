@@ -6,6 +6,7 @@ import {log} from '#utils';
 
 const REDIRECT_URI =
     'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
+// const REDIRECT_URI = 'https://localhost:8080/callback-instagram';
 
 const {APP_ID, API_SECRET} = process.env;
 
@@ -19,10 +20,10 @@ const SCOPES = [
     // 'instagram_business_manage_comments',
     // 'instagram_business_manage_messages',
     'instagram_business_basic',
-    // 'instagram_business_manage_messages',
-    // 'instagram_business_manage_comments',
+    'instagram_business_manage_messages',
+    'instagram_business_manage_comments',
     'instagram_business_content_publish',
-    // 'instagram_business_manage_insights',
+    'instagram_business_manage_insights',
 ];
 const STRINGIFIED_SCOPES = SCOPES.join('%2c');
 
