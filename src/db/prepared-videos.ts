@@ -8,7 +8,7 @@ import db from './utils';
 
 import {IPreparedVideo, PreparedVideoSchema} from '#src/models/types';
 
-export const CreatePreparedVideoParamsSchema = PreparedVideoSchema;
+export const CreatePreparedVideoParamsSchema = PreparedVideoSchema.omit({id: true});
 
 export type CreatePreparedVideoParams = Omit<IPreparedVideo, 'id'>;
 export type CreatePreparedVideoResponse = IPreparedVideo;

@@ -8,8 +8,8 @@ import db from './utils';
 
 import {AccountSchema, IAccount} from '#src/models/types';
 
-export const CreateAccountParamsSchema = AccountSchema;
-export type CreateAccountParams = IAccount;
+export const CreateAccountParamsSchema = AccountSchema.omit({id: true});
+export type CreateAccountParams = Omit<IAccount, 'id'>;
 export type CreateAccountResponse = IAccount;
 
 export async function createAccount(params: CreateAccountParams): Promise<CreateAccountResponse> {

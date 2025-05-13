@@ -8,7 +8,7 @@ import db from './utils';
 
 import {ISource, SourceSchema} from '#src/models/types';
 
-export const CreateSourceParamsSchema = SourceSchema;
+export const CreateSourceParamsSchema = SourceSchema.omit({id: true});
 export type CreateSourceParams = Omit<ISource, 'id'>;
 export type CreateSourceResponse = ISource;
 

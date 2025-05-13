@@ -8,8 +8,8 @@ import db from './utils';
 
 import {IScenario, ScenarioSchema} from '#src/models/types';
 
-export const CreateScenarioParamsSchema = ScenarioSchema;
-export type CreateScenarioParams = IScenario;
+export const CreateScenarioParamsSchema = ScenarioSchema.omit({id: true});
+export type CreateScenarioParams = Omit<IScenario, 'id'>;
 
 export type CreateScenarioResponse = IScenario;
 
