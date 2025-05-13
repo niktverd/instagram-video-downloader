@@ -9,32 +9,24 @@ const REDIRECT_URI =
 
 const {APP_ID, API_SECRET} = process.env;
 
+const FB_API_VERSION = 'v19.0';
+
 const SCOPES = [
-    // 'user_profile',
-    // 'user_media',
-    // 'instagram_basic',
-    // 'instagram_business_basic',
-    // 'instagram_content_publish',
-    // 'instagram_business_content_publish',
-    // 'instagram_business_manage_comments',
-    // 'instagram_business_manage_messages',
+    // Business permissions
     'instagram_business_basic',
-    // 'instagram_business_manage_messages',
-    // 'instagram_business_manage_comments',
     'instagram_business_content_publish',
-    // 'instagram_business_manage_insights',
+    // add more if you need: 'instagram_business_manage_comments', 'instagram_business_manage_messages', ...
 ];
-const STRINGIFIED_SCOPES = SCOPES.join('%2c');
+
+// Facebook expects scopes to be comma-separated (no pre-encoding)
+const STRINGIFIED_SCOPES = SCOPES.join(',');
 
 export const instagramLogin = (req: Request, res: Response) => {
     const redirectionUri = (req.query.redirectionUri as string) || '';
-
-    const authUrl = `https://api.instagram.com/oauth/authorize
-      ?client_id=${APP_ID}
-      &redirect_uri=${REDIRECT_URI}
-      &scope=${STRINGIFIED_SCOPES}
-      &response_type=code
-      &state=${encodeURIComponent(redirectionUri)}`.replace(/\s+/g, '');
+    const encRedirect = encodeURIComponent(REDIRECT_URI);
+    const encScopes = encodeURIComponent(STRINGIFIED_SCOPES);
+    const encState = encodeURIComponent(redirectionUri);
+    const authUrl = `https://www.facebook.com/${FB_API_VERSION}/dialog/oauth?client_id=${APP_ID}&redirect_uri=${encRedirect}&scope=${encScopes}&response_type=code&state=${encState}`;
 
     log({authUrl});
 
@@ -57,27 +49,36 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
         code: (code as string) || '',
         state: (state as string) || '',
     });
-    const uri = `https://api.instagram.com/oauth/access_token`.replace(/\s+/g, '');
+    const uri = `https://graph.facebook.com/${FB_API_VERSION}/oauth/access_token?client_id=${APP_ID}&client_secret=${API_SECRET}&redirect_uri=${encodeURIComponent(
+        REDIRECT_URI,
+    )}&code=${code}`;
     log({uri});
 
     try {
         const response = await fetch(uri, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: new URLSearchParams({
-                client_id: APP_ID as string,
-                client_secret: API_SECRET as string,
-                grant_type: 'authorization_code',
-                redirect_uri: REDIRECT_URI as string,
-                code: code as string,
-            }).toString(),
+            method: 'GET',
         });
         log(response);
         console.log(response);
         const responseJson = await response.json();
         log(responseJson);
-        const {access_token: accessToken, user_id: userId} = responseJson;
+
+        const {access_token: accessToken} = responseJson;
+
+        // exchange for long-lived token so the frontend can store something that lasts ~60 days
         const longLivedToken = await getLongLivedToken(accessToken);
+
+        // Fetch IG user id using the new token (optional)
+        let userId = '';
+        try {
+            const meRes = await fetch(
+                `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`,
+            );
+            const meJson = await meRes.json();
+            userId = meJson.id || '';
+        } catch (e) {
+            log('Failed to fetch user id', e);
+        }
 
         if (state) {
             // If redirectionUri was provided, redirect to it with token
@@ -88,8 +89,8 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
         // Default response if no redirection URI
         res.send(`
             longLivedToken: ${longLivedToken}
-            userId: ${userId}
             accessToken: ${accessToken}
+            userId: ${userId}
             responseJson: ${JSON.stringify(responseJson)}
             state: ${state}
         `);
