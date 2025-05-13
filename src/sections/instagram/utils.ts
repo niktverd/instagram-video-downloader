@@ -16,6 +16,7 @@ export const getLongLivedToken = async (shortLivedToken: string) => {
         });
 
         log(response);
+        console.log(response);
 
         const responseJson = await response.json();
 
