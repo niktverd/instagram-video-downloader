@@ -19,10 +19,10 @@ const SCOPES = [
     // 'instagram_business_manage_comments',
     // 'instagram_business_manage_messages',
     'instagram_business_basic',
-    'instagram_business_manage_messages',
-    'instagram_business_manage_comments',
+    // 'instagram_business_manage_messages',
+    // 'instagram_business_manage_comments',
     'instagram_business_content_publish',
-    'instagram_business_manage_insights',
+    // 'instagram_business_manage_insights',
 ];
 const STRINGIFIED_SCOPES = SCOPES.join('%2c');
 
