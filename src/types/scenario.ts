@@ -27,5 +27,8 @@ export type ScenarioShortifyUnique = z.infer<typeof scenarioShortifyUniqueSchema
 export type ScenarioCoverWithGreenUnique = z.infer<typeof scenarioCoverWithGreenUniqueSchema>;
 // export type ScenarioLongVideoWithInjections = z.infer<typeof scenarioLongVideoWithInjectionsSchema>;
 
-export type ScenarioV4 = ScenarioAddBannerAtTheEndUnique | ScenarioShortifyUnique;
+export type ScenarioV4 =
+    | ScenarioAddBannerAtTheEndUnique
+    | ScenarioShortifyUnique
+    | ScenarioCoverWithGreenUnique;
 // | ScenarioCoverWithImage;
