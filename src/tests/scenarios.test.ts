@@ -8,6 +8,7 @@ import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../utils';
 
 import {ScenarioType} from '#schemas/scenario';
 import {addBannerInTheEndUnique} from '$/cloud-run/components/scenarios/AddBannerInTheEndUnique';
+import {coverWithGreenScenario} from '$/cloud-run/components/scenarios/CoverWithGreen';
 import {shortifyUnique} from '$/cloud-run/components/scenarios/ShortifyUnique';
 
 log('Test primitives');
@@ -29,6 +30,13 @@ const bannerVideoUrls = [
     'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Fdima%2Fsimple-scenario-video%2F0.9583381927006516.mp4?alt=media&token=850d3d16-5138-43bf-9c37-e4552e9c930a',
 ];
 
+const greenVideoUrls = [
+    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Ftests-green%2F1xbet%201.mp4?alt=media&token=2682116c-4834-4141-ae88-1f85f41a4879',
+    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Ftests-green%2F1xbet%202.mp4?alt=media&token=3b40cd37-3fad-46f4-9128-d1c76aa248bf',
+    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Ftests-green%2F1xbet%203.mp4?alt=media&token=09af661e-fd37-49bd-8bf5-2d38cd84b292',
+    'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/assets%2Ftests-green%2F1xbet%204.mp4?alt=media&token=f06e8110-9470-46d2-b038-7149a0d81484',
+];
+
 export const prepareVideo = async () => {
     const basePath = path.join(__dirname, 'tests-data');
     if (!existsSync(basePath)) {
@@ -45,13 +53,21 @@ export const prepareVideo = async () => {
     return await Promise.all(promises);
 };
 
+const createTimestamp = () => {
+    // Create a timestamp with seconds and nanoseconds within valid range
+    const now = new Date();
+    const seconds = Math.floor(now.getTime() / 1000); // Convert to seconds
+    const nanoseconds = (now.getTime() % 1000) * 1000000; // Convert milliseconds to nanoseconds
+    return new Timestamp(seconds, nanoseconds);
+};
+
 const testAddBannerInTheEndUnique = async (filePath: string) => {
     const directoryName = `test-testAddBannerInTheEndUnique`;
 
     const basePath = getWorkingDirectoryForVideo(directoryName);
     await addBannerInTheEndUnique({
         source: {
-            id: '123',
+            id: 123,
             sources: {
                 instagramReel: {
                     url: filePath,
@@ -61,16 +77,11 @@ const testAddBannerInTheEndUnique = async (filePath: string) => {
                     originalHashtags: [],
                 },
             },
-            createdAt: new Timestamp(new Date().getTime(), 0),
             firebaseUrl:
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
-            randomIndex: 0,
             bodyJSONString: {},
             attempt: 0,
-            scenarios: [],
-            lastUsed: new Timestamp(new Date().getTime(), 0),
-            timesUsed: 0,
-            scenariosHasBeenCreated: [],
+            lastUsed: createTimestamp().toString(),
         },
         scenario: {
             id: 1,
@@ -118,7 +129,7 @@ const testShortifyUnique = async (filePath: string) => {
     const basePath = getWorkingDirectoryForVideo(directoryName);
     await shortifyUnique({
         source: {
-            id: '123',
+            id: 123,
             sources: {
                 instagramReel: {
                     url: filePath,
@@ -128,22 +139,12 @@ const testShortifyUnique = async (filePath: string) => {
                     originalHashtags: [],
                 },
             },
-            createdAt: new Timestamp(new Date().getTime(), 0),
             firebaseUrl:
                 'https://firebasestorage.googleapis.com/v0/b/media-automation-6aff2.firebasestorage.app/o/04cJDG354H7mvpVtL3It.mp4?alt=media&token=da780902-65e8-48c4-85b0-3d15777b0857',
-            randomIndex: 0,
             bodyJSONString: {},
             attempt: 0,
-            scenarios: [],
-            lastUsed: new Timestamp(new Date().getTime(), 0),
-            timesUsed: 0,
-            scenariosHasBeenCreated: [],
+            lastUsed: createTimestamp().toString(),
         },
-        // directoryName: 'test',
-        // mainVideoUrl: filePath,
-        // bannerVideoUrls: [bannerVideoUrls[0]],
-        // originalHashtags: [],
-        // accounts: ['@someaccount.gamble'],
         scenario: {
             id: 1,
             slug: ScenarioName.ScenarioShortifyUnique,
@@ -155,6 +156,50 @@ const testShortifyUnique = async (filePath: string) => {
                 extraBannerUrls: [bannerVideoUrls[0]],
                 minDuration: 3,
                 maxDuration: 5,
+            },
+        },
+        basePath,
+    });
+};
+
+const testCoverWithGreen = async (
+    filePath: string,
+    loopGreen: 'once' | 'loop' | 'random',
+    whereToPutGreen?: 'start' | 'middle' | 'end',
+) => {
+    const directoryName = `test-coverWithGreen-${loopGreen}${
+        whereToPutGreen ? `-${whereToPutGreen}` : ''
+    }`;
+
+    const basePath = getWorkingDirectoryForVideo(directoryName);
+    await coverWithGreenScenario({
+        source: {
+            id: 123,
+            sources: {
+                instagramReel: {
+                    url: filePath,
+                    senderId: '123',
+                    owner: '123',
+                    title: 'test',
+                    originalHashtags: [],
+                },
+            },
+            firebaseUrl: sources.blackNYellow,
+            bodyJSONString: {},
+            attempt: 0,
+            lastUsed: createTimestamp().toString(),
+        },
+        scenario: {
+            id: 1,
+            slug: 'cover-with-green-unique',
+            type: ScenarioType.ScenarioCoverWithGreenUnique,
+            onlyOnce: false,
+            enabled: true,
+            texts: {},
+            options: {
+                greenVideoUrls: greenVideoUrls,
+                loopGreen,
+                whereToPutGreen: whereToPutGreen || 'start',
             },
         },
         basePath,
@@ -175,6 +220,18 @@ const runTests = async () => {
     const runShortifyUnique = false;
     if (runShortifyUnique) {
         await testShortifyUnique(sources.blackNYellow);
+    }
+
+    const runCoverWithGreen = true;
+    if (runCoverWithGreen) {
+        // Test once mode with different positions
+        await testCoverWithGreen(sources.blackNYellow, 'once', 'start');
+        await testCoverWithGreen(sources.blackNRed, 'once', 'middle');
+        await testCoverWithGreen(sources.orange, 'once', 'end');
+
+        // Test loop and random modes
+        await testCoverWithGreen(sources.blackNRed, 'loop');
+        await testCoverWithGreen(sources.blackNYellow, 'random');
     }
 
     log('runTest finished');

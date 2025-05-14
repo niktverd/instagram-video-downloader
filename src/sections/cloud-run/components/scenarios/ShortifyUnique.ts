@@ -8,18 +8,13 @@ import {
     splitVideo,
 } from '../video';
 
+import {ScenarioFunction} from './types';
 import {addRandomEffects} from './utils';
 
-import {ScenarioShortifyUnique, ScenarioV4, SourceV3} from '#types';
+import {ScenarioShortifyUnique} from '#types';
 import {getRandomElementOfArray, log, saveFileToDisk} from '#utils';
 
-type ShortifyUniqueArgs = {
-    scenario: ScenarioV4;
-    source: SourceV3;
-    basePath: string;
-};
-
-export const shortifyUnique = async ({scenario, source, basePath}: ShortifyUniqueArgs) => {
+export const shortifyUnique: ScenarioFunction = async ({scenario, source, basePath}) => {
     log('shortifyUnique', {
         source,
         scenario,
@@ -35,6 +30,12 @@ export const shortifyUnique = async ({scenario, source, basePath}: ShortifyUniqu
     // Use the first banner URL from the array
     const bannerVideoUrl = getRandomElementOfArray(bannerVideoUrls);
     log({mainVideoUrl, bannerVideoUrl});
+    if (!bannerVideoUrl) {
+        throw new Error('Banner video URL is not found');
+    }
+    if (!mainVideoUrl) {
+        throw new Error('Main video URL is not found');
+    }
 
     //download videos
     const tempFilePath1 = join(basePath, 'first.mp4');

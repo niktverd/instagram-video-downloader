@@ -2,27 +2,29 @@ import {join} from 'path';
 
 import {concatVideoFromList, normalizeVideo, saveFileList} from '../video/primitives';
 
+import {ScenarioFunction} from './types';
 import {addRandomEffects} from './utils';
 
-import {ScenarioAddBannerAtTheEndUnique, ScenarioV4, SourceV3} from '#types';
+import {ScenarioAddBannerAtTheEndUnique} from '#types';
 import {log, saveFileToDisk} from '#utils';
 
-type AddBannerInTheEndUniqueArgs = {
-    scenario: ScenarioV4;
-    source: SourceV3;
-    basePath: string;
-};
-
-export const addBannerInTheEndUnique = async ({
+export const addBannerInTheEndUnique: ScenarioFunction = async ({
     scenario,
     source,
     basePath,
-}: AddBannerInTheEndUniqueArgs): Promise<string> => {
+}): Promise<string> => {
     const {
         options: {extraBannerUrl},
     } = scenario as ScenarioAddBannerAtTheEndUnique;
     const {firebaseUrl: mainVideoUrl} = source;
     log('addBannerInTheEndUnique', {mainVideoUrl, extraBannerUrl});
+
+    if (!mainVideoUrl) {
+        throw new Error('Main video URL is not found');
+    }
+    if (!extraBannerUrl) {
+        throw new Error('Extra banner URL is not found');
+    }
 
     //download videos
     const tempFilePath1 = join(basePath, 'first.mp4');

@@ -4,6 +4,7 @@ import {
     // scenarioAddBannerAtTheEndSchema,
     scenarioAddBannerAtTheEndUniqueSchema,
     scenarioBaseSchema,
+    scenarioCoverWithGreenUniqueSchema,
     // scenarioCoverWithImageSchema,
     // scenarioLongVideoWithInjectionsSchema,
     // scenarioShortifySchema,
@@ -23,7 +24,7 @@ export type ScenarioBase = z.infer<typeof scenarioBaseSchema>;
 export type ScenarioAddBannerAtTheEndUnique = z.infer<typeof scenarioAddBannerAtTheEndUniqueSchema>;
 // export type ScenarioShortify = z.infer<typeof scenarioShortifySchema>;
 export type ScenarioShortifyUnique = z.infer<typeof scenarioShortifyUniqueSchema>;
-// export type ScenarioCoverWithImage = z.infer<typeof scenarioCoverWithImageSchema>;
+export type ScenarioCoverWithGreenUnique = z.infer<typeof scenarioCoverWithGreenUniqueSchema>;
 // export type ScenarioLongVideoWithInjections = z.infer<typeof scenarioLongVideoWithInjectionsSchema>;
 
 export type ScenarioV4 = ScenarioAddBannerAtTheEndUnique | ScenarioShortifyUnique;

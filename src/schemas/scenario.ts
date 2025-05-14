@@ -7,6 +7,7 @@ export enum ScenarioType {
     ScenarioShortifyUnique = 'ScenarioShortifyUnique',
     // ScenarioCoverWithImage = 'ScenarioCoverWithImage',
     // ScenarioLongVideoWithInjections = 'ScenarioLongVideoWithInjections',
+    ScenarioCoverWithGreenUnique = 'ScenarioCoverWithGreenUnique',
 }
 
 export const scenarioBaseSchema = z
@@ -72,3 +73,12 @@ export const scenarioShortifyUniqueSchema = scenarioBaseSchema.extend({
 //     injections: z.array(z.string()),
 //     limit: z.number(),
 // });
+
+export const scenarioCoverWithGreenUniqueSchema = scenarioBaseSchema.extend({
+    type: z.literal(ScenarioType.ScenarioCoverWithGreenUnique),
+    options: z.object({
+        greenVideoUrls: z.array(z.string()),
+        whereToPutGreen: z.enum(['start', 'middle', 'end']),
+        loopGreen: z.enum(['once', 'loop', 'random']),
+    }),
+});

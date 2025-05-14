@@ -3,28 +3,18 @@
 
 // import {getVideoDuration, normalizeVideo, overlayImageOnVideo} from '../video';
 
+// import {ScenarioFunction} from './types';
+
 // import {ScenarioType} from '#src/schemas/scenario';
-// import {ScenarioV3} from '#types';
+// import {ScenarioAddBannerAtTheEndUnique, ScenarioCoverWithImasge} from '#types';
 // import {getWorkingDirectoryForVideo, log, prepareCaption, saveFileToDisk} from '#utils';
 // import {addPreparedVideo, uploadFileToServer} from '$/shared';
 
-// type AddBannerInTheEndArgs = {
-//     sourceId: string;
-//     directoryName: string;
-//     mainVideoUrl: string;
-//     scenario: ScenarioV3;
-//     originalHashtags: string[];
-//     accounts: string[];
-// };
+// export const coverWithImage: ScenarioFunction = async ({source, scenario, basePath}) => {
+//     const {
+//         options: {extraBannerUrl},
+//     } = scenario as ScenarioCoverWithImasge;
 
-// export const coverWithImage = async ({
-//     sourceId,
-//     directoryName,
-//     mainVideoUrl,
-//     originalHashtags,
-//     accounts = [],
-//     scenario,
-// }: AddBannerInTheEndArgs) => {
 //     if (!accounts.length || !scenario) {
 //         throw new Error('Accounts cannot be empty');
 //     }
