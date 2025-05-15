@@ -14,22 +14,12 @@ const compilerOptions: ts.CompilerOptions = {
     moduleResolution: ts.ModuleResolutionKind.NodeJs,
     paths: {
         '#src/*': ['./src/*'],
+        '#schemas/*': ['./schemas/*'],
     },
     baseUrl: '.',
 };
 
-const exportFiles = [
-    'src/types/scenario.ts',
-    'src/schemas/scenario.ts',
-    'src/models/types.ts',
-    // db
-    'src/db/account.ts',
-    'src/db/scenario.ts',
-    'src/db/user.ts',
-    'src/db/sources.ts',
-    'src/db/prepared-videos.ts',
-    'src/db/instagram-media-containers.ts',
-];
+const exportFiles = ['src/types/index.ts', 'src/schemas/index.ts'];
 
 // Path of source file that contains Zod schemas
 const paths = exportFiles.map((file) => path.resolve(__dirname, file));
@@ -54,6 +44,19 @@ const pathAliasTransformer = (context: ts.TransformationContext): ts.Transformer
                 if (importPath.startsWith('#src/')) {
                     // Convert #src/ to relative path without src/
                     const relativePath = importPath.replace('#src/', '../');
+                    return ts.factory.updateImportDeclaration(
+                        node,
+                        node.modifiers,
+                        node.importClause,
+                        ts.factory.createStringLiteral(relativePath),
+                        undefined,
+                    );
+                }
+
+                // Check if the import uses #schemas alias
+                if (importPath.startsWith('#schemas/')) {
+                    // Convert #schemas/ to relative path
+                    const relativePath = importPath.replace('#schemas/', '../schemas/');
                     return ts.factory.updateImportDeclaration(
                         node,
                         node.modifiers,
@@ -116,8 +119,25 @@ if (emitResult.emitSkipped) {
                 // Remove src/ from the path
                 content = content.replace(/from\s+['"]#src\/(.*?)['"]/g, 'from "../$1"');
 
+                // Replace #schemas paths with ../schemas/
+                content = content.replace(
+                    /from\s+['"]#schemas\/(.*?)['"]/g,
+                    'from "../schemas/$1"',
+                );
+
                 // Also fix any direct references to src/
                 content = content.replace(/from\s+['"]\.\.\/src\/(.*?)['"]/g, 'from "../$1"');
+
+                // Remove 'declare' keyword from enum declarations
+                content = content.replace(/export\s+declare\s+enum/g, 'export enum');
+
+                // Fix paths for imports from '../types/enums' in schema files
+                if (filePath.includes('/schemas/')) {
+                    content = content.replace(
+                        /from\s+['"]\.\.\/types\/enums['"]/g,
+                        'from "../../types/enums"',
+                    );
+                }
 
                 // // Remove server-specific imports
                 // content = content.replace(/import\s+.*?\s+from\s+['"]objection['"];\s*\n?/g, '');
@@ -143,14 +163,18 @@ if (emitResult.emitSkipped) {
                     content = `/* eslint-disable @typescript-eslint/no-explicit-any */\n${content}`;
                 }
 
-                fs.writeFileSync(filePath, content);
+                // Write the processed content to a .ts file instead of .d.ts
+                const tsFilePath = filePath.replace('.d.ts', '.ts');
+                fs.writeFileSync(tsFilePath, content);
+                // Remove the original .d.ts file
+                fs.unlinkSync(filePath);
             }
         }
     };
 
     processGeneratedFiles(sharedTypesDir);
 
-    // Generate index.d.ts file that exports all types
+    // Generate index.ts file instead of index.d.ts
     const generateIndexFile = () => {
         const exports = exportFiles
             .map((file) => {
@@ -166,10 +190,10 @@ if (emitResult.emitSkipped) {
 ${exports}
 `;
 
-        fs.writeFileSync(path.join(sharedTypesDir, 'index.d.ts'), indexContent);
+        fs.writeFileSync(path.join(sharedTypesDir, 'index.ts'), indexContent);
     };
 
     generateIndexFile();
 
-    console.log('✅ Types successfully generated in sharedTypes/ directory');
+    console.log('✅ Types successfully generated in sharedTypes/ directory as .ts files');
 }

@@ -1,31 +1,31 @@
-import {PartialModelObject} from 'objection';
 import {z} from 'zod';
 
-import User from '../models/User';
-
 import {
-    CreateUserParamsSchema as _CreateUserParamsSchema,
-    DeleteUserParamsSchema as _DeleteUserParamsSchema,
-    GetAllUsersParamsSchema as _GetAllUsersParamsSchema,
-    GetUserByEmailParamsSchema as _GetUserByEmailParamsSchema,
-    GetUserByIdParamsSchema as _GetUserByIdParamsSchema,
-    UpdateUserParamsSchema as _UpdateUserParamsSchema,
+    CreateUserParamsSchema,
+    DeleteUserParamsSchema,
+    GetAllUsersParamsSchema,
+    GetUserByEmailParamsSchema,
+    GetUserByIdParamsSchema,
+    UpdateUserParamsSchema,
 } from '#schemas/handlers/user';
+import {UserSchema} from '#schemas/models';
 
-export type CreateUserParams = z.infer<typeof _CreateUserParamsSchema>;
-export type CreateUserResponse = PartialModelObject<User>;
+export type IUser = z.infer<typeof UserSchema>;
 
-export type GetUserByIdParams = z.infer<typeof _GetUserByIdParamsSchema>;
-export type GetUserByIdResponse = PartialModelObject<User>;
+export type CreateUserParams = z.infer<typeof CreateUserParamsSchema>;
+export type CreateUserResponse = IUser;
 
-export type GetUserByEmailParams = z.infer<typeof _GetUserByEmailParamsSchema>;
-export type GetUserByEmailResponse = PartialModelObject<User>;
+export type GetUserByIdParams = z.infer<typeof GetUserByIdParamsSchema>;
+export type GetUserByIdResponse = IUser;
 
-export type GetAllUsersParams = z.infer<typeof _GetAllUsersParamsSchema>;
-export type GetAllUsersResponse = PartialModelObject<User>[];
+export type GetUserByEmailParams = z.infer<typeof GetUserByEmailParamsSchema>;
+export type GetUserByEmailResponse = IUser;
 
-export type UpdateUserParams = z.infer<typeof _UpdateUserParamsSchema>;
-export type UpdateUserResponse = PartialModelObject<User>;
+export type GetAllUsersParams = z.infer<typeof GetAllUsersParamsSchema>;
+export type GetAllUsersResponse = IUser[];
 
-export type DeleteUserParams = z.infer<typeof _DeleteUserParamsSchema>;
+export type UpdateUserParams = z.infer<typeof UpdateUserParamsSchema>;
+export type UpdateUserResponse = IUser;
+
+export type DeleteUserParams = z.infer<typeof DeleteUserParamsSchema>;
 export type DeleteUserResponse = number;

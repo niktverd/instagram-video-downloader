@@ -1,5 +1,4 @@
-import {Timestamp} from 'firebase/firestore/lite';
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type SourceInstagramReel = {
     url: string;
     senderId: string;
@@ -32,7 +31,7 @@ type ReportYoutubeShort = PublishedCommon & {
 
 export type MediaPostModel = {
     id: string;
-    createdAt: Timestamp;
+    createdAt: any;
     firebaseUrl: string;
     sources: Sources;
     publishedOnInstagramCarcarKz: ReportInstagramReel;
@@ -45,7 +44,7 @@ export type MediaPostModel = {
 export type MediaPostModelOld = {
     id: string;
     account: string;
-    createdAt: Timestamp;
+    createdAt: any;
     firebaseUrl: string;
     mediaContainerId: string;
     senderId: string;
@@ -56,14 +55,14 @@ export type MediaPostModelOld = {
 
 export type SourceV3 = {
     id: string;
-    createdAt: Timestamp;
+    createdAt: any;
     firebaseUrl: string;
     sources: Sources;
     randomIndex: number;
     bodyJSONString: object;
     attempt: number;
     scenarios: string[];
-    lastUsed: Timestamp;
+    lastUsed: any;
     timesUsed: number;
     scenariosHasBeenCreated: [];
     sender?: string;
@@ -94,7 +93,7 @@ export type AccountV3 = {
 export type AccountMediaContainerV3 = {
     id: string;
     mediaContainerId: string;
-    createdAt: Timestamp;
+    createdAt: any;
     status: 'created' | 'published';
     preparedVideoId: string;
 };
@@ -105,3 +104,4 @@ export * from './instagramMediaContainer';
 export * from './source';
 export * from './preparedVideo';
 export * from './user';
+export * from './enums';

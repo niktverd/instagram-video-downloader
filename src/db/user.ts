@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {PartialModelObject, Transaction} from 'objection';
+import {Transaction} from 'objection';
 import {v4 as uuidv4} from 'uuid';
-
-import User from '../models/User';
 
 import db from './utils';
 
@@ -14,6 +12,7 @@ import {
     GetUserByEmailParamsSchema as _GetUserByEmailParamsSchema,
     GetUserByIdParamsSchema as _GetUserByIdParamsSchema,
 } from '#schemas/handlers/user';
+import {User} from '#src/models';
 import {
     CreateUserParams,
     CreateUserResponse,
@@ -25,8 +24,8 @@ import {
     GetUserByEmailResponse,
     GetUserByIdParams,
     GetUserByIdResponse,
+    IUser,
     UpdateUserParams,
-    UpdateUserResponse as _UpdateUserResponse,
 } from '#src/types/user';
 
 export async function createUser(
@@ -35,7 +34,7 @@ export async function createUser(
 ): Promise<CreateUserResponse> {
     const paramsValidated = CreateUserParamsSchema.parse(params);
 
-    const userData: PartialModelObject<User> = {
+    const userData: IUser = {
         id: uuidv4(),
         email: paramsValidated.email,
         displayName: paramsValidated.displayName,
