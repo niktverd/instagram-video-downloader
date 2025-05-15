@@ -1,22 +1,4 @@
 import {
-    CreateAccountParams,
-    CreateAccountParamsSchema,
-    CreateAccountResponse,
-    DeleteAccountParams,
-    DeleteAccountParamsSchema,
-    DeleteAccountResponse,
-    GetAccountByIdParams,
-    GetAccountByIdParamsSchema,
-    GetAccountByIdResponse,
-    GetAccountBySlugParams,
-    GetAccountBySlugParamsSchema,
-    GetAccountBySlugResponse,
-    GetAllAccountsParams,
-    GetAllAccountsParamsSchema,
-    GetAllAccountsResponse,
-    UpdateAccountParams,
-    UpdateAccountParamsSchema,
-    UpdateAccountResponse,
     createAccount,
     deleteAccount,
     getAccountById,
@@ -25,6 +7,29 @@ import {
     updateAccount,
     wrapper,
 } from '../../../db';
+
+import {
+    CreateAccountParamsSchema,
+    DeleteAccountParamsSchema,
+    GetAccountByIdParamsSchema,
+    GetAccountBySlugParamsSchema,
+    GetAllAccountsParamsSchema,
+    UpdateAccountParamsSchema,
+} from '#schemas/handlers/account';
+import {
+    CreateAccountParams,
+    CreateAccountResponse,
+    DeleteAccountParams,
+    DeleteAccountResponse,
+    GetAccountByIdParams,
+    GetAccountByIdResponse,
+    GetAccountBySlugParams,
+    GetAccountBySlugResponse,
+    GetAllAccountsParams,
+    GetAllAccountsResponse,
+    UpdateAccountParams,
+    UpdateAccountResponse,
+} from '#types';
 
 export const createAccountPost = wrapper<CreateAccountParams, CreateAccountResponse>(
     createAccount,

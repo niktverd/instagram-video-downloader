@@ -2,9 +2,10 @@ import {Model} from 'objection';
 
 import {Account} from './Account';
 import {BaseModel} from './BaseModel';
-import {IScenario} from './types';
 
-import {ScenarioType} from '#schemas/scenario';
+import {ScenarioType} from '#src/types/enums';
+import {IScenario} from '#types';
+
 export class Scenario extends BaseModel implements IScenario {
     id!: number;
     slug!: string;

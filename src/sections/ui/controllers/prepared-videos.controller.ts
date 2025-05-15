@@ -1,19 +1,4 @@
 import {
-    CreatePreparedVideoParams,
-    CreatePreparedVideoParamsSchema,
-    CreatePreparedVideoResponse,
-    DeletePreparedVideoParams,
-    DeletePreparedVideoParamsSchema,
-    DeletePreparedVideoResponse,
-    GetAllPreparedVideosParams,
-    GetAllPreparedVideosParamsSchema,
-    GetAllPreparedVideosResponse,
-    GetPreparedVideoByIdParams,
-    GetPreparedVideoByIdParamsSchema,
-    GetPreparedVideoByIdResponse,
-    UpdatePreparedVideoParams,
-    UpdatePreparedVideoParamsSchema,
-    UpdatePreparedVideoResponse,
     createPreparedVideo,
     deletePreparedVideo,
     getAllPreparedVideos,
@@ -21,6 +6,26 @@ import {
     updatePreparedVideo,
     wrapper,
 } from '../../../db';
+
+import {
+    CreatePreparedVideoParamsSchema,
+    DeletePreparedVideoParamsSchema,
+    GetAllPreparedVideosParamsSchema,
+    GetPreparedVideoByIdParamsSchema,
+    UpdatePreparedVideoParamsSchema,
+} from '#schemas/handlers/preparedVideo';
+import {
+    CreatePreparedVideoParams,
+    CreatePreparedVideoResponse,
+    DeletePreparedVideoParams,
+    DeletePreparedVideoResponse,
+    GetAllPreparedVideosParams,
+    GetAllPreparedVideosResponse,
+    GetPreparedVideoByIdParams,
+    GetPreparedVideoByIdResponse,
+    UpdatePreparedVideoParams,
+    UpdatePreparedVideoResponse,
+} from '#types';
 
 export const createPreparedVideoPost = wrapper<
     CreatePreparedVideoParams,

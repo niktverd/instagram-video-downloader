@@ -3,10 +3,9 @@ import path from 'path';
 
 import {Timestamp} from 'firebase/firestore/lite';
 
-import {ScenarioName} from '../types/scenario';
 import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../utils';
 
-import {ScenarioType} from '#schemas/scenario';
+import {ScenarioName, ScenarioType} from '#src/types/enums';
 import {addBannerInTheEndUnique} from '$/cloud-run/components/scenarios/AddBannerInTheEndUnique';
 import {coverWithGreenScenario} from '$/cloud-run/components/scenarios/CoverWithGreen';
 import {shortifyUnique} from '$/cloud-run/components/scenarios/ShortifyUnique';

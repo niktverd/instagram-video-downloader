@@ -24,8 +24,7 @@ import {
     getOnePreparedVideo,
     updateInstagramMediaContainer,
 } from '#src/db';
-import {IAccount} from '#src/models/types';
-import {MediaPostModelOld} from '#types';
+import {IAccount, MediaPostModelOld} from '#types';
 import {
     getRandomElementOfArray,
     log,

@@ -1,27 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {PartialModelObject, Transaction} from 'objection';
 import {v4 as uuidv4} from 'uuid';
-import {z} from 'zod';
 
 import User from '../models/User';
 
 import db from './utils';
 
-export const CreateUserParamsSchema = z
-    .object({
-        email: z.string(),
-        displayName: z.string().optional(),
-        photoURL: z.string().optional(),
-        // providerData: z.record(z.any()).optional(),
-        // providerId: z.string().optional(),
-        providerData: z.any().optional(),
-        providerId: z.any().optional(),
-        password: z.string(),
-    })
-    .strict();
-
-export type CreateUserParams = z.infer<typeof CreateUserParamsSchema>;
-export type CreateUserResponse = PartialModelObject<User>;
+import {
+    CreateUserParamsSchema,
+    UpdateUserParamsSchema,
+    DeleteUserParamsSchema as _DeleteUserParamsSchema,
+    GetAllUsersParamsSchema as _GetAllUsersParamsSchema,
+    GetUserByEmailParamsSchema as _GetUserByEmailParamsSchema,
+    GetUserByIdParamsSchema as _GetUserByIdParamsSchema,
+} from '#schemas/handlers/user';
+import {
+    CreateUserParams,
+    CreateUserResponse,
+    DeleteUserParams,
+    DeleteUserResponse,
+    GetAllUsersParams,
+    GetAllUsersResponse,
+    GetUserByEmailParams,
+    GetUserByEmailResponse,
+    GetUserByIdParams,
+    GetUserByIdResponse,
+    UpdateUserParams,
+    UpdateUserResponse as _UpdateUserResponse,
+} from '#src/types/user';
 
 export async function createUser(
     params: CreateUserParams,
@@ -43,15 +49,6 @@ export async function createUser(
     return user;
 }
 
-export const GetUserByIdParamsSchema = z
-    .object({
-        id: z.string(),
-    })
-    .strict();
-
-export type GetUserByIdParams = z.infer<typeof GetUserByIdParamsSchema>;
-export type GetUserByIdResponse = PartialModelObject<User>;
-
 export async function getUserById(
     params: GetUserByIdParams,
     trx?: Transaction,
@@ -63,15 +60,6 @@ export async function getUserById(
 
     return user;
 }
-
-export const GetUserByEmailParamsSchema = z
-    .object({
-        email: z.string(),
-    })
-    .strict();
-
-export type GetUserByEmailParams = z.infer<typeof GetUserByEmailParamsSchema>;
-export type GetUserByEmailResponse = PartialModelObject<User>;
 
 export async function getUserByEmail(
     params: GetUserByEmailParams,
@@ -88,10 +76,6 @@ export async function getUserByEmail(
     return user;
 }
 
-export const GetAllUsersParamsSchema = z.object({});
-export type GetAllUsersParams = z.infer<typeof GetAllUsersParamsSchema>;
-export type GetAllUsersResponse = PartialModelObject<User>[];
-
 export async function getAllUsers(
     _params: GetAllUsersParams,
     trx?: Transaction,
@@ -100,29 +84,12 @@ export async function getAllUsers(
     return users;
 }
 
-export const UpdateUserParamsSchema = CreateUserParamsSchema.partial()
-    .extend({
-        id: z.string(),
-    })
-    .strict();
-
-export type UpdateUserParams = z.infer<typeof UpdateUserParamsSchema>;
-export type UpdateUserResponse = PartialModelObject<User>;
 export async function updateUser(params: UpdateUserParams, trx?: Transaction): Promise<User> {
     const {id, ...updateData} = UpdateUserParamsSchema.parse(params);
 
     const user = await User.query(trx || db).patchAndFetchById(id, updateData);
     return user;
 }
-
-export const DeleteUserParamsSchema = z
-    .object({
-        id: z.string(),
-    })
-    .strict();
-
-export type DeleteUserParams = z.infer<typeof DeleteUserParamsSchema>;
-export type DeleteUserResponse = number;
 
 export async function deleteUser(
     params: DeleteUserParams,

@@ -99,4 +99,9 @@ export type AccountMediaContainerV3 = {
     preparedVideoId: string;
 };
 
+export * from './account';
 export * from './scenario';
+export * from './instagramMediaContainer';
+export * from './source';
+export * from './preparedVideo';
+export * from './user';

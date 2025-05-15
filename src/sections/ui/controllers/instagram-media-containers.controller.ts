@@ -1,22 +1,27 @@
 import {
-    CreateInstagramMediaContainerParams,
-    CreateInstagramMediaContainerParamsSchema,
-    CreateInstagramMediaContainerResponse,
-    DeleteInstagramMediaContainerParams,
-    DeleteInstagramMediaContainerParamsSchema,
-    DeleteInstagramMediaContainerResponse,
-    GetAllInstagramMediaContainersParams,
-    GetAllInstagramMediaContainersParamsSchema,
-    GetAllInstagramMediaContainersResponse,
-    UpdateInstagramMediaContainerParams,
-    UpdateInstagramMediaContainerParamsSchema,
-    UpdateInstagramMediaContainerResponse,
     createInstagramMediaContainer,
     deleteInstagramMediaContainer,
     getAllInstagramMediaContainers,
     updateInstagramMediaContainer,
     wrapper,
 } from '../../../db';
+
+import {
+    CreateInstagramMediaContainerParamsSchema,
+    DeleteInstagramMediaContainerParamsSchema,
+    GetAllInstagramMediaContainersParamsSchema,
+    UpdateInstagramMediaContainerParamsSchema,
+} from '#schemas/handlers/instagramMediaContainer';
+import {
+    CreateInstagramMediaContainerParams,
+    CreateInstagramMediaContainerResponse,
+    DeleteInstagramMediaContainerParams,
+    DeleteInstagramMediaContainerResponse,
+    GetAllInstagramMediaContainersParams,
+    GetAllInstagramMediaContainersResponse,
+    UpdateInstagramMediaContainerParams,
+    UpdateInstagramMediaContainerResponse,
+} from '#types';
 
 export const getAllInstagramMediaContainersGet = wrapper<
     GetAllInstagramMediaContainersParams,

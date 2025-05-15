@@ -1,19 +1,4 @@
 import {
-    CreateSourceParams,
-    CreateSourceParamsSchema,
-    CreateSourceResponse,
-    DeleteSourceParams,
-    DeleteSourceParamsSchema,
-    DeleteSourceResponse,
-    GetAllSourcesParams,
-    GetAllSourcesParamsSchema,
-    GetAllSourcesResponse,
-    GetOneSourceParams,
-    GetOneSourceParamsSchema,
-    GetOneSourceResponse,
-    UpdateSourceParams,
-    UpdateSourceParamsSchema,
-    UpdateSourceResponse,
     createSource,
     deleteSource,
     getAllSources,
@@ -21,6 +6,26 @@ import {
     updateSource,
     wrapper,
 } from '../../../db';
+
+import {
+    CreateSourceParamsSchema,
+    DeleteSourceParamsSchema,
+    GetAllSourcesParamsSchema,
+    GetOneSourceParamsSchema,
+    UpdateSourceParamsSchema,
+} from '#schemas/handlers/source';
+import {
+    CreateSourceParams,
+    CreateSourceResponse,
+    DeleteSourceParams,
+    DeleteSourceResponse,
+    GetAllSourcesParams,
+    GetAllSourcesResponse,
+    GetOneSourceParams,
+    GetOneSourceResponse,
+    UpdateSourceParams,
+    UpdateSourceResponse,
+} from '#types';
 
 export const getAllSourcesGet = wrapper<GetAllSourcesParams, GetAllSourcesResponse>(
     getAllSources,

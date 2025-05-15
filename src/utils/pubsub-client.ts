@@ -6,7 +6,7 @@
 import {PubSubAction, PubSubPayload, PubSubTopic} from './constants';
 import {log, logError} from './logging';
 
-import {GetAllAccountsResponse} from '#src/db';
+import {GetAllAccountsResponse} from '#types';
 
 // eslint-disable-next-line valid-jsdoc
 /**

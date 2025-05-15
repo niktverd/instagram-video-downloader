@@ -1,31 +1,48 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Transaction} from 'objection';
-import {z} from 'zod';
 
 import {Scenario} from '../models/Scenario';
 
 import db from './utils';
 
-import {IScenario, ScenarioSchema} from '#src/models/types';
-
-export const CreateScenarioParamsSchema = ScenarioSchema.omit({id: true});
-export type CreateScenarioParams = Omit<IScenario, 'id'>;
-
-export type CreateScenarioResponse = IScenario;
+import {
+    CreateScenarioParamsSchema,
+    UpdateScenarioParamsSchema,
+    DeleteScenarioParamsSchema as _DeleteScenarioParamsSchema,
+    GetAllScenariosParamsSchema as _GetAllScenariosParamsSchema,
+    GetScenarioByIdParamsSchema as _GetScenarioByIdParamsSchema,
+    GetScenarioBySlugParamsSchema as _GetScenarioBySlugParamsSchema,
+} from '#schemas/handlers/scenario';
+import {
+    CreateScenarioParams,
+    CreateScenarioResponse,
+    DeleteScenarioParams,
+    DeleteScenarioResponse,
+    GetAllScenariosParams,
+    GetAllScenariosResponse,
+    GetScenarioByIdParams,
+    GetScenarioByIdResponse,
+    GetScenarioBySlugParams,
+    GetScenarioBySlugResponse,
+    UpdateScenarioParams,
+    IScenario as _IScenario,
+    UpdateScenarioResponse as _UpdateScenarioResponse,
+} from '#types';
 
 export async function createScenario(
     params: CreateScenarioParams,
     trx?: Transaction,
 ): Promise<CreateScenarioResponse> {
+    const validatedParams = CreateScenarioParamsSchema.parse(params);
     const scenarioData: Record<string, any> = {
-        slug: params.slug,
-        enabled: params.enabled ?? true,
-        options: params.options || {},
-        type: params.type,
+        slug: validatedParams.slug,
+        enabled: validatedParams.enabled ?? true,
+        options: validatedParams.options || {},
+        type: validatedParams.type,
     };
 
-    if (typeof params.copiedFrom === 'number') {
-        scenarioData.copiedFrom = params.copiedFrom;
+    if (typeof validatedParams.copiedFrom === 'number') {
+        scenarioData.copiedFrom = validatedParams.copiedFrom;
     }
 
     console.log('scenarioData', scenarioData);
@@ -33,15 +50,6 @@ export async function createScenario(
     console.log('scenario', scenario);
     return scenario;
 }
-
-export const GetScenarioByIdParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type GetScenarioByIdParams = z.infer<typeof GetScenarioByIdParamsSchema>;
-export type GetScenarioByIdResponse = IScenario;
 
 export async function getScenarioById(
     params: GetScenarioByIdParams,
@@ -54,15 +62,6 @@ export async function getScenarioById(
 
     return scenario;
 }
-
-export const GetScenarioBySlugParamsSchema = z
-    .object({
-        slug: z.string(),
-    })
-    .strict();
-
-export type GetScenarioBySlugParams = z.infer<typeof GetScenarioBySlugParamsSchema>;
-export type GetScenarioBySlugResponse = IScenario;
 
 export async function getScenarioBySlug(
     params: GetScenarioBySlugParams,
@@ -79,10 +78,6 @@ export async function getScenarioBySlug(
     return scenario;
 }
 
-export const GetAllScenariosParamsSchema = z.object({}).strict();
-export type GetAllScenariosParams = z.infer<typeof GetAllScenariosParamsSchema>;
-export type GetAllScenariosResponse = IScenario[];
-
 export async function getAllScenarios(
     _params: GetAllScenariosParams,
     trx?: Transaction,
@@ -91,16 +86,6 @@ export async function getAllScenarios(
     return scenarios;
 }
 
-export const UpdateScenarioParamsSchema = CreateScenarioParamsSchema.partial()
-    .extend({
-        id: z.number(),
-        createdAt: z.string(),
-        updatedAt: z.string(),
-    })
-    .strict();
-
-export type UpdateScenarioParams = z.infer<typeof UpdateScenarioParamsSchema>;
-export type UpdateScenarioResponse = IScenario;
 export async function updateScenario(
     params: UpdateScenarioParams,
     trx?: Transaction,
@@ -121,15 +106,6 @@ export async function updateScenario(
     const scenario = await Scenario.query(trx || db).patchAndFetchById(id, cleanUpdateData);
     return scenario;
 }
-
-export const DeleteScenarioParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type DeleteScenarioParams = z.infer<typeof DeleteScenarioParamsSchema>;
-export type DeleteScenarioResponse = number;
 
 export async function deleteScenario(
     params: DeleteScenarioParams,

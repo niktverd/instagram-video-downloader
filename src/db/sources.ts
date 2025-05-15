@@ -1,36 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {OrderByDirection, Transaction} from 'objection';
-import {z} from 'zod';
 
 import {Source} from '../models/Source';
 
 import db from './utils';
 
-import {ISource, SourceSchema} from '#src/models/types';
-
-export const CreateSourceParamsSchema = SourceSchema.omit({id: true});
-export type CreateSourceParams = Omit<ISource, 'id'>;
-export type CreateSourceResponse = ISource;
+import {
+    CreateSourceParamsSchema,
+    GetAllSourcesParamsSchema,
+    UpdateSourceParamsSchema,
+    DeleteSourceParamsSchema as _DeleteSourceParamsSchema,
+    GetOneSourceParamsSchema as _GetOneSourceParamsSchema,
+    GetSourceByIdParamsSchema as _GetSourceByIdParamsSchema,
+} from '#schemas/handlers/source';
+import {
+    CreateSourceParams,
+    CreateSourceResponse,
+    DeleteSourceParams,
+    DeleteSourceResponse,
+    GetAllSourcesParams,
+    GetAllSourcesResponse,
+    GetOneSourceParams,
+    GetOneSourceResponse,
+    GetSourceByIdParams,
+    GetSourceByIdResponse,
+    UpdateSourceParams,
+    UpdateSourceResponse as _UpdateSourceResponse,
+} from '#types';
 
 export async function createSource(
     params: CreateSourceParams,
     trx?: Transaction,
 ): Promise<CreateSourceResponse> {
-    const source = await Source.query(trx || db).insert(params);
+    const validatedParams = CreateSourceParamsSchema.parse(params);
+    const source = await Source.query(trx || db).insert(validatedParams);
 
     return source;
 }
-
-export const GetAllSourcesParamsSchema = z
-    .object({
-        page: z.string().optional(),
-        limit: z.string().optional(),
-        sortBy: z.string().optional(),
-        sortOrder: z.string().optional(),
-    })
-    .strict();
-export type GetAllSourcesParams = z.infer<typeof GetAllSourcesParamsSchema>;
-export type GetAllSourcesResponse = {sources: ISource[]; count: number};
 
 export async function getAllSources(
     params: GetAllSourcesParams,
@@ -61,16 +67,6 @@ export async function getAllSources(
     };
 }
 
-export const GetOneSourceParamsSchema = z
-    .object({
-        id: z.number().optional(),
-        random: z.boolean().optional(),
-        emptyFirebaseUrl: z.boolean().optional(),
-    })
-    .strict();
-export type GetOneSourceParams = z.infer<typeof GetOneSourceParamsSchema>;
-export type GetOneSourceResponse = ISource | undefined;
-
 export async function getOneSource(
     params: GetOneSourceParams,
     trx?: Transaction,
@@ -93,16 +89,6 @@ export async function getOneSource(
     return query.limit(1).first();
 }
 
-export const UpdateSourceParamsSchema = CreateSourceParamsSchema.partial()
-    .extend({
-        id: z.number(),
-        createdAt: z.string().optional(),
-        updatedAt: z.string().optional(),
-    })
-    .strict();
-
-export type UpdateSourceParams = z.infer<typeof UpdateSourceParamsSchema>;
-export type UpdateSourceResponse = ISource;
 export async function updateSource(params: UpdateSourceParams, trx?: Transaction): Promise<Source> {
     const {id, ...updateData} = UpdateSourceParamsSchema.parse(params);
 
@@ -120,15 +106,6 @@ export async function updateSource(params: UpdateSourceParams, trx?: Transaction
     return source;
 }
 
-export const DeleteSourceParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type DeleteSourceParams = z.infer<typeof DeleteSourceParamsSchema>;
-export type DeleteSourceResponse = number;
-
 export async function deleteSource(
     params: DeleteSourceParams,
     trx?: Transaction,
@@ -137,15 +114,6 @@ export async function deleteSource(
 
     return deletedCount;
 }
-
-export const GetSourceByIdParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type GetSourceByIdParams = z.infer<typeof GetSourceByIdParamsSchema>;
-export type GetSourceByIdResponse = ISource | undefined;
 
 export async function getSourceById(
     params: GetSourceByIdParams,

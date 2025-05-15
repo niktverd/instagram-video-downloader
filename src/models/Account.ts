@@ -2,7 +2,8 @@ import {PartialModelObject} from 'objection';
 
 import {BaseModel} from './BaseModel';
 import Scenario from './Scenario';
-import {IAccount} from './types';
+
+import {IAccount} from '#src/types/account';
 
 export class Account extends BaseModel implements IAccount {
     id!: number;

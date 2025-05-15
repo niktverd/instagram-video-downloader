@@ -1,16 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Transaction} from 'objection';
-import {z} from 'zod';
 
 import {Account} from '../models/Account';
 
 import db from './utils';
 
-import {AccountSchema, IAccount} from '#src/models/types';
-
-export const CreateAccountParamsSchema = AccountSchema.omit({id: true});
-export type CreateAccountParams = Omit<IAccount, 'id'>;
-export type CreateAccountResponse = IAccount;
+import {
+    CreateAccountParams,
+    CreateAccountResponse,
+    DeleteAccountParams,
+    DeleteAccountResponse,
+    GetAccountByIdParams,
+    GetAccountByIdResponse,
+    GetAccountBySlugParams,
+    GetAccountBySlugResponse,
+    GetAllAccountsParams,
+    GetAllAccountsResponse,
+    UpdateAccountParams,
+} from '#src/types/account';
 
 export async function createAccount(params: CreateAccountParams): Promise<CreateAccountResponse> {
     const {availableScenarios, ...accountParams} = params;
@@ -31,15 +38,6 @@ export async function createAccount(params: CreateAccountParams): Promise<Create
     });
 }
 
-export const GetAccountByIdParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type GetAccountByIdParams = z.infer<typeof GetAccountByIdParamsSchema>;
-export type GetAccountByIdResponse = IAccount;
-
 export async function getAccountById(
     params: GetAccountByIdParams,
     trx?: Transaction,
@@ -54,15 +52,6 @@ export async function getAccountById(
 
     return account;
 }
-
-export const GetAccountBySlugParamsSchema = z
-    .object({
-        slug: z.string(),
-    })
-    .strict();
-
-export type GetAccountBySlugParams = z.infer<typeof GetAccountBySlugParamsSchema>;
-export type GetAccountBySlugResponse = IAccount;
 
 export async function getAccountBySlug(
     params: GetAccountBySlugParams,
@@ -80,10 +69,6 @@ export async function getAccountBySlug(
     return account;
 }
 
-export const GetAllAccountsParamsSchema = z.object({}).strict();
-export type GetAllAccountsParams = z.infer<typeof GetAllAccountsParamsSchema>;
-export type GetAllAccountsResponse = IAccount[];
-
 export async function getAllAccounts(
     _params: GetAllAccountsParams,
     trx?: Transaction,
@@ -92,19 +77,11 @@ export async function getAllAccounts(
     return accounts;
 }
 
-export const UpdateAccountParamsSchema = CreateAccountParamsSchema.partial()
-    .extend({
-        id: z.number(),
-    })
-    .strict();
-
-export type UpdateAccountParams = z.infer<typeof UpdateAccountParamsSchema>;
-export type UpdateAccountResponse = IAccount;
 export async function updateAccount(
     params: UpdateAccountParams,
     trx?: Transaction,
 ): Promise<Account> {
-    const {id, availableScenarios, ...updateData} = UpdateAccountParamsSchema.parse(params);
+    const {id, availableScenarios, ...updateData} = params;
 
     return await (trx || db).transaction(async (t) => {
         const account = await Account.query(t).patchAndFetchById(id, updateData);
@@ -129,15 +106,6 @@ export async function updateAccount(
         return account;
     });
 }
-
-export const DeleteAccountParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type DeleteAccountParams = z.infer<typeof DeleteAccountParamsSchema>;
-export type DeleteAccountResponse = number;
 
 export async function deleteAccount(
     params: DeleteAccountParams,

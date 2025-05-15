@@ -10,7 +10,7 @@ import {shortifyUnique} from './ShortifyUnique';
 import {ScenarioFunction} from './types';
 
 import {
-    ScenarioType,
+    // ScenarioType,
     // scenarioAddBannerAtTheEndSchema,
     scenarioAddBannerAtTheEndUniqueSchema,
     scenarioCoverWithGreenUniqueSchema,
@@ -19,6 +19,7 @@ import {
     // scenarioShortifySchema,
     scenarioShortifyUniqueSchema,
 } from '#src/schemas/scenario';
+import {ScenarioType} from '#src/types/enums';
 
 export const ScenarioMap: Record<ScenarioType, {scenario: ScenarioFunction; schema: z.ZodSchema}> =
     {

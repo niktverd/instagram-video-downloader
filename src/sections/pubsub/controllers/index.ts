@@ -3,11 +3,11 @@ import {rmSync, writeFileSync} from 'fs';
 
 import {Request, Response} from 'express';
 
-import {ScenarioType} from '#schemas/scenario';
 import {createPreparedVideo, getAccountById, getScenarioById, getSourceById} from '#src/db';
 import {Scenario} from '#src/models';
 import {ScenarioMap} from '#src/sections/cloud-run/components/scenarios/ScenarioMap';
 import {getVideoDuration} from '#src/sections/cloud-run/components/video';
+import {ScenarioType} from '#src/types/enums';
 import {PubSubAction, PubSubTopic, getWorkingDirectoryForVideo, log, logError} from '#utils';
 import {hasPreparedVideoBeenCreated, uploadFileToServer} from '$/shared';
 

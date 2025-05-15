@@ -1,24 +1,29 @@
 // import {Request, Response} from 'express';
 
 import {
-    CreateScenarioParams,
-    CreateScenarioParamsSchema,
-    CreateScenarioResponse,
-    DeleteScenarioParams,
-    DeleteScenarioParamsSchema,
-    DeleteScenarioResponse,
-    GetAllScenariosParams,
-    GetAllScenariosParamsSchema,
-    GetAllScenariosResponse,
-    UpdateScenarioParams,
-    UpdateScenarioParamsSchema,
-    UpdateScenarioResponse,
     createScenario,
     deleteScenario,
     getAllScenarios,
     updateScenario,
     wrapper,
 } from '../../../db';
+
+import {
+    CreateScenarioParamsSchema,
+    DeleteScenarioParamsSchema,
+    GetAllScenariosParamsSchema,
+    UpdateScenarioParamsSchema,
+} from '#schemas/handlers/scenario';
+import {
+    CreateScenarioParams,
+    CreateScenarioResponse,
+    DeleteScenarioParams,
+    DeleteScenarioResponse,
+    GetAllScenariosParams,
+    GetAllScenariosResponse,
+    UpdateScenarioParams,
+    UpdateScenarioResponse,
+} from '#types';
 
 // import {logError} from '#utils';
 // import {clearPreprod} from '$/shared';

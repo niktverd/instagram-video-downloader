@@ -2,7 +2,8 @@ import {Account} from './Account';
 import {BaseModel} from './BaseModel';
 import Scenario from './Scenario';
 import Source from './Source';
-import {IAccount, IPreparedVideo, IScenario, ISource} from './types';
+
+import {IAccount, IPreparedVideo, IScenario, ISource} from '#types';
 
 export class PreparedVideo extends BaseModel implements IPreparedVideo {
     id!: number;

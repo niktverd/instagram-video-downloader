@@ -1,22 +1,4 @@
 import {
-    CreateUserParams,
-    CreateUserParamsSchema,
-    CreateUserResponse,
-    DeleteUserParams,
-    DeleteUserParamsSchema,
-    DeleteUserResponse,
-    GetAllUsersParams,
-    GetAllUsersParamsSchema,
-    GetAllUsersResponse,
-    GetUserByEmailParams,
-    GetUserByEmailParamsSchema,
-    GetUserByEmailResponse,
-    GetUserByIdParams,
-    GetUserByIdParamsSchema,
-    GetUserByIdResponse,
-    UpdateUserParams,
-    UpdateUserParamsSchema,
-    UpdateUserResponse,
     createUser,
     deleteUser,
     getAllUsers,
@@ -25,6 +7,29 @@ import {
     updateUser,
     wrapper,
 } from '../../../db';
+
+import {
+    CreateUserParamsSchema,
+    DeleteUserParamsSchema,
+    GetAllUsersParamsSchema,
+    GetUserByEmailParamsSchema,
+    GetUserByIdParamsSchema,
+    UpdateUserParamsSchema,
+} from '#schemas/handlers/user';
+import {
+    CreateUserParams,
+    CreateUserResponse,
+    DeleteUserParams,
+    DeleteUserResponse,
+    GetAllUsersParams,
+    GetAllUsersResponse,
+    GetUserByEmailParams,
+    GetUserByEmailResponse,
+    GetUserByIdParams,
+    GetUserByIdResponse,
+    UpdateUserParams,
+    UpdateUserResponse,
+} from '#src/types/user';
 
 export const createUserPost = wrapper<CreateUserParams, CreateUserResponse>(
     createUser,

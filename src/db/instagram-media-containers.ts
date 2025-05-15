@@ -1,39 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Transaction} from 'objection';
-import {z} from 'zod';
 
 import {InstagramMediaContainer} from '../models/InstagramMediaContainer';
 
 import db from './utils';
 
-import {IInstagramMediaContainer, InstagramMediaContainerSchema} from '#src/models/types';
-
-export const CreateInstagramMediaContainerParamsSchema = InstagramMediaContainerSchema.omit({
-    id: true,
-});
-export type CreateInstagramMediaContainerParams = Omit<IInstagramMediaContainer, 'id'>;
-export type CreateInstagramMediaContainerResponse = IInstagramMediaContainer;
+import {
+    CreateInstagramMediaContainerParamsSchema,
+    UpdateInstagramMediaContainerParamsSchema,
+    DeleteInstagramMediaContainerParamsSchema as _DeleteInstagramMediaContainerParamsSchema,
+    GetAllInstagramMediaContainersParamsSchema as _GetAllInstagramMediaContainersParamsSchema,
+    GetInstagramMediaContainerByIdParamsSchema as _GetInstagramMediaContainerByIdParamsSchema,
+    GetLimitedInstagramMediaContainersParamsSchema as _GetLimitedInstagramMediaContainersParamsSchema,
+} from '#schemas/handlers/instagramMediaContainer';
+import {
+    CreateInstagramMediaContainerParams,
+    CreateInstagramMediaContainerResponse,
+    DeleteInstagramMediaContainerParams,
+    DeleteInstagramMediaContainerResponse,
+    GetAllInstagramMediaContainersParams,
+    GetAllInstagramMediaContainersResponse,
+    GetInstagramMediaContainerByIdParams,
+    GetInstagramMediaContainerByIdResponse,
+    GetLimitedInstagramMediaContainersParams,
+    GetLimitedInstagramMediaContainersResponse,
+    UpdateInstagramMediaContainerParams,
+    IInstagramMediaContainer as _IInstagramMediaContainer,
+    UpdateInstagramMediaContainerResponse as _UpdateInstagramMediaContainerResponse,
+} from '#types';
 
 export async function createInstagramMediaContainer(
     params: CreateInstagramMediaContainerParams,
 ): Promise<CreateInstagramMediaContainerResponse> {
     return await db.transaction(async (trx) => {
-        const preparedVideo = await InstagramMediaContainer.query(trx).insert(params);
+        const validatedParams = CreateInstagramMediaContainerParamsSchema.parse(params);
+        const preparedVideo = await InstagramMediaContainer.query(trx).insert(validatedParams);
 
         return preparedVideo;
     });
 }
-
-export const GetInstagramMediaContainerByIdParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type GetInstagramMediaContainerByIdParams = z.infer<
-    typeof GetInstagramMediaContainerByIdParamsSchema
->;
-export type GetInstagramMediaContainerByIdResponse = IInstagramMediaContainer;
 
 export async function getInstagramMediaContainerById(
     params: GetInstagramMediaContainerByIdParams,
@@ -48,12 +53,6 @@ export async function getInstagramMediaContainerById(
     return preparedVideo;
 }
 
-export const GetAllInstagramMediaContainersParamsSchema = z.object({}).strict();
-export type GetAllInstagramMediaContainersParams = z.infer<
-    typeof GetAllInstagramMediaContainersParamsSchema
->;
-export type GetAllInstagramMediaContainersResponse = IInstagramMediaContainer[];
-
 export async function getAllInstagramMediaContainers(
     _params: GetAllInstagramMediaContainersParams,
     trx?: Transaction,
@@ -62,17 +61,6 @@ export async function getAllInstagramMediaContainers(
     return preparedVideos;
 }
 
-export const UpdateInstagramMediaContainerParamsSchema =
-    CreateInstagramMediaContainerParamsSchema.partial()
-        .extend({
-            id: z.number(),
-        })
-        .strict();
-
-export type UpdateInstagramMediaContainerParams = z.infer<
-    typeof UpdateInstagramMediaContainerParamsSchema
->;
-export type UpdateInstagramMediaContainerResponse = IInstagramMediaContainer;
 export async function updateInstagramMediaContainer(
     params: UpdateInstagramMediaContainerParams,
     trx?: Transaction,
@@ -93,17 +81,6 @@ export async function updateInstagramMediaContainer(
     });
 }
 
-export const DeleteInstagramMediaContainerParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type DeleteInstagramMediaContainerParams = z.infer<
-    typeof DeleteInstagramMediaContainerParamsSchema
->;
-export type DeleteInstagramMediaContainerResponse = number;
-
 export async function deleteInstagramMediaContainer(
     params: DeleteInstagramMediaContainerParams,
     trx?: Transaction,
@@ -111,24 +88,6 @@ export async function deleteInstagramMediaContainer(
     const deletedCount = await InstagramMediaContainer.query(trx || db).deleteById(params.id);
     return deletedCount;
 }
-
-export const GetLimitedInstagramMediaContainersParamsSchema = z
-    .object({
-        // firebaseUrl: z.string().optional(),
-        // duration: z.number().optional(),
-        // scenarioId: z.number().optional(),
-        // sourceId: z.number().optional(),
-        accountId: z.number().optional(),
-        limit: z.number().optional(),
-        notPublished: z.boolean().optional(),
-        random: z.boolean().optional(),
-    })
-    .strict();
-
-export type GetLimitedInstagramMediaContainersParams = z.infer<
-    typeof GetLimitedInstagramMediaContainersParamsSchema
->;
-export type GetLimitedInstagramMediaContainersResponse = IInstagramMediaContainer[];
 
 export async function getLimitedInstagramMediaContainers(
     params: GetLimitedInstagramMediaContainersParams,

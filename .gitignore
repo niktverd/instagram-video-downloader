@@ -35,3 +35,6 @@ pubsub-service-account.json
 
 assets/output
 reqId.log
+
+# Shared
+sharedTypes

@@ -1,4 +1,4 @@
-import {IScenario, ISource} from '#src/models/types';
+import {IScenario, ISource} from '#types';
 
 type ScenarioFunctionArgs = {
     scenario: IScenario;

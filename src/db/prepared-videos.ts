@@ -1,36 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Transaction} from 'objection';
-import {z} from 'zod';
 
 import {PreparedVideo} from '../models/PreparedVideo';
 
 import db from './utils';
 
-import {IPreparedVideo, PreparedVideoSchema} from '#src/models/types';
-
-export const CreatePreparedVideoParamsSchema = PreparedVideoSchema.omit({id: true});
-
-export type CreatePreparedVideoParams = Omit<IPreparedVideo, 'id'>;
-export type CreatePreparedVideoResponse = IPreparedVideo;
+import {
+    CreatePreparedVideoParamsSchema,
+    UpdatePreparedVideoParamsSchema,
+    DeletePreparedVideoParamsSchema as _DeletePreparedVideoParamsSchema,
+    GetAllPreparedVideosParamsSchema as _GetAllPreparedVideosParamsSchema,
+    GetOnePreparedVideoParamsSchema as _GetOnePreparedVideoParamsSchema,
+    GetPreparedVideoByIdParamsSchema as _GetPreparedVideoByIdParamsSchema,
+} from '#schemas/handlers/preparedVideo';
+import {
+    CreatePreparedVideoParams,
+    CreatePreparedVideoResponse,
+    DeletePreparedVideoParams,
+    DeletePreparedVideoResponse,
+    GetAllPreparedVideosParams,
+    GetAllPreparedVideosResponse,
+    GetOnePreparedVideoParams,
+    GetOnePreparedVideoResponse,
+    GetPreparedVideoByIdParams,
+    GetPreparedVideoByIdResponse,
+    UpdatePreparedVideoParams,
+    IPreparedVideo as _IPreparedVideo,
+    UpdatePreparedVideoResponse as _UpdatePreparedVideoResponse,
+} from '#types';
 
 export async function createPreparedVideo(
     params: CreatePreparedVideoParams,
 ): Promise<CreatePreparedVideoResponse> {
     return await db.transaction(async (trx) => {
-        const preparedVideo = await PreparedVideo.query(trx).insert(params);
+        const validatedParams = CreatePreparedVideoParamsSchema.parse(params);
+        const preparedVideo = await PreparedVideo.query(trx).insert(validatedParams);
 
         return preparedVideo;
     });
 }
-
-export const GetPreparedVideoByIdParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type GetPreparedVideoByIdParams = z.infer<typeof GetPreparedVideoByIdParamsSchema>;
-export type GetPreparedVideoByIdResponse = IPreparedVideo;
 
 export async function getPreparedVideoById(
     params: GetPreparedVideoByIdParams,
@@ -45,10 +53,6 @@ export async function getPreparedVideoById(
     return preparedVideo;
 }
 
-export const GetAllPreparedVideosParamsSchema = z.object({}).strict();
-export type GetAllPreparedVideosParams = z.infer<typeof GetAllPreparedVideosParamsSchema>;
-export type GetAllPreparedVideosResponse = IPreparedVideo[];
-
 export async function getAllPreparedVideos(
     _params: GetAllPreparedVideosParams,
     trx?: Transaction,
@@ -57,14 +61,6 @@ export async function getAllPreparedVideos(
     return preparedVideos;
 }
 
-export const UpdatePreparedVideoParamsSchema = CreatePreparedVideoParamsSchema.partial()
-    .extend({
-        id: z.number(),
-    })
-    .strict();
-
-export type UpdatePreparedVideoParams = z.infer<typeof UpdatePreparedVideoParamsSchema>;
-export type UpdatePreparedVideoResponse = IPreparedVideo;
 export async function updatePreparedVideo(
     params: UpdatePreparedVideoParams,
     trx?: Transaction,
@@ -82,15 +78,6 @@ export async function updatePreparedVideo(
     });
 }
 
-export const DeletePreparedVideoParamsSchema = z
-    .object({
-        id: z.number(),
-    })
-    .strict();
-
-export type DeletePreparedVideoParams = z.infer<typeof DeletePreparedVideoParamsSchema>;
-export type DeletePreparedVideoResponse = number;
-
 export async function deletePreparedVideo(
     params: DeletePreparedVideoParams,
     trx?: Transaction,
@@ -98,25 +85,6 @@ export async function deletePreparedVideo(
     const deletedCount = await PreparedVideo.query(trx || db).deleteById(params.id);
     return deletedCount;
 }
-
-export const GetOnePreparedVideoParamsSchema = z
-    .object({
-        hasFirebaseUrl: z.boolean().optional(),
-        firebaseUrl: z.string().optional(),
-        duration: z.number().optional(),
-        scenarioId: z.number().optional(),
-        sourceId: z.number().optional(),
-        accountId: z.number().optional(),
-        random: z.boolean().optional(),
-        notInInstagramMediaContainers: z.boolean().optional(),
-        fetchGraphAccount: z.boolean().optional(),
-        fetchGraphScenario: z.boolean().optional(),
-        fetchGraphSource: z.boolean().optional(),
-    })
-    .strict();
-
-export type GetOnePreparedVideoParams = z.infer<typeof GetOnePreparedVideoParamsSchema>;
-export type GetOnePreparedVideoResponse = IPreparedVideo | undefined;
 
 export async function getOnePreparedVideo(
     params: GetOnePreparedVideoParams,

@@ -1,6 +1,7 @@
 import {BaseModel} from './BaseModel';
 import PreparedVideo from './PreparedVideo';
-import {IInstagramMediaContainer} from './types';
+
+import {IInstagramMediaContainer} from '#types';
 
 export class InstagramMediaContainer extends BaseModel implements IInstagramMediaContainer {
     id!: number;

@@ -11,12 +11,13 @@
 * src/tests/requests/imitateInstagramMessageWebhook.ts
 * src/utils/scenarios.ts
 
-## Unused dependencies (2)
+## Unused dependencies (3)
 
-| Name       | Location          | Severity |
-| :--------- | :---------------- | :------- |
-| dotenv-cli | package.json:58:6 | error    |
-| pg         | package.json:71:6 | error    |
+| Name                   | Location          | Severity |
+| :--------------------- | :---------------- | :------- |
+| typescript-json-schema | package.json:76:6 | error    |
+| dotenv-cli             | package.json:59:6 | error    |
+| pg                     | package.json:72:6 | error    |
 
 ## Unused exports (5)
 
@@ -25,7 +26,7 @@
 | getSvg          | src/sections/cloud-run/components/reels-creator/create-video.ts:22:17 | error    |
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:53:14               | error    |
-| default         | src/models/InstagramMediaContainer.ts:48:8                            | error    |
+| default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
 
 ## Unused exported enum members (3)

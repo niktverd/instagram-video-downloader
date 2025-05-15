@@ -11,12 +11,9 @@ import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
 import {getScenarios} from '../sections/shared/scenarios';
-import {MediaPostModel, SourceV3} from '../types';
+import {CreateSourceParams, IScenario, MediaPostModel, SourceV3} from '../types';
 
 import {log, logError} from './logging';
-
-import {CreateSourceParams} from '#src/db';
-import {IScenario} from '#src/models/types';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

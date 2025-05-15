@@ -1,14 +1,6 @@
 import {z} from 'zod';
 
-export enum ScenarioType {
-    // ScenarioAddBannerAtTheEnd = 'ScenarioAddBannerAtTheEnd',
-    ScenarioAddBannerAtTheEndUnique = 'ScenarioAddBannerAtTheEndUnique',
-    // ScenarioShortify = 'ScenarioShortify',
-    ScenarioShortifyUnique = 'ScenarioShortifyUnique',
-    // ScenarioCoverWithImage = 'ScenarioCoverWithImage',
-    // ScenarioLongVideoWithInjections = 'ScenarioLongVideoWithInjections',
-    ScenarioCoverWithGreenUnique = 'ScenarioCoverWithGreenUnique',
-}
+import {ScenarioType} from '#src/types/enums';
 
 export const scenarioBaseSchema = z
     .object({
