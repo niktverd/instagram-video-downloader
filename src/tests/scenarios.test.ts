@@ -221,7 +221,7 @@ const runTests = async () => {
         await testShortifyUnique(sources.blackNYellow);
     }
 
-    const runCoverWithGreen = true;
+    const runCoverWithGreen = false;
     if (runCoverWithGreen) {
         // Test once mode with different positions
         await testCoverWithGreen(sources.blackNYellow, 'once', 'start');

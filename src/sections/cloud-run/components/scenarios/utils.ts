@@ -1,6 +1,12 @@
 import {shuffle} from 'lodash';
 
 import {addTextToVideo, applyVideoColorCorrection, changeVideoSpeed, rotateVideo} from '../video';
+import {
+    applyBoxBlur,
+    applyMetadata,
+    generateVideoMetadata,
+    hueAdjustVideo,
+} from '../video/primitives';
 import {randomBetween} from '../video/utils';
 
 const updateBrightness = async (filePath: string) => {
@@ -21,6 +27,27 @@ const updateRotation = async (filePath: string) => {
 const updateVideoSpeed = async (filePath: string) => {
     return changeVideoSpeed({input: filePath, speed: randomBetween(0.87, 1.15)});
 };
+const updateVideoMetadata = async (filePath: string) => {
+    return applyMetadata({
+        input: filePath,
+        metadata: generateVideoMetadata({input: filePath, iteration: 1}),
+    });
+};
+const updateHue = async (filePath: string) => {
+    return hueAdjustVideo({
+        input: filePath,
+        hue: randomBetween(-10, 10),
+        saturation: randomBetween(0.5, 1.5),
+    });
+};
+const updateBlur = async (filePath: string) => {
+    return applyBoxBlur({
+        input: filePath,
+        iterations: randomBetween(1, 2),
+        boxHeight: randomBetween(1, 2),
+        boxWidth: randomBetween(1, 2),
+    });
+};
 
 const arrayOfEffects = [
     updateBrightness,
@@ -28,6 +55,8 @@ const arrayOfEffects = [
     updateSaturation,
     updateGamma,
     updateRotation,
+    updateHue,
+    updateBlur,
 ];
 
 type AddRandomEffectsArgs = {
@@ -52,6 +81,6 @@ export const addRandomEffects = async ({input, countOfEffects = 1, text}: AddRan
     }
 
     output = await updateVideoSpeed(output);
-
+    output = await updateVideoMetadata(output);
     return output;
 };

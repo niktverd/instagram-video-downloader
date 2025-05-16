@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import {writeFileSync} from 'fs';
 import {dirname, join} from 'path';
 
@@ -637,6 +638,7 @@ export const rotateVideo = async ({
     scale,
     pathSuffix = '',
 }: RotateScaleVideoArgs): Promise<string> => {
+    log('rotateVideo started');
     const outputPath = prepareOutputFileName(input, {
         suffix: '_rotaded' + pathSuffix,
         extention: '.mp4',
@@ -650,12 +652,25 @@ export const rotateVideo = async ({
                 (Math.max(width, height) / Math.min(width, height)) *
                     ((Math.abs(angle) * Math.PI) / 180);
 
+        // Calculate rotated dimensions explicitly to avoid FFmpeg's rotw/roth boundary condition issues
+        const angleRad = (Math.abs(angle) * Math.PI) / 180;
+        const scaledWidth = width * localScale;
+        const scaledHeight = height * localScale;
+        const rotatedWidth = Math.ceil(
+            scaledWidth * Math.abs(Math.cos(angleRad)) +
+                scaledHeight * Math.abs(Math.sin(angleRad)),
+        );
+        const rotatedHeight = Math.ceil(
+            scaledWidth * Math.abs(Math.sin(angleRad)) +
+                scaledHeight * Math.abs(Math.cos(angleRad)),
+        );
+
         const ffmpegCommand = ffmpeg(input)
             .complexFilter([
-                // Scale the input video to 1280x720 for background
+                // Scale the input video to original dimensions for background
                 '[0:v] scale=iw:ih, setsar=1 [bg]',
-                // Scale and rotate the foreground video
-                `[0:v] scale=iw*${localScale}:ih*${localScale}, rotate=${angle}*PI/180:ow=rotw(iw):oh=roth(ih) [overlay]`,
+                // Scale and rotate the foreground video with explicit output dimensions
+                `[0:v] scale=iw*${localScale}:ih*${localScale}, rotate=${angle}*PI/180:ow=${rotatedWidth}:oh=${rotatedHeight} [overlay]`,
                 // Overlay the rotated video onto the background at center
                 '[bg][overlay] overlay=(W-w)/2:(H-h)/2 [out]',
             ])
@@ -675,6 +690,7 @@ type AddTextToVideoArgs = {
 };
 
 export const addTextToVideo = async ({input, text = ''}: AddTextToVideoArgs): Promise<string> => {
+    log('addTextToVideo started');
     const outputPath = prepareOutputFileName(input, {
         suffix: '_with_text',
         extention: '.mp4',
@@ -707,6 +723,7 @@ export const changeVideoSpeed = async ({
     speed,
     outputOverride,
 }: ChangeVideoSpeedArgs): Promise<string> => {
+    log('changeVideoSpeed started');
     if (speed <= 0) {
         throw new Error('Speed must be greater than 0');
     }
@@ -730,5 +747,187 @@ export const changeVideoSpeed = async ({
             .output(outputPath);
 
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'changeVideoSpeed').run();
+    });
+};
+
+type GenerateMetadataArgs = {
+    input?: string;
+    iteration?: number;
+};
+
+export const generateVideoMetadata = ({
+    input = '',
+    iteration = 0,
+}: GenerateMetadataArgs = {}): Record<string, string> => {
+    log('generateVideoMetadata started');
+    const timestamp = Date.now();
+    const randomHash = crypto
+        .createHash('sha256')
+        .update(`${timestamp}-${input}-${iteration}-${Math.random()}`)
+        .digest('hex');
+
+    const genres = ['Action', 'Drama', 'Comedy', 'Documentary', 'Music'];
+    const languages = ['eng', 'fra', 'deu', 'spa', 'ita'];
+    const encoders = ['x264', 'ffmpeg', 'HandBrake', 'Adobe', 'DaVinci'];
+
+    return {
+        title: `UniqueVideo_${randomHash.substring(0, 8)}`,
+        artist: `Artist_${randomHash.substring(8, 16)}`,
+        album: `Album_${randomHash.substring(16, 24)}`,
+        date: new Date(timestamp + iteration * 1000).toISOString(),
+        genre: genres[Math.floor(Math.random() * genres.length)],
+        copyright: `Copyright_${randomHash.substring(24, 32)}`,
+        encoder: encoders[Math.floor(Math.random() * encoders.length)],
+        language: languages[Math.floor(Math.random() * languages.length)],
+        comment: `Processed_${randomHash.substring(32, 40)}`,
+        creation_time: new Date(timestamp + iteration * 2000).toISOString(),
+        description: `Description_${randomHash.substring(40, 48)}`,
+        publisher: `Publisher_${randomHash.substring(48, 56)}`,
+        composer: `Composer_${randomHash.substring(56, 64)}`,
+    };
+};
+
+type ApplyMetadataArgs = {
+    input: string;
+    metadata?: Record<string, string>;
+    outputOverride?: string;
+};
+
+export const applyMetadata = async ({
+    input,
+    metadata,
+    outputOverride,
+}: ApplyMetadataArgs): Promise<string> => {
+    log('applyMetadata started');
+    const outputPath = prepareOutputFileName(input, {
+        outputFileName: outputOverride,
+        suffix: '_with_metadata',
+        extention: '.mp4',
+    });
+
+    const metadataToApply = metadata || generateVideoMetadata({input});
+
+    return new Promise((resolve, reject) => {
+        const ffmpegCommand = ffmpeg(input).videoCodec('copy').audioCodec('copy');
+
+        // Apply all metadata fields
+        Object.entries(metadataToApply).forEach(([key, value]) => {
+            ffmpegCommand.outputOptions('-metadata', `${key}=${value}`);
+        });
+
+        ffmpegCommand.output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'applyMetadata').run();
+    });
+};
+
+// eslint-disable-next-line valid-jsdoc
+/**
+ * Reads metadata from a video file
+ */
+export const readMetadata = (input: string): Promise<Record<string, string>> => {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(input, (err, metadata) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+
+            // Extract metadata from format tags
+            const formatMetadata: Record<string, string> = {};
+            if (metadata.format.tags) {
+                Object.entries(metadata.format.tags).forEach(([key, value]) => {
+                    formatMetadata[key] = String(value);
+                });
+            }
+
+            // Also check for metadata in streams (particularly the first video and audio streams)
+            const streamMetadata: Record<string, string> = {};
+            metadata.streams.forEach((stream) => {
+                if (stream.tags) {
+                    Object.entries(stream.tags).forEach(([key, value]) => {
+                        // Prefix stream metadata with stream type to avoid collisions
+                        const streamType = stream.codec_type || 'unknown';
+                        streamMetadata[`${streamType}_${key}`] = String(value);
+                    });
+                }
+            });
+
+            // Combine format and stream metadata, with format metadata taking precedence
+            const result: Record<string, string> = {
+                ...streamMetadata,
+                ...formatMetadata,
+            };
+
+            resolve(result);
+        });
+    });
+};
+
+type HueAdjustVideoArgs = {
+    input: string;
+    hue?: number; // Hue adjustment in degrees (-180 to 180)
+    saturation?: number; // Saturation multiplier (0-2, where 1 is normal)
+    pathSuffix?: string;
+};
+
+export const hueAdjustVideo = async ({
+    input,
+    hue = 0,
+    saturation = 1,
+    pathSuffix = '',
+}: HueAdjustVideoArgs): Promise<string> => {
+    log('hueAdjustVideo started');
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_hue_adjusted' + pathSuffix,
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        // Build the hue filter string
+        const hueFilter = `hue=h=${hue}:s=${saturation}`;
+
+        const ffmpegCommand = ffmpeg(input)
+            .videoFilters(hueFilter)
+            .audioCodec('copy') // Preserve original audio
+            .videoCodec('libx264') // Use H.264 video codec for compatibility
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'hueAdjustVideo').run();
+    });
+};
+
+type ApplyBoxBlurArgs = {
+    input: string;
+    boxWidth?: number; // Width of the box blur (default: 2)
+    boxHeight?: number; // Height of the box blur (default: 2)
+    iterations?: number; // Number of iterations (default: 1)
+    pathSuffix?: string;
+};
+
+export const applyBoxBlur = async ({
+    input,
+    boxWidth = 2,
+    boxHeight = 2,
+    iterations = 1,
+    pathSuffix = '',
+}: ApplyBoxBlurArgs): Promise<string> => {
+    log('applyBoxBlur started');
+    const outputPath = prepareOutputFileName(input, {
+        suffix: '_blurred' + pathSuffix,
+        extention: '.mp4',
+    });
+
+    return new Promise((resolve, reject) => {
+        // Build the boxblur filter string
+        const blurFilter = `boxblur=${boxWidth}:${boxHeight}:${iterations}`;
+
+        const ffmpegCommand = ffmpeg(input)
+            .videoFilters(blurFilter)
+            .audioCodec('copy') // Preserve original audio
+            .videoCodec('libx264') // Use H.264 video codec for compatibility
+            .output(outputPath);
+
+        ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'applyBoxBlur').run();
     });
 };

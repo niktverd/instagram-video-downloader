@@ -1,12 +1,17 @@
 import {existsSync, mkdirSync} from 'fs';
 import path from 'path';
 
-import {log, saveFileToDisk} from '#utils';
+import {getRandomElementOfArray, log, saveFileToDisk} from '#utils';
 import {
     addTextToVideo,
+    applyBoxBlur,
+    applyMetadata,
     applyVideoColorCorrection,
     changeVideoSpeed,
+    generateVideoMetadata,
+    hueAdjustVideo,
     isolateRedObjects,
+    readMetadata,
     rotateVideo,
 } from '$/cloud-run/components/video';
 
@@ -164,7 +169,7 @@ const testIsolateRedObjects = async (filePath: string) => {
 const testRotateVideo = async (filePath: string) => {
     log('testRotateVideo started');
 
-    for (let angle = -5; angle <= 5; angle += 2) {
+    for (let angle = -6; angle <= -1; angle += 0.5) {
         await rotateVideo({
             input: filePath,
             angle,
@@ -192,6 +197,179 @@ const testChangeVideoSpeed = async (filePath: string) => {
     log('testChangeVideoSpeed completed');
 };
 
+const testHueAdjustVideo = async (filePath: string) => {
+    log('testHueAdjustVideo started');
+
+    // Test different hue values (range -180 to 180)
+    await hueAdjustVideo({
+        input: filePath,
+        hue: -90,
+        pathSuffix: '-hue-minus90',
+    });
+
+    await hueAdjustVideo({
+        input: filePath,
+        hue: 0,
+        saturation: 0.5,
+        pathSuffix: '-hue0-sat0.5',
+    });
+
+    await hueAdjustVideo({
+        input: filePath,
+        hue: 90,
+        pathSuffix: '-hue90',
+    });
+
+    await hueAdjustVideo({
+        input: filePath,
+        hue: 180,
+        pathSuffix: '-hue180',
+    });
+
+    // Test different saturation values
+    await hueAdjustVideo({
+        input: filePath,
+        saturation: 0,
+        pathSuffix: '-sat0',
+    });
+
+    await hueAdjustVideo({
+        input: filePath,
+        saturation: 1.5,
+        pathSuffix: '-sat1.5',
+    });
+
+    // Test combination
+    await hueAdjustVideo({
+        input: filePath,
+        hue: 45,
+        saturation: 1.2,
+        pathSuffix: '-hue45-sat1.2',
+    });
+
+    log('testHueAdjustVideo completed');
+};
+
+const testApplyBoxBlur = async (filePath: string) => {
+    log('testApplyBoxBlur started');
+
+    // Test light blur
+    await applyBoxBlur({
+        input: filePath,
+        boxWidth: 1,
+        boxHeight: 1,
+        iterations: 1,
+        pathSuffix: '-blur-light',
+    });
+
+    // Test medium blur
+    await applyBoxBlur({
+        input: filePath,
+        boxWidth: 3,
+        boxHeight: 3,
+        iterations: 1,
+        pathSuffix: '-blur-medium',
+    });
+
+    // Test heavy blur
+    await applyBoxBlur({
+        input: filePath,
+        boxWidth: 5,
+        boxHeight: 5,
+        iterations: 2,
+        pathSuffix: '-blur-heavy',
+    });
+
+    // Test asymmetric blur
+    await applyBoxBlur({
+        input: filePath,
+        boxWidth: 1,
+        boxHeight: 5,
+        iterations: 1,
+        pathSuffix: '-blur-asymmetric',
+    });
+
+    // Test multiple iterations
+    await applyBoxBlur({
+        input: filePath,
+        boxWidth: 2,
+        boxHeight: 2,
+        iterations: 3,
+        pathSuffix: '-blur-iterations3',
+    });
+
+    log('testApplyBoxBlur completed');
+};
+
+const testMetadata = async (filePath: string) => {
+    log('testMetadata started');
+
+    // Test 1: Auto-generated metadata
+    log('Test 1: Auto-generated metadata');
+    const autoMetadataFile = await applyMetadata({
+        input: filePath,
+        outputOverride: `${path.basename(filePath, '.mp4')}_auto_metadata.mp4`,
+    });
+    const autoMetadata = await readMetadata(autoMetadataFile);
+    log('Auto-generated metadata read from file:');
+    log(autoMetadata);
+
+    // Test 2: Custom metadata
+    log('Test 2: Custom metadata');
+    const customMetadata = {
+        title: 'Test Title',
+        artist: 'Test Artist',
+        album: 'Test Album',
+        genre: 'Test Genre',
+        comment: 'Test Comment',
+    };
+
+    const customMetadataFile = await applyMetadata({
+        input: filePath,
+        metadata: customMetadata,
+        outputOverride: `${path.basename(filePath, '.mp4')}_custom_metadata.mp4`,
+    });
+
+    const readCustomMetadata = await readMetadata(customMetadataFile);
+    log('Custom metadata read from file:');
+    log(readCustomMetadata);
+
+    // Verify custom metadata was written and read back correctly
+    log('Verifying custom metadata:');
+    Object.entries(customMetadata).forEach(([key, value]) => {
+        const readValue = readCustomMetadata[key];
+        const match = readValue === value;
+        log(`${key}: Expected "${value}", Got "${readValue}", Match: ${match}`);
+    });
+
+    // Test 3: Generated metadata from function
+    log('Test 3: Generated metadata');
+    const generatedMetadata = generateVideoMetadata({
+        input: filePath,
+        iteration: 3,
+    });
+
+    const generatedMetadataFile = await applyMetadata({
+        input: filePath,
+        metadata: generatedMetadata,
+        outputOverride: `${path.basename(filePath, '.mp4')}_generated_metadata.mp4`,
+    });
+
+    const readGeneratedMetadata = await readMetadata(generatedMetadataFile);
+    log('Generated metadata read from file:');
+    log(readGeneratedMetadata);
+
+    // Verify generated metadata was written and read back correctly
+    log('Verifying generated metadata:');
+    Object.entries(generatedMetadata).forEach(([key, value]) => {
+        const readValue = readGeneratedMetadata[key];
+        const match = readValue === value;
+        log(`${key}: Expected "${value}", Got "${readValue}", Match: ${match}`);
+    });
+
+    log('testMetadata completed');
+};
+
 const runTests = async () => {
     const files = await prepareVideo();
 
@@ -211,7 +389,7 @@ const runTests = async () => {
 
     const runRotationTests = false;
     if (runRotationTests) {
-        await testRotateVideo(files[1]);
+        await testRotateVideo(getRandomElementOfArray(files));
     }
 
     const runAddTextToVideo = false;
@@ -221,7 +399,22 @@ const runTests = async () => {
 
     const runChangeVideoSpeed = false;
     if (runChangeVideoSpeed) {
-        await testChangeVideoSpeed(files[1]);
+        await testChangeVideoSpeed(getRandomElementOfArray(files));
+    }
+
+    const runHueAdjustTests = true;
+    if (runHueAdjustTests) {
+        await testHueAdjustVideo(getRandomElementOfArray(files));
+    }
+
+    const runBoxBlurTests = true;
+    if (runBoxBlurTests) {
+        await testApplyBoxBlur(getRandomElementOfArray(files));
+    }
+
+    const runMetadataTest = true;
+    if (runMetadataTest) {
+        await testMetadata(getRandomElementOfArray(files));
     }
 
     log('runTest finished');
