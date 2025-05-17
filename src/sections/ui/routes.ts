@@ -17,6 +17,7 @@ import {
     getAccountBySlugGet,
     getAllAccountsGet,
     getAllInstagramMediaContainersGet,
+    getAllPreparedVideosGet,
     getAllScenariosGet,
     getAllSourcesGet,
     getAllUsersGet,
@@ -62,6 +63,7 @@ router.get('/get-all-users', getAllUsersGet);
 router.get('/get-all-sources', getAllSourcesGet);
 router.get('/get-one-source', getOneSourceGet);
 router.get('/get-all-instagram-media-containers', getAllInstagramMediaContainersGet);
+router.get('/get-all-prepared-videos', getAllPreparedVideosGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);

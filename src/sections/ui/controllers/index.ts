@@ -5,3 +5,4 @@ export * from './scenarios.controller';
 export * from './users.controller';
 export * from './sources.controller';
 export * from './instagram-media-containers.controller';
+export * from './prepared-videos.controller';
