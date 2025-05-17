@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Transaction} from 'objection';
+import {OrderByDirection, Transaction} from 'objection';
 
 import {PreparedVideo} from '../models/PreparedVideo';
 
@@ -8,10 +8,6 @@ import db from './utils';
 import {
     CreatePreparedVideoParamsSchema,
     UpdatePreparedVideoParamsSchema,
-    DeletePreparedVideoParamsSchema as _DeletePreparedVideoParamsSchema,
-    GetAllPreparedVideosParamsSchema as _GetAllPreparedVideosParamsSchema,
-    GetOnePreparedVideoParamsSchema as _GetOnePreparedVideoParamsSchema,
-    GetPreparedVideoByIdParamsSchema as _GetPreparedVideoByIdParamsSchema,
 } from '#schemas/handlers/preparedVideo';
 import {
     CreatePreparedVideoParams,
@@ -54,11 +50,27 @@ export async function getPreparedVideoById(
 }
 
 export async function getAllPreparedVideos(
-    _params: GetAllPreparedVideosParams,
+    params: GetAllPreparedVideosParams,
     trx?: Transaction,
 ): Promise<GetAllPreparedVideosResponse> {
-    const preparedVideos = await PreparedVideo.query(trx || db);
-    return preparedVideos;
+    const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
+
+    const query = PreparedVideo.query(trx || db);
+
+    if (sortBy) {
+        query.orderBy(sortBy, sortOrder as OrderByDirection);
+    }
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    // Execute the query with pagination
+    const result = await query.page(pageNumber - 1, limitNumber); // Objection uses 0-based page indexing
+
+    return {
+        preparedVideos: result.results,
+        count: result.total,
+    };
 }
 
 export async function updatePreparedVideo(

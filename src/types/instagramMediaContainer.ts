@@ -1,12 +1,12 @@
 import {z} from 'zod';
 
 import {
-    CreateInstagramMediaContainerParamsSchema as _CreateInstagramMediaContainerParamsSchema,
-    DeleteInstagramMediaContainerParamsSchema as _DeleteInstagramMediaContainerParamsSchema,
-    GetAllInstagramMediaContainersParamsSchema as _GetAllInstagramMediaContainersParamsSchema,
-    GetInstagramMediaContainerByIdParamsSchema as _GetInstagramMediaContainerByIdParamsSchema,
-    GetLimitedInstagramMediaContainersParamsSchema as _GetLimitedInstagramMediaContainersParamsSchema,
-    UpdateInstagramMediaContainerParamsSchema as _UpdateInstagramMediaContainerParamsSchema,
+    // CreateInstagramMediaContainerParamsSchema,
+    DeleteInstagramMediaContainerParamsSchema,
+    GetAllInstagramMediaContainersParamsSchema,
+    GetInstagramMediaContainerByIdParamsSchema,
+    GetLimitedInstagramMediaContainersParamsSchema,
+    UpdateInstagramMediaContainerParamsSchema,
 } from '#schemas/handlers/instagramMediaContainer';
 import {InstagramMediaContainerSchema} from '#schemas/models/instagramMediaContainer';
 
@@ -16,26 +16,26 @@ export type CreateInstagramMediaContainerParams = Omit<IInstagramMediaContainer,
 export type CreateInstagramMediaContainerResponse = IInstagramMediaContainer;
 
 export type GetInstagramMediaContainerByIdParams = z.infer<
-    typeof _GetInstagramMediaContainerByIdParamsSchema
+    typeof GetInstagramMediaContainerByIdParamsSchema
 >;
 export type GetInstagramMediaContainerByIdResponse = IInstagramMediaContainer;
 
 export type GetAllInstagramMediaContainersParams = z.infer<
-    typeof _GetAllInstagramMediaContainersParamsSchema
+    typeof GetAllInstagramMediaContainersParamsSchema
 >;
 export type GetAllInstagramMediaContainersResponse = IInstagramMediaContainer[];
 
 export type UpdateInstagramMediaContainerParams = z.infer<
-    typeof _UpdateInstagramMediaContainerParamsSchema
+    typeof UpdateInstagramMediaContainerParamsSchema
 >;
 export type UpdateInstagramMediaContainerResponse = IInstagramMediaContainer;
 
 export type DeleteInstagramMediaContainerParams = z.infer<
-    typeof _DeleteInstagramMediaContainerParamsSchema
+    typeof DeleteInstagramMediaContainerParamsSchema
 >;
 export type DeleteInstagramMediaContainerResponse = number;
 
 export type GetLimitedInstagramMediaContainersParams = z.infer<
-    typeof _GetLimitedInstagramMediaContainersParamsSchema
+    typeof GetLimitedInstagramMediaContainersParamsSchema
 >;
 export type GetLimitedInstagramMediaContainersResponse = IInstagramMediaContainer[];

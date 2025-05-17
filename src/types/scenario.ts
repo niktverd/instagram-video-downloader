@@ -1,12 +1,12 @@
 import {z} from 'zod';
 
 import {
-    CreateScenarioParamsSchema as _CreateScenarioParamsSchema,
-    DeleteScenarioParamsSchema as _DeleteScenarioParamsSchema,
-    GetAllScenariosParamsSchema as _GetAllScenariosParamsSchema,
-    GetScenarioByIdParamsSchema as _GetScenarioByIdParamsSchema,
-    GetScenarioBySlugParamsSchema as _GetScenarioBySlugParamsSchema,
-    UpdateScenarioParamsSchema as _UpdateScenarioParamsSchema,
+    // CreateScenarioParamsSchema,
+    DeleteScenarioParamsSchema,
+    GetAllScenariosParamsSchema,
+    GetScenarioByIdParamsSchema,
+    GetScenarioBySlugParamsSchema,
+    UpdateScenarioParamsSchema,
 } from '#schemas/handlers/scenario';
 import {ScenarioSchema} from '#schemas/models/scenario';
 import {
@@ -40,17 +40,17 @@ export type ScenarioV4 =
 export type CreateScenarioParams = Omit<IScenario, 'id'>;
 export type CreateScenarioResponse = IScenario;
 
-export type GetScenarioByIdParams = z.infer<typeof _GetScenarioByIdParamsSchema>;
+export type GetScenarioByIdParams = z.infer<typeof GetScenarioByIdParamsSchema>;
 export type GetScenarioByIdResponse = IScenario;
 
-export type GetScenarioBySlugParams = z.infer<typeof _GetScenarioBySlugParamsSchema>;
+export type GetScenarioBySlugParams = z.infer<typeof GetScenarioBySlugParamsSchema>;
 export type GetScenarioBySlugResponse = IScenario;
 
-export type GetAllScenariosParams = z.infer<typeof _GetAllScenariosParamsSchema>;
+export type GetAllScenariosParams = z.infer<typeof GetAllScenariosParamsSchema>;
 export type GetAllScenariosResponse = IScenario[];
 
-export type UpdateScenarioParams = z.infer<typeof _UpdateScenarioParamsSchema>;
+export type UpdateScenarioParams = z.infer<typeof UpdateScenarioParamsSchema>;
 export type UpdateScenarioResponse = IScenario;
 
-export type DeleteScenarioParams = z.infer<typeof _DeleteScenarioParamsSchema>;
+export type DeleteScenarioParams = z.infer<typeof DeleteScenarioParamsSchema>;
 export type DeleteScenarioResponse = number;

@@ -10,7 +10,14 @@ export const GetPreparedVideoByIdParamsSchema = z
     })
     .strict();
 
-export const GetAllPreparedVideosParamsSchema = z.object({}).strict();
+export const GetAllPreparedVideosParamsSchema = z
+    .object({
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sortBy: z.string().optional(),
+        sortOrder: z.string().optional(),
+    })
+    .strict();
 
 export const UpdatePreparedVideoParamsSchema = CreatePreparedVideoParamsSchema.partial()
     .extend({
