@@ -1,12 +1,11 @@
 # Knip report
 
-## Unused files (8)
+## Unused files (7)
 
 * src/config/database.ts
 * src/sections/cloud-run/components/scenarios/CoverWithImage.ts
 * src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
 * src/sections/cloud-run/components/scenarios/common.ts
-* src/sections/ui/controllers/prepared-videos.controller.ts
 * src/services/UserService.ts
 * src/tests/requests/imitateInstagramMessageWebhook.ts
 * src/utils/scenarios.ts
