@@ -22,6 +22,7 @@ import {
     getAllSourcesGet,
     getAllUsersGet,
     getOneSourceGet,
+    getScenarioByIdGet,
     getUserByEmailGet,
     getUserByIdGet,
     uiConvertImageToVideo,
@@ -47,6 +48,7 @@ const router = expressRouter();
 // GET routes
 router.get('/get-media-posts', uiGetMediaPosts);
 router.get('/get-scenarios', getAllScenariosGet);
+router.get('/get-scenario-by-id', getScenarioByIdGet);
 router.get('/get-accounts', getAllAccountsGet);
 router.get('/get-account-by-id', getAccountByIdGet);
 router.get('/get-account-by-slug', getAccountBySlugGet);

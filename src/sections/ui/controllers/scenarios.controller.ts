@@ -4,6 +4,7 @@ import {
     createScenario,
     deleteScenario,
     getAllScenarios,
+    getScenarioById,
     updateScenario,
     wrapper,
 } from '../../../db';
@@ -12,6 +13,7 @@ import {
     CreateScenarioParamsSchema,
     DeleteScenarioParamsSchema,
     GetAllScenariosParamsSchema,
+    GetScenarioByIdParamsSchema,
     UpdateScenarioParamsSchema,
 } from '#schemas/handlers/scenario';
 import {
@@ -21,6 +23,8 @@ import {
     DeleteScenarioResponse,
     GetAllScenariosParams,
     GetAllScenariosResponse,
+    GetScenarioByIdParams,
+    GetScenarioByIdResponse,
     UpdateScenarioParams,
     UpdateScenarioResponse,
 } from '#types';
@@ -31,6 +35,12 @@ import {
 export const getAllScenariosGet = wrapper<GetAllScenariosParams, GetAllScenariosResponse>(
     getAllScenarios,
     GetAllScenariosParamsSchema,
+    'GET',
+);
+
+export const getScenarioByIdGet = wrapper<GetScenarioByIdParams, GetScenarioByIdResponse>(
+    getScenarioById,
+    GetScenarioByIdParamsSchema,
     'GET',
 );
 
