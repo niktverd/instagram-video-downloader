@@ -6,26 +6,17 @@ import {InstagramMediaContainer} from '../models/InstagramMediaContainer';
 import db from './utils';
 
 import {
-    CreateInstagramMediaContainerParamsSchema,
-    UpdateInstagramMediaContainerParamsSchema,
-    DeleteInstagramMediaContainerParamsSchema as _DeleteInstagramMediaContainerParamsSchema,
-    GetAllInstagramMediaContainersParamsSchema as _GetAllInstagramMediaContainersParamsSchema,
-    GetInstagramMediaContainerByIdParamsSchema as _GetInstagramMediaContainerByIdParamsSchema,
-    GetLimitedInstagramMediaContainersParamsSchema as _GetLimitedInstagramMediaContainersParamsSchema,
-} from '#schemas/handlers/instagramMediaContainer';
-import {
     CreateInstagramMediaContainerParams,
     CreateInstagramMediaContainerResponse,
     DeleteInstagramMediaContainerParams,
     DeleteInstagramMediaContainerResponse,
     GetAllInstagramMediaContainersParams,
-    GetAllInstagramMediaContainersResponse,
     GetInstagramMediaContainerByIdParams,
     GetInstagramMediaContainerByIdResponse,
     GetLimitedInstagramMediaContainersParams,
     GetLimitedInstagramMediaContainersResponse,
+    IInstagramMediaContainer,
     UpdateInstagramMediaContainerParams,
-    IInstagramMediaContainer as _IInstagramMediaContainer,
     UpdateInstagramMediaContainerResponse as _UpdateInstagramMediaContainerResponse,
 } from '#types';
 
@@ -33,8 +24,7 @@ export async function createInstagramMediaContainer(
     params: CreateInstagramMediaContainerParams,
 ): Promise<CreateInstagramMediaContainerResponse> {
     return await db.transaction(async (trx) => {
-        const validatedParams = CreateInstagramMediaContainerParamsSchema.parse(params);
-        const preparedVideo = await InstagramMediaContainer.query(trx).insert(validatedParams);
+        const preparedVideo = await InstagramMediaContainer.query(trx).insert(params);
 
         return preparedVideo;
     });
@@ -54,18 +44,32 @@ export async function getInstagramMediaContainerById(
 }
 
 export async function getAllInstagramMediaContainers(
-    _params: GetAllInstagramMediaContainersParams,
+    params: GetAllInstagramMediaContainersParams,
     trx?: Transaction,
-): Promise<GetAllInstagramMediaContainersResponse> {
-    const preparedVideos = await InstagramMediaContainer.query(trx || db);
-    return preparedVideos;
+): Promise<{mediaContainers: IInstagramMediaContainer[]; count: number}> {
+    const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
+    const query = InstagramMediaContainer.query(trx || db);
+
+    if (sortBy) {
+        query.orderBy(sortBy, sortOrder as 'asc' | 'desc');
+    }
+
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    const result = await query.page(pageNumber - 1, limitNumber);
+
+    return {
+        mediaContainers: result.results,
+        count: result.total,
+    };
 }
 
 export async function updateInstagramMediaContainer(
     params: UpdateInstagramMediaContainerParams,
     trx?: Transaction,
 ): Promise<InstagramMediaContainer> {
-    const {id, ...updateData} = UpdateInstagramMediaContainerParamsSchema.parse(params);
+    const {id, ...updateData} = params;
 
     return await (trx || db).transaction(async (t) => {
         const preparedVideo = await InstagramMediaContainer.query(t).patchAndFetchById(

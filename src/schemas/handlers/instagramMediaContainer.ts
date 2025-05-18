@@ -12,7 +12,14 @@ export const GetInstagramMediaContainerByIdParamsSchema = z
     })
     .strict();
 
-export const GetAllInstagramMediaContainersParamsSchema = z.object({}).strict();
+export const GetAllInstagramMediaContainersParamsSchema = z
+    .object({
+        page: z.string().optional(),
+        limit: z.string().optional(),
+        sortBy: z.string().optional(),
+        sortOrder: z.string().optional(),
+    })
+    .strict();
 
 export const UpdateInstagramMediaContainerParamsSchema =
     CreateInstagramMediaContainerParamsSchema.partial()

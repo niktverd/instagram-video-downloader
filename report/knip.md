@@ -14,9 +14,9 @@
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
-| typescript-json-schema | package.json:76:6 | error    |
-| dotenv-cli             | package.json:59:6 | error    |
-| pg                     | package.json:72:6 | error    |
+| typescript-json-schema | package.json:77:6 | error    |
+| dotenv-cli             | package.json:60:6 | error    |
+| pg                     | package.json:73:6 | error    |
 
 ## Unused exports (5)
 

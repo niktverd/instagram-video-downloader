@@ -38,7 +38,8 @@
     "migrate:make": "knex migrate:make",
     "migrate:rollback": "knex migrate:rollback",
     "migrate:firestore": "ts-node src/scripts/migrateToPostgres.ts",
-    "generate-types": "npx ts-node generate-types.ts"
+    "generate-types": "npx ts-node generate-types.ts",
+    "gt": "npx ts-node generate-types.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
