@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 
+import {getAccountById} from '#src/db';
 import {log, logError} from '#utils';
 import {
     getInstagramInsights,
@@ -10,21 +11,22 @@ import {
 import {getAccounts} from '$/shared';
 
 export const uiGetInsights = async (req: Request, res: Response) => {
-    const {id: accountName} = req.query;
+    const {id} = req.query;
 
     try {
-        if (!accountName) {
-            throw new Error('accoutn name is not provided');
-        }
-        const accounts = await getAccounts();
-        const account = accounts.find(({id}) => id.toString() === accountName);
+        const account = await getAccountById({id: Number(id)});
         if (!account) {
-            throw new Error(`accoutn with name ${accountName} was not found`);
+            throw new Error(`account with id ${id} was not found`);
         }
-        const insight = await getInstagramInsights(account.token);
+        if (account.token) {
+            const insight = await getInstagramInsights(account.token);
 
-        log(insight);
-        res.status(200).send(insight);
+            log(insight);
+            res.status(200).send(insight);
+            return;
+        }
+
+        res.status(400).send({message: 'account token is unavailable'});
     } catch (error) {
         log(error);
         logError(error);
@@ -42,7 +44,7 @@ export const uiGetInstagramUserById = async (req: Request, res: Response) => {
         const accounts = await getAccounts();
         const account = accounts.find(({id}) => id.toString() === accountName);
         if (!account) {
-            throw new Error(`accoutn with name ${accountName} was not found`);
+            throw new Error(`account with name ${accountName} was not found`);
         }
         const user = await getInstagramUserNameById(userId as string, account.token);
 
@@ -65,7 +67,7 @@ export const uiGetInstagramUserIdByMediaId = async (req: Request, res: Response)
         const accounts = await getAccounts();
         const account = accounts.find(({id}) => id.toString() === accountName);
         if (!account) {
-            throw new Error(`accoutn with name ${accountName} was not found`);
+            throw new Error(`account with name ${accountName} was not found`);
         }
         const owner = await getVideoOwnerByVideoId({
             reelVideoId: reelVideoId as string,

@@ -275,3 +275,19 @@ export const prepareCaption = (texts: IScenario['texts'] | undefined) => {
 
     return [linkToAnotherAccount, intro, main, outro].filter(Boolean).join('\n');
 };
+
+export const queryToNumberArray = (val: unknown): number[] => {
+    if (!val) {
+        return [];
+    }
+    if (Array.isArray(val)) {
+        return val.map(Number).filter((n) => !isNaN(n));
+    }
+    if (typeof val === 'string') {
+        return [Number(val)].filter((n) => !isNaN(n));
+    }
+    if (typeof val === 'number') {
+        return [val];
+    }
+    return [];
+};

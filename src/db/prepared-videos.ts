@@ -53,7 +53,15 @@ export async function getAllPreparedVideos(
     params: GetAllPreparedVideosParams,
     trx?: Transaction,
 ): Promise<GetAllPreparedVideosResponse> {
-    const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
+    const {
+        page = 1,
+        limit = 10,
+        sortBy,
+        sortOrder = 'desc',
+        scenarioIds,
+        sourceIds,
+        accountIds,
+    } = params;
 
     const query = PreparedVideo.query(trx || db);
 
@@ -63,6 +71,18 @@ export async function getAllPreparedVideos(
 
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
+
+    if (scenarioIds) {
+        query.whereIn('scenarioId', scenarioIds);
+    }
+
+    if (sourceIds) {
+        query.whereIn('sourceId', sourceIds);
+    }
+
+    if (accountIds) {
+        query.whereIn('accountId', accountIds);
+    }
 
     // Execute the query with pagination
     const result = await query.page(pageNumber - 1, limitNumber); // Objection uses 0-based page indexing
