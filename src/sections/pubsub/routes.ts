@@ -1,13 +1,13 @@
 import {Router as expressRouter} from 'express';
 
-import {pubsubHandler, pushMessageToPubSub} from './controllers';
+import {publishBulkRunScenarioMessagesByIdsPost, pushPubSubTestPost} from './controllers';
 
 const router = expressRouter();
 
 // GET routes
-router.get('/push-test', pushMessageToPubSub);
+router.get('/push-test', pushPubSubTestPost);
 
 // POST routes
-router.post('/handler', pubsubHandler);
+router.post('/shedule-source-video-creation', publishBulkRunScenarioMessagesByIdsPost);
 
 export default router;

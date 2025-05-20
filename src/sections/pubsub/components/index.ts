@@ -1,109 +1,78 @@
-/**
- * Utility for interacting with Google Cloud Pub/Sub
- * This file provides functions for publishing messages to Pub/Sub topics
- */
+import {PublishBulkRunScenarioMessagesByIdsParams, PushPubSubTestParams} from '#src/types/pubsub';
+import {PubSubAction, PubSubTopic, log, logError} from '#utils';
 
-import {PubSubAction, PubSubPayload, PubSubTopic} from './constants';
-import {log, logError} from './logging';
-
-import {GetAllAccountsResponse, IScenario} from '#types';
-
-// eslint-disable-next-line valid-jsdoc
-/**
- * Publishes a message to a Pub/Sub topic via HTTP POST
- * This can be used from the client or server side to send messages
- * to our Pub/Sub topic
- */
-export const publishMessageToPubSub = async (
-    topicName: string,
-    message: PubSubPayload,
-    attributes: Record<string, string> = {},
-): Promise<boolean> => {
+export const pushPubSubTest = async (params: PushPubSubTestParams) => {
+    const {accountId, scenarioId, sourceId} = params;
     try {
-        const projectId = process.env.GCP_PROJECT_ID;
-        log('[pubsub-client] Project ID:', projectId, 'topicName:', topicName);
-        if (!projectId) {
-            throw new Error('GCP_PROJECT_ID environment variable is not set');
+        const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;
+        log('[pubsub] Using topic:', topic);
+
+        const {publishMessageToPubSub} = await import('../../../utils/pubsub-client');
+        const pubsubProjectId = process.env.GCP_PROJECT_ID || '';
+        log('[pubsub] Project ID:', pubsubProjectId);
+        log('[pubsub] Using service account authentication');
+        log(
+            '[pubsub] GOOGLE_APPLICATION_CREDENTIALS:',
+            process.env.GOOGLE_APPLICATION_CREDENTIALS || 'not set',
+        );
+
+        if (!pubsubProjectId) {
+            log('[pubsub] Error: Missing project ID');
+            throw new Error('Missing project ID');
         }
 
-        log('[pubsub-client] Publishing message to topic:', topicName);
-        log('[pubsub-client] Project ID:', projectId);
+        const testMessage = {
+            data: 'This is a test message for Instagram video events',
+            timestamp: new Date().toISOString(),
+            ...(accountId && {accountId}),
+            ...(scenarioId && {scenarioId}),
+            ...(sourceId && {sourceId}),
+        };
+        log('[pubsub] Test message:', testMessage);
 
-        // Import Google Cloud Pub/Sub client
-        const {PubSub} = await import('@google-cloud/pubsub');
+        const attributes = {
+            type: PubSubAction.TEST,
+            timestamp: new Date().toISOString(),
+            source: 'test-endpoint',
+            ...(accountId && {accountId}),
+            ...(scenarioId && {scenarioId}),
+            ...(sourceId && {sourceId}),
+        };
+        log('[pubsub] Message attributes:', attributes);
 
-        // Create a client, it will automatically detect credentials
-        // from GOOGLE_APPLICATION_CREDENTIALS environment variable
-        const pubsubClient = new PubSub({projectId});
-        log('[pubsub-client] Created PubSub client');
+        const success = await publishMessageToPubSub(topic, testMessage, attributes);
+        log('[pubsub] Publish result:', success);
 
-        // Get a reference to the topic
-        const topic = pubsubClient.topic(topicName);
-
-        // Convert message to Buffer
-        const dataBuffer = Buffer.from(JSON.stringify(message));
-
-        // Publish the message
-        log('[pubsub-client] Publishing message...');
-        const messageId = await topic.publishMessage({data: dataBuffer, attributes});
-        log('[pubsub-client] Published message with ID:', messageId);
-        return true;
+        if (success) {
+            return {
+                success: true,
+                message: 'Test message published to Pub/Sub',
+                topic,
+                authMethod: 'service_account',
+                ...(accountId && {accountId}),
+                ...(scenarioId && {scenarioId}),
+                ...(sourceId && {sourceId}),
+            };
+        } else {
+            throw new Error('Failed to publish test message to Pub/Sub');
+        }
     } catch (error) {
-        logError('[pubsub-client] Error publishing message to Pub/Sub:', error);
-        return false;
+        logError('Error in push-pubsub test endpoint:', error);
+        throw error;
     }
 };
 
 // eslint-disable-next-line valid-jsdoc
 /**
- * Helper function for creating a message with proper attributes for different actions
+ * Publish messages in bulk for each accountId and scenarioId pair
+ * This version takes explicit arrays of accountIds and scenarioIds
  */
-export const createPubSubMessage = (
-    action: PubSubAction,
-    payload: PubSubPayload,
-): {
-    message: PubSubPayload;
-    attributes: Record<string, string>;
-} => {
-    return {
-        message: payload,
-        attributes: {
-            type: action,
-            timestamp: new Date().toISOString(),
-        },
-    };
-};
-
-// eslint-disable-next-line valid-jsdoc
-/**
- * Request to run a scenario
- */
-export const requestRunScenario = async (
-    sourceId: string,
-    scenarioId: string,
-    accountId: string,
-): Promise<boolean> => {
-    const {message, attributes} = createPubSubMessage(PubSubAction.RUN_SCENARIO, {
-        sourceId,
-        scenarioId,
-        accountId,
-        requestedAt: new Date().toISOString(),
-    });
-
-    return publishMessageToPubSub(PubSubTopic.INSTAGRAM_VIDEO_EVENTS, message, attributes);
-};
-
-// eslint-disable-next-line valid-jsdoc
-/**
- * Publish messages in bulk for each account and scenario pair
- * This helps reduce API calls when sending similar messages for multiple accounts and scenarios
- */
-export const publishBulkRunScenarioMessages = async (
-    sourceId: number,
-    accounts: GetAllAccountsResponse,
+export const publishBulkRunScenarioMessagesByIds = async (
+    params: PublishBulkRunScenarioMessagesByIdsParams,
 ): Promise<{success: boolean; count: number}> => {
     try {
-        log('publishBulkRunScenarioMessages');
+        const {sourceId, accountIds, scenarioIds} = params;
+        log('publishBulkRunScenarioMessagesByIds');
         const projectId = process.env.GCP_PROJECT_ID;
         log('projectId:', projectId);
         if (!projectId) {
@@ -167,11 +136,8 @@ export const publishBulkRunScenarioMessages = async (
         const promises: Promise<boolean>[] = [];
 
         // Create all messages and submit them to the batch publisher
-        for (const account of accounts) {
-            for (const scenario of (account.availableScenarios as IScenario[]) || []) {
-                const accountId = account.id;
-                const scenarioId = scenario.id;
-
+        for (const accountId of accountIds) {
+            for (const scenarioId of scenarioIds) {
                 if (!accountId || !scenarioId) {
                     continue;
                 }
@@ -231,10 +197,10 @@ export const publishBulkRunScenarioMessages = async (
             return {success: true, count: successCount};
         } else {
             log('[pubsub-client] No messages were successfully published');
-            return {success: false, count: 0};
+            throw new Error('No messages were successfully published');
         }
     } catch (error) {
         logError('[pubsub-client] Error publishing bulk messages to Pub/Sub:', error);
-        return {success: false, count: 0};
+        throw error;
     }
 };
