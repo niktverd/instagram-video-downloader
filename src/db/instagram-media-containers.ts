@@ -96,8 +96,8 @@ export async function deleteInstagramMediaContainer(
 export async function getLimitedInstagramMediaContainers(
     params: GetLimitedInstagramMediaContainersParams,
 ): Promise<GetLimitedInstagramMediaContainersResponse> {
-    const {accountId, limit = 3, notPublished, random} = params;
-    const query = InstagramMediaContainer.query(db);
+    const {accountId, limit = 3, notPublished, random, isBlocked = false} = params;
+    const query = InstagramMediaContainer.query(db).where('isBlocked', isBlocked);
 
     if (accountId) {
         query.where('accountId', accountId);

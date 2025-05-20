@@ -40,5 +40,6 @@ export const GetLimitedInstagramMediaContainersParamsSchema = z
         limit: z.number().optional(),
         notPublished: z.boolean().optional(),
         random: z.boolean().optional(),
+        isBlocked: z.boolean().optional(),
     })
     .strict();
