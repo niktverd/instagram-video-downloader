@@ -134,8 +134,8 @@ if (emitResult.emitSkipped) {
                 // Fix paths for imports from '../types/enums' in schema files
                 if (filePath.includes('/schemas/')) {
                     content = content.replace(
-                        /from\s+['"]\.\.\/types\/enums['"]/g,
-                        'from "../../types/enums"',
+                        /from\s+['"]\.\.\/\.\.\/types\/enums['"]/g,
+                        'from "../types/enums"',
                     );
                 }
 
