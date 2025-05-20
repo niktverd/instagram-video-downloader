@@ -32,9 +32,9 @@
 
 | Name        | Location              | Severity |
 | :---------- | :-------------------- | :------- |
-| RandomIndex | src/constants.ts:34:5 | error    |
-| Min2        | src/constants.ts:22:5 | error    |
-| Min1        | src/constants.ts:23:5 | error    |
+| RandomIndex | src/constants.ts:35:5 | error    |
+| Min2        | src/constants.ts:23:5 | error    |
+| Min1        | src/constants.ts:24:5 | error    |
 
 ## Duplicate exports (4)
 
