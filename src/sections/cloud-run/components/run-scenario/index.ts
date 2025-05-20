@@ -17,9 +17,8 @@ import {getWorkingDirectoryForVideo, log} from '#utils';
  * Processes messages sent from Pub/Sub to our webhook endpoint
  */
 export const runScenarioHandler = async ({
-    accountId,
-    scenarioId,
-    sourceId,
+    message: {data, messageId, publishTime, attributes: attributes},
+    subscription: _subscription,
 }: CloudRunCreateScenarioVideoParams): Promise<void> => {
     // Remove express req/res, just business logic
     // Pub/Sub messages are received as base64-encoded strings
@@ -28,8 +27,19 @@ export const runScenarioHandler = async ({
     // Generate a unique request ID for logging
     writeFileSync('reqId.log', randomUUID());
 
+    // Decode the base64 data from the Pub/Sub message
+    const decodedData = Buffer.from(data, 'base64').toString();
+    const {accountId, scenarioId, sourceId} = JSON.parse(decodedData);
+
     const logLocal = log.bind(null, 'local', `${accountId}-${scenarioId}-${sourceId}`);
-    logLocal('Received runScenarioHandler call', {accountId, scenarioId, sourceId});
+    logLocal('attributes', {attributes});
+    logLocal('Received runScenarioHandler call', {
+        accountId,
+        scenarioId,
+        sourceId,
+        messageId,
+        publishTime,
+    });
 
     if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId})) {
         logLocal('Prepared video already exists');

@@ -1,7 +1,12 @@
 import {z} from 'zod';
 
+// Schema for the body in a Pub/Sub push message
 export const CloudRunCreateScenarioVideoSchema = z.object({
-    accountId: z.coerce.number(),
-    scenarioId: z.coerce.number(),
-    sourceId: z.coerce.number(),
+    message: z.object({
+        data: z.string(), // Base64 encoded string
+        messageId: z.string(),
+        publishTime: z.string(),
+        attributes: z.record(z.string()).optional(),
+    }),
+    subscription: z.string().optional(),
 });

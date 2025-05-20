@@ -132,7 +132,12 @@ if (emitResult.emitSkipped) {
                 content = content.replace(/export\s+declare\s+enum/g, 'export enum');
 
                 // Fix paths for imports from '../types/enums' in schema files
-                if (filePath.includes('/schemas/')) {
+                if (filePath.includes('/schemas/models/')) {
+                    content = content.replace(
+                        /from\s+['"]\.\.\/types\/enums['"]/g,
+                        'from "../../types/enums"',
+                    );
+                } else if (filePath.includes('/schemas/')) {
                     content = content.replace(
                         /from\s+['"]\.\.\/\.\.\/types\/enums['"]/g,
                         'from "../types/enums"',

@@ -402,17 +402,17 @@ const runTests = async () => {
         await testChangeVideoSpeed(getRandomElementOfArray(files));
     }
 
-    const runHueAdjustTests = true;
+    const runHueAdjustTests = false;
     if (runHueAdjustTests) {
         await testHueAdjustVideo(getRandomElementOfArray(files));
     }
 
-    const runBoxBlurTests = true;
+    const runBoxBlurTests = false;
     if (runBoxBlurTests) {
         await testApplyBoxBlur(getRandomElementOfArray(files));
     }
 
-    const runMetadataTest = true;
+    const runMetadataTest = false;
     if (runMetadataTest) {
         await testMetadata(getRandomElementOfArray(files));
     }

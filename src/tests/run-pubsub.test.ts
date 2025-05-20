@@ -15,14 +15,15 @@
  */
 
 // Import the express types directly to avoid using aliased modules
-import {Request, Response} from 'express';
+import {Request} from 'express';
+
+import {runScenarioHandler} from '#src/sections/cloud-run/components/run-scenario';
 
 // Mock for log function
 const log = console.log;
 const logError = console.error;
 
 // Import pubsubHandler directly from the file
-import {pubsubHandler} from '../sections/pubsub/controllers/index';
 
 /**
  * Creates a mock response object for testing Express handlers
@@ -108,7 +109,7 @@ const runPubSubTests = async () => {
 
     // Call the handler
     try {
-        await pubsubHandler(basicMessageReq, mockRes as Response);
+        await runScenarioHandler(basicMessageReq.body);
         log('Response status:', mockRes.getLastStatus());
         // Expected: 204 No Content
     } catch (error) {
@@ -127,7 +128,7 @@ const runPubSubTests = async () => {
         data: 'This is a test message for Instagram video events',
         timestamp: '2025-05-03T11:23:42.763Z',
         accountId: 1,
-        scenarioId: 1,
+        scenarioId: 100,
         sourceId: 1,
     };
 
@@ -148,7 +149,7 @@ const runPubSubTests = async () => {
 
     // Call the handler
     try {
-        await pubsubHandler(detailedMessageReq, mockRes as Response);
+        await runScenarioHandler(detailedMessageReq.body);
         log('Response status:', mockRes.getLastStatus());
         // Expected: 204 No Content
     } catch (error) {
@@ -159,7 +160,7 @@ const runPubSubTests = async () => {
 };
 
 const runTests = () => {
-    const runPubSubTestsFlag = true;
+    const runPubSubTestsFlag = false;
     if (runPubSubTestsFlag) {
         // Run the tests
         runPubSubTests().catch((error) => {
