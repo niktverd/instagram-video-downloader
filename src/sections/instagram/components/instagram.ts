@@ -17,7 +17,7 @@ import {shuffle} from 'lodash';
 import {firestore, storage} from '#config/firebase';
 import {locations} from '#config/places';
 import casinoAudioNames from '#src/config/casino.audioname.json';
-import {DelayS} from '#src/constants';
+import {DelayMS, DelayS} from '#src/constants';
 import {
     createInstagramMediaContainer,
     getLimitedInstagramMediaContainers,
@@ -26,6 +26,7 @@ import {
 } from '#src/db';
 import {IAccount, MediaPostModelOld} from '#types';
 import {
+    delay,
     getRandomElementOfArray,
     log,
     logError,
@@ -412,6 +413,8 @@ export const publishRandomInstagramContainerForAccount = async (account: IAccoun
                 isBlocked: newAttempts > 3,
                 blockedReason: newAttempts > 3 ? 'Too many attempts' : undefined,
             });
+
+            await delay(DelayMS.Sec5);
         }
     }
 };
