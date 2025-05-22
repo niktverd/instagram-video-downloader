@@ -15,7 +15,6 @@ import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 import {shuffle} from 'lodash';
 
 import {firestore, storage} from '#config/firebase';
-import {locations} from '#config/places';
 import casinoAudioNames from '#src/config/casino.audioname.json';
 import {DelayMS, DelayS} from '#src/constants';
 import {
@@ -24,7 +23,7 @@ import {
     getOnePreparedVideo,
     updateInstagramMediaContainer,
 } from '#src/db';
-import {IAccount, MediaPostModelOld} from '#types';
+import {IAccount, InstagramLocationSource, MediaPostModelOld} from '#types';
 import {
     delay,
     getRandomElementOfArray,
@@ -342,11 +341,18 @@ export const prepareMediaContainersForAccount = async (account: IAccount) => {
     const caption = prepareCaption(preparedVideo.scenario?.texts);
     const videoUrl = preparedVideo.firebaseUrl;
     // const hashtags = [];
+    const scenario = preparedVideo.scenario;
+    const {instagramLocationSource, instagramLocations} = scenario || {};
 
-    const randomLocation = getRandomElementOfArray(locations.usa);
+    const localLocations =
+        instagramLocationSource === InstagramLocationSource.Scenario
+            ? instagramLocations
+            : account.instagramLocations;
+
+    const randomLocation = getRandomElementOfArray(localLocations || []);
     log({randomLocation});
 
-    const locationId = randomLocation.externalId;
+    const locationId = randomLocation?.externalId;
     if (account.token) {
         const result = await createInstagramPostContainer({
             caption,

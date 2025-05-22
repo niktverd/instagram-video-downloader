@@ -18,6 +18,8 @@ export const GetAllInstagramLocationsParamsSchema = z
         limit: z.string().optional(),
         sortBy: z.string().optional(),
         sortOrder: z.string().optional(),
+        groupTextFilter: z.string().optional(),
+        commonTextFilter: z.string().optional(),
     })
     .strict();
 

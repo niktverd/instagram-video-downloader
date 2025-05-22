@@ -51,6 +51,20 @@ export async function getAllInstagramLocations(
         query.orderBy(sortBy, sortOrder as 'asc' | 'desc');
     }
 
+    if (params.groupTextFilter) {
+        query.where('group', 'ilike', `%${params.groupTextFilter}%`);
+    }
+
+    if (params.commonTextFilter) {
+        query.andWhere(function () {
+            this.where('name', 'ilike', `%${params.commonTextFilter}%`).orWhere(
+                'address',
+                'ilike',
+                `%${params.commonTextFilter}%`,
+            );
+        });
+    }
+
     const pageNumber = Number(page);
     const limitNumber = Number(limit);
 

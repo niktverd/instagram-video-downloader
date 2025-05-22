@@ -172,7 +172,7 @@ export async function getOnePreparedVideo(
         query.withGraphFetched('source');
     }
 
-    const preparedVideo = await query.first();
+    const preparedVideo = await query.first().withGraphFetched('scenario');
 
     return preparedVideo;
 }
