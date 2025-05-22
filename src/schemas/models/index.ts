@@ -4,3 +4,4 @@ export {ScenarioSchema} from './scenario';
 export {SourceSchema} from './source';
 export {PreparedVideoSchema} from './preparedVideo';
 export {UserSchema} from './user';
+export {InstagramLocationSchema} from './instagram-location';

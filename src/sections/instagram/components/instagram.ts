@@ -346,7 +346,7 @@ export const prepareMediaContainersForAccount = async (account: IAccount) => {
     const randomLocation = getRandomElementOfArray(locations.usa);
     log({randomLocation});
 
-    const locationId = randomLocation.external_id;
+    const locationId = randomLocation.externalId;
     if (account.token) {
         const result = await createInstagramPostContainer({
             caption,

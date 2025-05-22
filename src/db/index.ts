@@ -5,3 +5,4 @@ export * from './scenario';
 export * from './sources';
 export * from './prepared-videos';
 export * from './instagram-media-containers';
+export * from './instagram-locations';

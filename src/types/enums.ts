@@ -15,3 +15,8 @@ export enum ScenarioType {
     // ScenarioLongVideoWithInjections = 'ScenarioLongVideoWithInjections',
     ScenarioCoverWithGreenUnique = 'ScenarioCoverWithGreenUnique',
 }
+
+export enum InstagramLocationSource {
+    Scenario = 'scenario',
+    Account = 'account',
+}

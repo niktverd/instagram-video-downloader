@@ -1,6 +1,8 @@
 import {z} from 'zod';
 
-import {ScenarioType} from '#src/types/enums';
+import {InstagramLocationSchema} from './instagram-location';
+
+import {InstagramLocationSource, ScenarioType} from '#src/types/enums';
 
 export const ScenarioSchema = z
     .object({
@@ -12,5 +14,12 @@ export const ScenarioSchema = z
         copiedFrom: z.number().nullable().optional(),
         options: z.record(z.any()).optional(),
         texts: z.record(z.any()).optional(),
+        instagramLocationSource: z
+            .nativeEnum(InstagramLocationSource)
+            .default(InstagramLocationSource.Scenario)
+            .optional(),
+
+        // added on request
+        instagramLocations: z.array(InstagramLocationSchema).optional(),
     })
     .strict();

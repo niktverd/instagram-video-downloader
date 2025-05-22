@@ -2,8 +2,10 @@ import {Model} from 'objection';
 
 import {Account} from './Account';
 import {BaseModel} from './BaseModel';
+import {InstagramLocation} from './InstagramLocation';
 
-import {ScenarioType} from '#src/types/enums';
+import {InstagramLocationSource, ScenarioType} from '#src/types/enums';
+import {IInstagramLocation} from '#src/types/instagramLocation';
 import {IScenario} from '#types';
 
 export class Scenario extends BaseModel implements IScenario {
@@ -15,6 +17,10 @@ export class Scenario extends BaseModel implements IScenario {
     copiedFrom?: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     options: Record<string, any> = {};
+    instagramLocationSource: InstagramLocationSource = InstagramLocationSource.Scenario;
+
+    // to add on request
+    instagramLocations?: IInstagramLocation[];
 
     // Table name is the only required property
     static get tableName() {
@@ -34,10 +40,22 @@ export class Scenario extends BaseModel implements IScenario {
                 join: {
                     from: 'scenarios.id',
                     through: {
-                        from: 'account_scenarios.scenarioId',
-                        to: 'account_scenarios.accountId',
+                        from: 'accountScenarios.scenarioId',
+                        to: 'accountScenarios.accountId',
                     },
                     to: 'accounts.id',
+                },
+            },
+            instagramLocations: {
+                relation: Model.ManyToManyRelation,
+                modelClass: InstagramLocation,
+                join: {
+                    from: 'scenarios.id',
+                    through: {
+                        from: 'scenarioInstagramLocations.scenarioId',
+                        to: 'scenarioInstagramLocations.instagramLocationId',
+                    },
+                    to: 'instagramLocations.id',
                 },
             },
         };

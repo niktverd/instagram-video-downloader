@@ -11,13 +11,13 @@ import {
     DeleteInstagramMediaContainerParams,
     DeleteInstagramMediaContainerResponse,
     GetAllInstagramMediaContainersParams,
+    GetAllInstagramMediaContainersResponse,
     GetInstagramMediaContainerByIdParams,
     GetInstagramMediaContainerByIdResponse,
     GetLimitedInstagramMediaContainersParams,
     GetLimitedInstagramMediaContainersResponse,
-    IInstagramMediaContainer,
     UpdateInstagramMediaContainerParams,
-    UpdateInstagramMediaContainerResponse as _UpdateInstagramMediaContainerResponse,
+    UpdateInstagramMediaContainerResponse,
 } from '#types';
 
 export async function createInstagramMediaContainer(
@@ -46,7 +46,7 @@ export async function getInstagramMediaContainerById(
 export async function getAllInstagramMediaContainers(
     params: GetAllInstagramMediaContainersParams,
     trx?: Transaction,
-): Promise<{mediaContainers: IInstagramMediaContainer[]; count: number}> {
+): Promise<GetAllInstagramMediaContainersResponse> {
     const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
     const query = InstagramMediaContainer.query(trx || db);
 
@@ -68,7 +68,7 @@ export async function getAllInstagramMediaContainers(
 export async function updateInstagramMediaContainer(
     params: UpdateInstagramMediaContainerParams,
     trx?: Transaction,
-): Promise<InstagramMediaContainer> {
+): Promise<UpdateInstagramMediaContainerResponse> {
     const {id, ...updateData} = params;
 
     return await (trx || db).transaction(async (t) => {

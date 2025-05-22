@@ -4,11 +4,13 @@ import {clearPreprod} from '../shared';
 
 import {
     createAccountPost,
+    createInstagramLocationPost,
     createInstagramMediaContainerPost,
     createScenarioPost,
     createSourcePost,
     createUserPost,
     deleteAccountDelete,
+    deleteInstagramLocationDelete,
     deleteInstagramMediaContainerDelete,
     deleteScenarioDelete,
     deleteSourceDelete,
@@ -16,6 +18,7 @@ import {
     getAccountByIdGet,
     getAccountBySlugGet,
     getAllAccountsGet,
+    getAllInstagramLocationsGet,
     getAllInstagramMediaContainersGet,
     getAllPreparedVideosGet,
     getAllScenariosGet,
@@ -37,6 +40,7 @@ import {
     uiSplitVideoInTheMiddle,
     uiTestGreenScreen,
     updateAccountPatch,
+    updateInstagramLocationPatch,
     updateInstagramMediaContainerPatch,
     updateScenarioPatch,
     updateSourcePatch,
@@ -66,7 +70,8 @@ router.get('/get-all-sources', getAllSourcesGet);
 router.get('/get-one-source', getOneSourceGet);
 router.get('/get-all-instagram-media-containers', getAllInstagramMediaContainersGet);
 router.get('/get-all-prepared-videos', getAllPreparedVideosGet);
-
+router.get('/get-all-instagram-locations', getAllInstagramLocationsGet);
+// router.get('/get-instagram-location-by-id', getInstagramLocationByIdGet);
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);
 router.post('/test-green-screen', uiTestGreenScreen);
@@ -77,6 +82,7 @@ router.post('/save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
 router.post('/create-user', createUserPost);
 router.post('/create-source', createSourcePost);
 router.post('/create-instagram-media-container', createInstagramMediaContainerPost);
+router.post('/create-instagram-location', createInstagramLocationPost);
 
 // PATCH routes
 router.patch('/patch-scenario', updateScenarioPatch);
@@ -84,7 +90,7 @@ router.patch('/patch-account', updateAccountPatch);
 router.patch('/update-user', updateUserPatch);
 router.patch('/update-source', updateSourcePatch);
 router.patch('/update-instagram-media-container', updateInstagramMediaContainerPatch);
-
+router.patch('/update-instagram-location', updateInstagramLocationPatch);
 // DELETE routes
 router.delete('/clear-proprod-database', clearPreprod);
 router.delete('/delete-user', deleteUserDelete);
@@ -92,5 +98,6 @@ router.delete('/delete-account', deleteAccountDelete);
 router.delete('/delete-scenario', deleteScenarioDelete);
 router.delete('/delete-source', deleteSourceDelete);
 router.delete('/delete-instagram-media-container', deleteInstagramMediaContainerDelete);
+router.delete('/delete-instagram-location', deleteInstagramLocationDelete);
 
 export default router;

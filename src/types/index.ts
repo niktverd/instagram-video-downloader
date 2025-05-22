@@ -101,6 +101,7 @@ export type AccountMediaContainerV3 = {
 export * from './account';
 export * from './scenario';
 export * from './instagramMediaContainer';
+export * from './instagramLocation';
 export * from './source';
 export * from './preparedVideo';
 export * from './user';

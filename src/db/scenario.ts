@@ -45,17 +45,35 @@ export async function createScenario(
         scenarioData.copiedFrom = validatedParams.copiedFrom;
     }
 
-    console.log('scenarioData', scenarioData);
-    const scenario = await Scenario.query(trx || db).insert(scenarioData);
-    console.log('scenario', scenario);
-    return scenario;
+    return await (trx || db).transaction(async (t) => {
+        console.log('scenarioData', scenarioData);
+        const scenario = await Scenario.query(t).insert(scenarioData);
+        console.log('scenario', scenario);
+
+        // Handle instagram locations if provided
+        if (validatedParams.instagramLocations?.length) {
+            const locationRows = validatedParams.instagramLocations.map(
+                ({id: instagramLocationId}) => ({
+                    scenarioId: scenario.id,
+                    instagramLocationId,
+                }),
+            );
+
+            await t('scenarioInstagramLocations').insert(locationRows);
+        }
+
+        return scenario;
+    });
 }
 
 export async function getScenarioById(
     params: GetScenarioByIdParams,
     trx?: Transaction,
 ): Promise<GetScenarioByIdResponse> {
-    const scenario = await Scenario.query(trx || db).findById(params.id);
+    const scenario = await Scenario.query(trx || db)
+        .findById(params.id)
+        .withGraphFetched('instagramLocations');
+
     if (!scenario) {
         throw new Error('Scenario not found');
     }
@@ -69,7 +87,8 @@ export async function getScenarioBySlug(
 ): Promise<GetScenarioBySlugResponse> {
     const scenario = await Scenario.query(trx || db)
         .where('slug', params.slug)
-        .first();
+        .first()
+        .withGraphFetched('instagramLocations');
 
     if (!scenario) {
         throw new Error('Scenario not found');
@@ -82,7 +101,7 @@ export async function getAllScenarios(
     _params: GetAllScenariosParams,
     trx?: Transaction,
 ): Promise<GetAllScenariosResponse> {
-    const scenarios = await Scenario.query(trx || db);
+    const scenarios = await Scenario.query(trx || db).withGraphFetched('instagramLocations');
     return scenarios;
 }
 
@@ -90,7 +109,7 @@ export async function updateScenario(
     params: UpdateScenarioParams,
     trx?: Transaction,
 ): Promise<Scenario> {
-    const {id, ...updateData} = UpdateScenarioParamsSchema.parse(params);
+    const {id, instagramLocations, ...updateData} = UpdateScenarioParamsSchema.parse(params);
 
     // Create a clean update object without undefined/null values that might cause type issues
     const cleanUpdateData: any = {};
@@ -103,8 +122,30 @@ export async function updateScenario(
         cleanUpdateData[key] = val;
     });
 
-    const scenario = await Scenario.query(trx || db).patchAndFetchById(id, cleanUpdateData);
-    return scenario;
+    return await (trx || db).transaction(async (t) => {
+        const scenario = await Scenario.query(t).patchAndFetchById(id, cleanUpdateData);
+        if (!scenario) {
+            throw new Error('Scenario not found');
+        }
+
+        // Handle instagram locations if provided
+        if (instagramLocations !== undefined) {
+            // Delete existing relationships
+            await t('scenarioInstagramLocations').where({scenarioId: id}).del();
+
+            // Add new relationships if any
+            if (instagramLocations?.length) {
+                const locationRows = instagramLocations.map(({id: instagramLocationId}) => ({
+                    scenarioId: id,
+                    instagramLocationId,
+                }));
+
+                await t('scenarioInstagramLocations').insert(locationRows);
+            }
+        }
+
+        return scenario;
+    });
 }
 
 export async function deleteScenario(
