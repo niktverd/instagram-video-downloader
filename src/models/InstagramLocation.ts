@@ -5,14 +5,12 @@ import {IInstagramLocation} from '#src/types/instagramLocation';
 export class InstagramLocation extends BaseModel implements IInstagramLocation {
     id!: number;
     externalId!: string;
-    externalIdSource?: string;
-    name?: string;
-    address?: string;
-    lat?: number;
-    lng?: number;
-    group?: string;
-    createdAt!: string;
-    updatedAt!: string;
+    externalIdSource?: string | null;
+    name?: string | null;
+    address?: string | null;
+    lat?: number | null;
+    lng?: number | null;
+    group?: string | null;
 
     static get tableName() {
         return 'instagramLocations';

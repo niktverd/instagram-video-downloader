@@ -4,11 +4,11 @@ export const InstagramLocationSchema = z
     .object({
         id: z.number().optional(),
         externalId: z.string(),
-        externalIdSource: z.string().optional(),
-        name: z.string().optional(),
-        address: z.string().optional(),
-        lat: z.number().optional(),
-        lng: z.number().optional(),
-        group: z.string().optional(),
+        externalIdSource: z.string().optional().nullable(),
+        name: z.string().optional().nullable(),
+        address: z.string().optional().nullable(),
+        lat: z.number().optional().nullable(),
+        lng: z.number().optional().nullable(),
+        group: z.string().optional().nullable(),
     })
     .strict();

@@ -18,11 +18,9 @@ export const GetScenarioBySlugParamsSchema = z
 
 export const GetAllScenariosParamsSchema = z.object({}).strict();
 
-export const UpdateScenarioParamsSchema = CreateScenarioParamsSchema.partial()
+export const UpdateScenarioParamsSchema = ScenarioSchema.partial()
     .extend({
         id: z.number(),
-        createdAt: z.string(),
-        updatedAt: z.string(),
     })
     .strict();
 
