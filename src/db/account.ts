@@ -85,12 +85,20 @@ export async function getAccountBySlug(
 }
 
 export async function getAllAccounts(
-    _params: GetAllAccountsParams,
+    params: GetAllAccountsParams,
     trx?: Transaction,
 ): Promise<GetAllAccountsResponse> {
-    const accounts = await Account.query(trx || db)
+    const {onlyEnabled = false} = params;
+    const query = Account.query(trx || db)
         .withGraphFetched('availableScenarios')
         .withGraphFetched('instagramLocations');
+
+    if (onlyEnabled) {
+        query.where('enabled', true);
+    }
+
+    const accounts = await query;
+
     return accounts;
 }
 

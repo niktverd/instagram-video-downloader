@@ -138,7 +138,7 @@ export const publishIntagramV4 = async (req: Request, res: Response) => {
     log(req.query);
 
     try {
-        const accounts = await getAllAccounts({});
+        const accounts = await getAllAccounts({onlyEnabled: true});
 
         for (const account of accounts) {
             try {

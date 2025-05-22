@@ -15,7 +15,11 @@ export const GetAccountBySlugParamsSchema = z
     })
     .strict();
 
-export const GetAllAccountsParamsSchema = z.object({}).strict();
+export const GetAllAccountsParamsSchema = z
+    .object({
+        onlyEnabled: z.boolean().optional(),
+    })
+    .strict();
 
 export const UpdateAccountParamsSchema = CreateAccountParamsSchema.partial()
     .extend({
