@@ -4,7 +4,7 @@ import {ScenarioSchema} from './models';
 
 import {ScenarioType} from '#src/types/enums';
 
-export const scenarioBaseSchema = ScenarioSchema;
+export const scenarioBaseSchema = ScenarioSchema.strip();
 
 // export const scenarioAddBannerAtTheEndSchema = scenarioBaseSchema.extend({
 //     type: z.literal(ScenarioType.ScenarioAddBannerAtTheEnd),
