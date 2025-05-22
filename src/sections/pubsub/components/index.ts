@@ -71,7 +71,7 @@ export const publishBulkRunScenarioMessagesByIds = async (
     params: PublishBulkRunScenarioMessagesByIdsParams,
 ): Promise<{success: boolean; count: number}> => {
     try {
-        const {sourceId, accountIds, scenarioIds} = params;
+        const {sourceIds, accountIds, scenarioIds} = params;
         log('publishBulkRunScenarioMessagesByIds');
         const projectId = process.env.GCP_PROJECT_ID;
         log('projectId:', projectId);
@@ -136,52 +136,54 @@ export const publishBulkRunScenarioMessagesByIds = async (
         const promises: Promise<boolean>[] = [];
 
         // Create all messages and submit them to the batch publisher
-        for (const accountId of accountIds) {
-            for (const scenarioId of scenarioIds) {
-                if (!accountId || !scenarioId) {
-                    continue;
+        for (const sourceId of sourceIds) {
+            for (const accountId of accountIds) {
+                for (const scenarioId of scenarioIds) {
+                    if (!accountId || !scenarioId) {
+                        continue;
+                    }
+
+                    totalMessages++;
+
+                    const payload = {
+                        sourceId,
+                        scenarioId,
+                        accountId,
+                        action: PubSubAction.RUN_SCENARIO,
+                        requestedAt: new Date().toISOString(),
+                    };
+
+                    const dataBuffer = Buffer.from(JSON.stringify(payload));
+                    const attributes = {
+                        type: PubSubAction.RUN_SCENARIO,
+                        timestamp: new Date().toISOString(),
+                    };
+
+                    // Add to batch via promise
+                    promises.push(
+                        (async () => {
+                            try {
+                                log('publishing message...');
+                                log({payload, attributes});
+                                const messageId = await batchPublisher.publishMessage({
+                                    data: dataBuffer,
+                                    attributes,
+                                });
+                                log(
+                                    `[pubsub-client] Message ${messageId} published for scenario ${scenarioId} and account ${accountId}`,
+                                );
+                                return true;
+                            } catch (error) {
+                                console.log('error...', error);
+                                logError(
+                                    `[pubsub-client] Failed to publish message for scenario ${scenarioId} and account ${accountId}:`,
+                                    error,
+                                );
+                                return false;
+                            }
+                        })(),
+                    );
                 }
-
-                totalMessages++;
-
-                const payload = {
-                    sourceId,
-                    scenarioId,
-                    accountId,
-                    action: PubSubAction.RUN_SCENARIO,
-                    requestedAt: new Date().toISOString(),
-                };
-
-                const dataBuffer = Buffer.from(JSON.stringify(payload));
-                const attributes = {
-                    type: PubSubAction.RUN_SCENARIO,
-                    timestamp: new Date().toISOString(),
-                };
-
-                // Add to batch via promise
-                promises.push(
-                    (async () => {
-                        try {
-                            log('publishing message...');
-                            log({payload, attributes});
-                            const messageId = await batchPublisher.publishMessage({
-                                data: dataBuffer,
-                                attributes,
-                            });
-                            log(
-                                `[pubsub-client] Message ${messageId} published for scenario ${scenarioId} and account ${accountId}`,
-                            );
-                            return true;
-                        } catch (error) {
-                            console.log('error...', error);
-                            logError(
-                                `[pubsub-client] Failed to publish message for scenario ${scenarioId} and account ${accountId}:`,
-                                error,
-                            );
-                            return false;
-                        }
-                    })(),
-                );
             }
         }
 

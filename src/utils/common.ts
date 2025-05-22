@@ -291,3 +291,16 @@ export const queryToNumberArray = (val: unknown): number[] => {
     }
     return [];
 };
+
+export const queryToBoolean = (val: unknown): boolean => {
+    if (typeof val === 'boolean') {
+        return val;
+    }
+    if (typeof val === 'string') {
+        return val.toLowerCase() === 'true' || val === '1';
+    }
+    if (typeof val === 'number') {
+        return val !== 0;
+    }
+    return false;
+};

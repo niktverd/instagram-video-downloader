@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+import {zodOptionalBoolean} from './utils';
+
 import {AccountSchema} from '#schemas/models';
 
 export const CreateAccountParamsSchema = AccountSchema.omit({id: true});
@@ -17,7 +19,7 @@ export const GetAccountBySlugParamsSchema = z
 
 export const GetAllAccountsParamsSchema = z
     .object({
-        onlyEnabled: z.boolean().optional(),
+        onlyEnabled: zodOptionalBoolean(),
     })
     .strict();
 

@@ -1,7 +1,8 @@
 import {z} from 'zod';
 
+import {zodOptionalNumberArray} from './utils';
+
 import {PreparedVideoSchema} from '#schemas/models';
-import {queryToNumberArray} from '#utils';
 
 export const CreatePreparedVideoParamsSchema = PreparedVideoSchema.omit({id: true});
 
@@ -10,14 +11,6 @@ export const GetPreparedVideoByIdParamsSchema = z
         id: z.number(),
     })
     .strict();
-
-const zodOptionalNumberArray = () =>
-    z
-        .preprocess(queryToNumberArray, z.array(z.number()))
-        .optional()
-        .transform((x) => (x === undefined ? undefined : (x as number[]))) as unknown as z.ZodType<
-        number[] | undefined
-    >;
 
 export const GetAllPreparedVideosParamsSchema = z
     .object({

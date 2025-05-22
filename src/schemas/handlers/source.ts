@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+import {zodOptionalBoolean} from './utils';
+
 import {SourceSchema} from '#schemas/models';
 
 export const CreateSourceParamsSchema = SourceSchema.omit({id: true});
@@ -10,6 +12,7 @@ export const GetAllSourcesParamsSchema = z
         limit: z.string().optional(),
         sortBy: z.string().optional(),
         sortOrder: z.string().optional(),
+        notInThePreparedVideos: zodOptionalBoolean(),
     })
     .strict();
 
@@ -24,8 +27,6 @@ export const GetOneSourceParamsSchema = z
 export const UpdateSourceParamsSchema = CreateSourceParamsSchema.partial()
     .extend({
         id: z.number(),
-        createdAt: z.string().optional(),
-        updatedAt: z.string().optional(),
     })
     .strict();
 

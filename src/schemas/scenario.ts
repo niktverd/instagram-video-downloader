@@ -1,20 +1,10 @@
 import {z} from 'zod';
 
+import {ScenarioSchema} from './models';
+
 import {ScenarioType} from '#src/types/enums';
 
-export const scenarioBaseSchema = z
-    .object({
-        id: z.number(),
-        slug: z.string(),
-        onlyOnce: z.boolean(),
-        enabled: z.boolean(),
-        texts: z.record(z.string(), z.array(z.string())),
-        type: z.nativeEnum(ScenarioType),
-        copiedFrom: z.string().optional().nullable(),
-        createdAt: z.any(),
-        updatedAt: z.any(),
-    })
-    .strict();
+export const scenarioBaseSchema = ScenarioSchema;
 
 // export const scenarioAddBannerAtTheEndSchema = scenarioBaseSchema.extend({
 //     type: z.literal(ScenarioType.ScenarioAddBannerAtTheEnd),

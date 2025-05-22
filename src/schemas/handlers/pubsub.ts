@@ -16,7 +16,7 @@ export const PushPubSubTestResponseSchema = z.object({
 });
 
 export const PublishBulkRunScenarioMessagesByIdsParamsSchema = z.object({
-    sourceId: z.number(),
+    sourceIds: z.array(z.number()),
     accountIds: z.array(z.number()),
     scenarioIds: z.array(z.number()),
 });

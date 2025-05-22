@@ -47,11 +47,18 @@ export async function getAllSources(
         limit = 10,
         sortBy,
         sortOrder = 'desc',
+        notInThePreparedVideos = false,
     } = GetAllSourcesParamsSchema.parse(params);
     const query = Source.query(trx || db);
 
     if (sortBy) {
         query.orderBy(sortBy, sortOrder as OrderByDirection);
+    }
+
+    if (notInThePreparedVideos) {
+        query.whereNotIn('id', function () {
+            this.select('sourceId').from('preparedVideos');
+        });
     }
 
     const pageNumber = Number(page);
