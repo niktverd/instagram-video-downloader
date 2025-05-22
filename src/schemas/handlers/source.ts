@@ -24,7 +24,7 @@ export const GetOneSourceParamsSchema = z
     })
     .strict();
 
-export const UpdateSourceParamsSchema = CreateSourceParamsSchema.partial()
+export const UpdateSourceParamsSchema = SourceSchema.partial()
     .extend({
         id: z.number(),
     })

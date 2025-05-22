@@ -1,7 +1,6 @@
 /* eslint-disable valid-jsdoc */
 // import * as firebase from 'firebase/app';
 import {collection, getDocs, getFirestore} from 'firebase/firestore';
-import {v4 as uuidv4} from 'uuid';
 
 import db from '../db/utils';
 import User from '../models/User';
@@ -33,13 +32,13 @@ export async function migrateUsers(): Promise<void> {
                 if (!existingUser) {
                     // Create new user in PostgreSQL
                     await User.query(trx).insert({
-                        id: doc.id || uuidv4(),
                         email: userData.email,
                         displayName: userData.displayName,
                         photoURL: userData.photoURL,
                         providerData: userData.providerData,
                         providerId: userData.providerId,
-                    });
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } as any);
 
                     migratedCount++;
                 }

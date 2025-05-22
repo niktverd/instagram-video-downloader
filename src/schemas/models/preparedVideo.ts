@@ -1,11 +1,11 @@
 import {z} from 'zod';
 
 import {AccountSchema} from './account';
+import {createEntitySchema} from './base';
 import {ScenarioSchema} from './scenario';
 import {SourceSchema} from './source';
 
-export const PreparedVideoSchema = z.object({
-    id: z.number(),
+export const PreparedVideoSchema = createEntitySchema({
     firebaseUrl: z.string(),
     duration: z.number().optional(),
     scenarioId: z.number(),
@@ -14,4 +14,4 @@ export const PreparedVideoSchema = z.object({
     scenario: ScenarioSchema.optional(),
     source: SourceSchema.optional(),
     account: AccountSchema.optional(),
-});
+}).strict();

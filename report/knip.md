@@ -10,13 +10,20 @@
 * src/tests/requests/imitateInstagramMessageWebhook.ts
 * src/utils/scenarios.ts
 
-## Unused dependencies (3)
+## Unused dependencies (4)
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
 | typescript-json-schema | package.json:77:6 | error    |
 | dotenv-cli             | package.json:60:6 | error    |
+| uuid                   | package.json:78:6 | error    |
 | pg                     | package.json:73:6 | error    |
+
+## Unused devDependencies (1)
+
+| Name        | Location          | Severity |
+| :---------- | :---------------- | :------- |
+| @types/uuid | package.json:89:6 | error    |
 
 ## Unused exports (6)
 

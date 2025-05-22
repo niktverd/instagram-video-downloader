@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {Transaction} from 'objection';
-import {v4 as uuidv4} from 'uuid';
 
 import db from './utils';
 
@@ -34,8 +33,7 @@ export async function createUser(
 ): Promise<CreateUserResponse> {
     const paramsValidated = CreateUserParamsSchema.parse(params);
 
-    const userData: IUser = {
-        id: uuidv4(),
+    const userData: Omit<IUser, 'id'> = {
         email: paramsValidated.email,
         displayName: paramsValidated.displayName,
         photoURL: paramsValidated.photoURL,
@@ -80,6 +78,7 @@ export async function getAllUsers(
     trx?: Transaction,
 ): Promise<GetAllUsersResponse> {
     const users = await User.query(trx || db);
+
     return users;
 }
 

@@ -1,16 +1,16 @@
 import {Model} from 'objection';
 
 export class BaseModel extends Model {
-    createdAt!: string;
-    updatedAt!: string;
+    createdAt!: Date;
+    updatedAt!: Date;
 
     $beforeInsert() {
-        const now = new Date().toISOString();
+        const now = new Date();
         this.createdAt = now;
         this.updatedAt = now;
     }
 
     $beforeUpdate() {
-        this.updatedAt = new Date().toISOString();
+        this.updatedAt = new Date();
     }
 }

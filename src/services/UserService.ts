@@ -1,6 +1,4 @@
 /* eslint-disable valid-jsdoc */
-import {v4 as uuidv4} from 'uuid';
-
 import User from '../models/User';
 
 export class UserService {
@@ -16,7 +14,6 @@ export class UserService {
         providerId?: string;
     }): Promise<User> {
         const user = await User.query().insert({
-            id: uuidv4(),
             email: userData.email,
             displayName: userData.displayName,
             photoURL: userData.photoURL,

@@ -20,7 +20,7 @@ export const GetAllUsersParamsSchema = z.object({}).strict();
 
 export const UpdateUserParamsSchema = CreateUserParamsSchema.partial()
     .extend({
-        id: z.string(),
+        id: z.number(),
     })
     .strict();
 

@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {BaseModel} from './BaseModel';
 
 export class User extends BaseModel {
-    id!: string;
+    id!: number;
     email!: string;
     displayName?: string;
     photoURL?: string;
