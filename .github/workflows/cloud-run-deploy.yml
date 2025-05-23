@@ -174,7 +174,6 @@ jobs:
             --max-delivery-attempts=15 \
             --min-retry-delay=120s \
             --max-retry-delay=600s \
-            --push-auth-service-account=compute@media-automation-6aff2.iam.gserviceaccount.com
 
       # # Add step for monitoring memory usage
       # - name: Monitor Memory Usage
