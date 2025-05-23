@@ -107,11 +107,11 @@ jobs:
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
-            --memory 4Gi \
-            --cpu 4 \
+            --memory 2Gi \
+            --cpu 1 \
             --timeout 1000 \
             --concurrency 1 \
-            --max-instances=2 \
+            --max-instances=40 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
@@ -123,11 +123,11 @@ jobs:
             --image gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA \
             --platform managed \
             --region $REGION \
-            --memory 4Gi \
-            --cpu 4 \
+            --memory 2Gi \
+            --cpu 1 \
             --timeout 1000 \
             --concurrency 1 \
-            --max-instances=2 \
+            --max-instances=40 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
@@ -169,11 +169,13 @@ jobs:
             --push-endpoint=$PUSH_ENDPOINT \
             --ack-deadline=600 \
             --expiration-period=never \
-            --message-retention-duration=6h \
+            --message-retention-duration=24h \
             --dead-letter-topic=$DEAD_LETTER_TOPIC \
-            --max-delivery-attempts=5 \
-            --min-retry-delay=60s \
-            --max-retry-delay=120s
+            --max-delivery-attempts=15 \
+            --min-retry-delay=120s \
+            --max-retry-delay=600s \
+            --enable-exactly-once-delivery \
+            --push-auth-service-account=compute@media-automation-6aff2.iam.gserviceaccount.com
 
       # # Add step for monitoring memory usage
       # - name: Monitor Memory Usage
