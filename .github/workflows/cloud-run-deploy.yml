@@ -172,7 +172,7 @@ jobs:
             --message-retention-duration=24h \
             --dead-letter-topic=$DEAD_LETTER_TOPIC \
             --max-delivery-attempts=15 \
-            --min-retry-delay=120s \
+            --min-retry-delay=540s \
             --max-retry-delay=600s \
 
       # # Add step for monitoring memory usage
