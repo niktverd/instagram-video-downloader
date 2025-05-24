@@ -1,0 +1,43 @@
+name: Shared Configuration
+
+on:
+  workflow_call:
+    outputs:
+      project_id:
+        description: "GCP Project ID"
+        value: ${{ jobs.config.outputs.project_id }}
+      region:
+        description: "GCP Region"
+        value: ${{ jobs.config.outputs.region }}
+      service_name_base:
+        description: "Base service name"
+        value: ${{ jobs.config.outputs.service_name_base }}
+      topics:
+        description: "PubSub topics configuration"
+        value: ${{ jobs.config.outputs.topics }}
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      project_id: ${{ steps.set-vars.outputs.project_id }}
+      region: ${{ steps.set-vars.outputs.region }}
+      service_name_base: ${{ steps.set-vars.outputs.service_name_base }}
+      topics: ${{ steps.set-vars.outputs.topics }}
+    
+    steps:
+      - id: set-vars
+        run: |
+          echo "project_id=${{ secrets.GCP_PROJECT_ID }}" >> $GITHUB_OUTPUT
+          echo "region=europe-central2" >> $GITHUB_OUTPUT
+          echo "service_name_base=instagram-downloader" >> $GITHUB_OUTPUT
+          
+          # JSON для сложных структур
+          cat << EOF >> $GITHUB_OUTPUT
+          topics={
+            "main": "instagram-video-tasks",
+            "dead_1": "instagram-video-tasks-dead-1",
+            "dead_2": "instagram-video-tasks-dead-2", 
+            "dead_3": "instagram-video-tasks-dead-3"
+          }
+          EOF 
