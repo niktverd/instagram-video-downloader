@@ -22,9 +22,9 @@ runs:
         echo "project_id=media-automation-6aff2" >> $GITHUB_OUTPUT
         echo "region=europe-central2" >> $GITHUB_OUTPUT
         
-        # Service configurations as JSON
-        cat << 'EOF' >> $GITHUB_OUTPUT
-        service_configs={
+        # Service configurations as JSON - use delimiter to avoid parsing issues
+        echo "service_configs<<ENDOFCONFIGS" >> $GITHUB_OUTPUT
+        echo '{
           "small": {
             "name": "instagram-downloader-small",
             "memory": "1Gi",
@@ -49,5 +49,5 @@ runs:
             "timeout": 1000,
             "concurrency": 2
           }
-        }
-        EOF 
+        }' >> $GITHUB_OUTPUT
+        echo "ENDOFCONFIGS" >> $GITHUB_OUTPUT 
