@@ -24,6 +24,7 @@ import {
     getAllScenariosGet,
     getAllSourcesGet,
     getAllUsersGet,
+    getInstagramAccountInsightsGet,
     getOneSourceGet,
     getScenarioByIdGet,
     getUserByEmailGet,
@@ -72,6 +73,8 @@ router.get('/get-all-instagram-media-containers', getAllInstagramMediaContainers
 router.get('/get-all-prepared-videos', getAllPreparedVideosGet);
 router.get('/get-all-instagram-locations', getAllInstagramLocationsGet);
 // router.get('/get-instagram-location-by-id', getInstagramLocationByIdGet);
+router.get('/get-instagram-account-insights', getInstagramAccountInsightsGet);
+
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);
 router.post('/test-green-screen', uiTestGreenScreen);

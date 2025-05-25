@@ -1,8 +1,14 @@
 import {Request, Response} from 'express';
 
-import {getAccountById} from '#src/db';
+import {GetInstagramAccountInsightsParamsSchema} from '#schemas/handlers';
+import {getAccountById, wrapper} from '#src/db';
+import {
+    GetInstagramAccountInsightsParams,
+    GetInstagramAccountInsightsResponse,
+} from '#src/types/instagramInsights';
 import {log, logError} from '#utils';
 import {
+    getInstagramAccountInsights,
     getInstagramInsights,
     getInstagramMedia,
     getInstagramUserNameById,
@@ -359,3 +365,8 @@ export const uiSavePostForFutherAnalysis = async (req: Request, res: Response) =
         });
     }
 };
+
+export const getInstagramAccountInsightsGet = wrapper<
+    GetInstagramAccountInsightsParams,
+    GetInstagramAccountInsightsResponse
+>(getInstagramAccountInsights, GetInstagramAccountInsightsParamsSchema, 'GET');

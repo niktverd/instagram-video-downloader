@@ -1,8 +1,12 @@
+import {
+    GetInstagramAccountInsightsParams,
+    GetInstagramAccountInsightsResponse,
+} from '#src/types/instagramInsights';
 import {log} from '#utils';
 
 export const getInstagramInsights = async (accessToken: string) => {
     const metrics = [
-        'impressions',
+        // 'impressions',
         'reach',
         'follower_count',
         // not in version 21
@@ -38,7 +42,7 @@ export const getInstagramInsights = async (accessToken: string) => {
     ];
     // email_contacts, phone_call_clicks, text_message_clicks, get_directions_clicks, website_clicks, profile_views
     const insights = await fetch(
-        `https://graph.instagram.com/v21.0/me/insights?metric=${metrics.join(
+        `https://graph.instagram.com/v22.0/me/insights?metric=${metrics.join(
             ',',
         )}&period=day&access_token=${accessToken}`,
         {
@@ -130,4 +134,11 @@ export const getVideoOwnerByVideoId = async ({
     }
 
     return accountName;
+};
+
+export const getInstagramAccountInsights = async (
+    params: GetInstagramAccountInsightsParams,
+): Promise<GetInstagramAccountInsightsResponse> => {
+    const insights = await getInstagramInsights(params.accessToken);
+    return insights;
 };
