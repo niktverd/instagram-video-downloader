@@ -12,7 +12,7 @@ import {downloadVideoCron} from '$/chore/components/preprocess-video';
 import {
     callbackInstagramLogin,
     hubChallangeWebhook,
-    messageWebhookV3,
+    messageWebhookV3Post,
 } from '$/instagram/controllers';
 
 dotenv.config();
@@ -50,9 +50,9 @@ app.use('/api', appRoutes);
 // instagram handlers
 // leave it here, because they are configured in the instagram app
 app.get('/webhooks', hubChallangeWebhook);
-app.post('/webhooks', messageWebhookV3);
+app.post('/webhooks', messageWebhookV3Post);
 app.get('/webhooks2', hubChallangeWebhook);
-app.post('/webhooks2', messageWebhookV3);
+app.post('/webhooks2', messageWebhookV3Post);
 app.get('/callback-instagram', callbackInstagramLogin);
 
 const dynamicPort = Number(process.env.PORT);

@@ -8,7 +8,13 @@ import {
     publishRandomInstagramContainerForAccount,
 } from '../components';
 
-import {getAllAccounts} from '#src/db';
+import {PublishIntagramV4Schema} from '#schemas/handlers/publishInstagram';
+import {getAllAccounts, wrapper} from '#src/db';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {
+    PublishIntagramV4PostParams,
+    PublishIntagramV4PostResponse,
+} from '#src/types/publishInstagram';
 import {ThrownError} from '#src/utils/error';
 import {delay, log, logError} from '#utils';
 import {stopHerokuApp} from '$/chore/components/heroku';
@@ -135,33 +141,25 @@ export const removePublishedFromFirebase = async (req: Request, res: Response) =
     await stopHerokuApp();
 };
 
-export const publishIntagramV4 = async (req: Request, res: Response) => {
-    log(req.query);
+const publishIntagramV4: ApiFunctionPrototype<
+    PublishIntagramV4PostParams,
+    PublishIntagramV4PostResponse
+> = async (_params, db) => {
+    const {result: accounts} = await getAllAccounts({onlyEnabled: true}, db);
 
-    try {
-        const {result: accounts} = await getAllAccounts({onlyEnabled: true});
-
-        for (const account of accounts) {
-            try {
-                // publish one container
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                await publishRandomInstagramContainerForAccount(account as any);
-
-                // prepare one container if necessary
-                await prepareMediaContainersForAccount(account);
-            } catch (error) {
-                logError('trycatch for one cycle', error);
-                console.log('error', error);
-            }
+    for (const account of accounts) {
+        try {
+            await publishRandomInstagramContainerForAccount(account, db);
+            await prepareMediaContainersForAccount(account, db);
+        } catch (error) {
+            logError('error publishing instagram container', error);
         }
-
-        // update record in db
-        res.status(200).send('success');
-    } catch (error) {
-        logError('trycatch for entire publish process', error);
-        res.status(200).send('error');
-    } finally {
-        await delay(1000);
-        await stopHerokuApp();
     }
+
+    return {result: {success: true, message: 'success'}, code: 200};
 };
+
+export const publishIntagramV4Post = wrapper<
+    PublishIntagramV4PostParams,
+    PublishIntagramV4PostResponse
+>(publishIntagramV4, PublishIntagramV4Schema, 'GET');

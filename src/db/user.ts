@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Transaction} from 'objection';
-
-import db from './utils';
-
 import {CreateUserParamsSchema, UpdateUserParamsSchema} from '#schemas/handlers/user';
 import {User} from '#src/models';
-import {IResponse} from '#src/types/common';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {
     CreateUserParams,
     CreateUserResponse,
@@ -23,10 +19,10 @@ import {
 } from '#src/types/user';
 import {ThrownError} from '#src/utils/error';
 
-export async function createUser(
-    params: CreateUserParams,
-    trx?: Transaction,
-): IResponse<CreateUserResponse> {
+export const createUser: ApiFunctionPrototype<CreateUserParams, CreateUserResponse> = async (
+    params,
+    db,
+) => {
     const paramsValidated = CreateUserParamsSchema.parse(params);
 
     const userData: Omit<IUser, 'id'> = {
@@ -38,18 +34,18 @@ export async function createUser(
         password: paramsValidated.password,
     };
 
-    const user = await User.query(trx || db).insert(userData);
+    const user = await User.query(db).insert(userData);
     return {
         result: user,
         code: 200,
     };
-}
+};
 
-export async function getUserById(
-    params: GetUserByIdParams,
-    trx?: Transaction,
-): IResponse<GetUserByIdResponse> {
-    const user = await User.query(trx || db).findById(params.id);
+export const getUserById: ApiFunctionPrototype<GetUserByIdParams, GetUserByIdResponse> = async (
+    params,
+    db,
+) => {
+    const user = await User.query(db).findById(params.id);
     if (!user) {
         throw new ThrownError('User not found', 404);
     }
@@ -58,15 +54,13 @@ export async function getUserById(
         result: user,
         code: 200,
     };
-}
+};
 
-export async function getUserByEmail(
-    params: GetUserByEmailParams,
-    trx?: Transaction,
-): IResponse<GetUserByEmailResponse> {
-    const user = await User.query(trx || db)
-        .where('email', params.email)
-        .first();
+export const getUserByEmail: ApiFunctionPrototype<
+    GetUserByEmailParams,
+    GetUserByEmailResponse
+> = async (params, db) => {
+    const user = await User.query(db).where('email', params.email).first();
 
     if (!user) {
         throw new ThrownError('User not found', 404);
@@ -76,40 +70,40 @@ export async function getUserByEmail(
         result: user,
         code: 200,
     };
-}
+};
 
-export async function getAllUsers(
-    _params: GetAllUsersParams,
-    trx?: Transaction,
-): IResponse<GetAllUsersResponse> {
-    const users = await User.query(trx || db);
+export const getAllUsers: ApiFunctionPrototype<GetAllUsersParams, GetAllUsersResponse> = async (
+    _params,
+    db,
+) => {
+    const users = await User.query(db);
 
     return {
         result: users,
         code: 200,
     };
-}
+};
 
-export async function updateUser(
-    params: UpdateUserParams,
-    trx?: Transaction,
-): IResponse<UpdateUserResponse> {
+export const updateUser: ApiFunctionPrototype<UpdateUserParams, UpdateUserResponse> = async (
+    params,
+    db,
+) => {
     const {id, ...updateData} = UpdateUserParamsSchema.parse(params);
 
-    const user = await User.query(trx || db).patchAndFetchById(id, updateData);
+    const user = await User.query(db).patchAndFetchById(id, updateData);
     return {
         result: user,
         code: 200,
     };
-}
+};
 
-export async function deleteUser(
-    params: DeleteUserParams,
-    trx?: Transaction,
-): IResponse<DeleteUserResponse> {
-    const deletedCount = await User.query(trx || db).deleteById(params.id);
+export const deleteUser: ApiFunctionPrototype<DeleteUserParams, DeleteUserResponse> = async (
+    params,
+    db,
+) => {
+    const deletedCount = await User.query(db).deleteById(params.id);
     return {
         result: deletedCount,
         code: 200,
     };
-}
+};

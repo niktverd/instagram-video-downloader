@@ -1,9 +1,12 @@
 import dotenv from 'dotenv';
 import {Request, Response} from 'express';
 
-import {createSource} from '#src/db';
+import {MessageWebhookV3Schema} from '#schemas/handlers';
+import {createSource, wrapper} from '#src/db';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {MessageWebhookV3Params, MessageWebhookV3Response} from '#src/types/instagramApi';
 import {ThrownError} from '#src/utils/error';
-import {initiateRecordV3, log, logError} from '#utils';
+import {initiateRecordV3, log} from '#utils';
 
 dotenv.config();
 
@@ -63,41 +66,46 @@ export const hubChallangeWebhook = (req: Request, res: Response) => {
     res.status(200).send(hubChallenge);
 };
 
-export const messageWebhookV3 = async (req: Request, res: Response) => {
-    try {
-        log(req.query);
-        log(req.body?.entry?.length);
+const messageWebhookV3: ApiFunctionPrototype<
+    MessageWebhookV3Params,
+    MessageWebhookV3Response
+> = async (params, db) => {
+    const {senderId, recipientId, attachment} = getAttachment(params.body);
+    const {type, payload} = attachment;
+    log({senderId, type, payload});
 
-        const {senderId, recipientId, attachment} = getAttachment(req.body);
-        const {type, payload} = attachment;
-        log({senderId, type, payload});
+    const {url, title = ''} = payload;
+    const originalHashtags: string[] = title?.match(/#\w+/g) || [];
 
-        const {url, title = ''} = payload;
-        const originalHashtags: string[] = title?.match(/#\w+/g) || [];
-
-        const data = await initiateRecordV3(
-            {
-                instagramReel: {
-                    url,
-                    senderId,
-                    title,
-                    originalHashtags,
-                    owner: '',
-                },
+    const data = initiateRecordV3(
+        {
+            instagramReel: {
+                url,
+                senderId,
+                title,
+                originalHashtags,
+                owner: '',
             },
-            req.body,
-            senderId,
-            recipientId,
-        );
+        },
+        params.body,
+        senderId,
+        recipientId,
+    );
 
-        console.log('before create source');
-        const sourceRecord = await createSource(data);
-        console.log('after create source');
+    const sourceRecord = await createSource(data, db);
+    log('firestoreDoc', sourceRecord);
 
-        log('firestoreDoc', sourceRecord);
-        res.status(200).send('success');
-    } catch (error) {
-        logError('Error: ', error);
-        res.status(404).send('NotFound');
-    }
+    return {
+        result: {
+            success: true,
+            message: 'success',
+        },
+        code: 200,
+    };
 };
+
+export const messageWebhookV3Post = wrapper<MessageWebhookV3Params, MessageWebhookV3Response>(
+    messageWebhookV3,
+    MessageWebhookV3Schema,
+    'POST',
+);

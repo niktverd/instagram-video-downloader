@@ -10,7 +10,7 @@ import {
     CloudRunCreateScenarioVideoParams,
     CloudRunCreateScenarioVideoResponse,
 } from '#src/types/cloud-run';
-import {IResponse} from '#src/types/common';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {ScenarioType} from '#src/types/enums';
 import {IScenario} from '#src/types/scenario';
 import {ThrownError} from '#src/utils/error';
@@ -21,10 +21,15 @@ import {getWorkingDirectoryForVideo, log} from '#utils';
  * Handler for Pub/Sub push messages
  * Processes messages sent from Pub/Sub to our webhook endpoint
  */
-export const runScenarioHandler = async ({
-    message: {data, messageId, publishTime, attributes: attributes},
-    subscription: _subscription,
-}: CloudRunCreateScenarioVideoParams): IResponse<CloudRunCreateScenarioVideoResponse> => {
+export const runScenarioHandler: ApiFunctionPrototype<
+    CloudRunCreateScenarioVideoParams,
+    CloudRunCreateScenarioVideoResponse
+> = async (params, db) => {
+    const {
+        message: {data, messageId, publishTime, attributes: attributes},
+        subscription: _subscription,
+    } = params;
+
     // Remove express req/res, just business logic
     // Pub/Sub messages are received as base64-encoded strings
     // All validation is done in the wrapper
@@ -46,24 +51,24 @@ export const runScenarioHandler = async ({
         publishTime,
     });
 
-    if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId})) {
+    if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId}, db)) {
         return {
             result: undefined,
             code: 200,
         };
     }
 
-    const {result: scenario} = await getScenarioById({id: scenarioId});
+    const {result: scenario} = await getScenarioById({id: scenarioId}, db);
     if (!scenario) {
         throw new ThrownError(`Scenario with id ${scenarioId} not found`, 404);
     }
 
-    const {result: account} = await getAccountById({id: accountId});
+    const {result: account} = await getAccountById({id: accountId}, db);
     if (!account) {
         throw new ThrownError(`Account with id ${accountId} not found`, 404);
     }
 
-    const {result: source} = await getSourceById({id: sourceId});
+    const {result: source} = await getSourceById({id: sourceId}, db);
     if (!source) {
         throw new ThrownError(`Source with id ${sourceId} not found`, 404);
     }
@@ -129,13 +134,16 @@ export const runScenarioHandler = async ({
     );
     logLocal('downloadURL', {downloadURL});
     // update database
-    const savedPreparedVideo = await createPreparedVideo({
-        firebaseUrl: downloadURL,
-        scenarioId,
-        sourceId,
-        accountId,
-        duration,
-    });
+    const savedPreparedVideo = await createPreparedVideo(
+        {
+            firebaseUrl: downloadURL,
+            scenarioId,
+            sourceId,
+            accountId,
+            duration,
+        },
+        db,
+    );
     logLocal('video added to database', savedPreparedVideo);
     // delete tempfiles
     const deleteTempFiles = true;

@@ -10,7 +10,6 @@ import {firestore, storage} from '../config/firebase';
 import baseHashtags from '../config/instagram.hashtags.json';
 import {postText} from '../config/post.text';
 import {Collection, DelayS} from '../constants';
-import {getScenarios} from '../sections/shared/scenarios';
 import {CreateSourceParams, IScenario, MediaPostModel, SourceV3} from '../types';
 
 import {ThrownError} from './error';
@@ -215,14 +214,12 @@ export const initiateRecord = (source: MediaPostModel['sources']) =>
         randomIndex: Math.random(),
     } as Omit<MediaPostModel, 'id'>);
 
-export const initiateRecordV3 = async (
+export const initiateRecordV3 = (
     source: SourceV3['sources'],
     bodyJSONString: SourceV3['bodyJSONString'],
     sender: SourceV3['sender'],
     recipient: SourceV3['recipient'],
-): Promise<CreateSourceParams> => {
-    const scenarios = await getScenarios(true);
-    log({scenarios});
+): CreateSourceParams => {
     return {
         firebaseUrl: '',
         sources: source,

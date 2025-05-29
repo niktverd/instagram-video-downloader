@@ -37,3 +37,6 @@ export const UiGetUserContentParamsSchema = z.object({
     accessToken: z.string().optional(),
 });
 export const UiGetUserContentResponseSchema = z.any();
+
+export const MessageWebhookV3Schema = z.any();
+export const MessageWebhookV3ResponseSchema = z.any();

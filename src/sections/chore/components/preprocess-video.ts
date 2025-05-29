@@ -11,6 +11,7 @@ import {
     updateDoc,
     where,
 } from 'firebase/firestore/lite';
+import knex from 'knex';
 import {shuffle} from 'lodash';
 
 import {getVideoDuration} from '../../cloud-run/components/video/primitives';
@@ -18,7 +19,7 @@ import {uploadYoutubeVideo} from '../../youtube/components/youtube';
 
 import {firestore} from '#config/firebase';
 import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '#src/constants';
-import {deleteSource, getAllAccounts, getOneSource, updateSource} from '#src/db';
+import {dbConfig, deleteSource, getAllAccounts, getOneSource, updateSource} from '#src/db';
 import {ThrownError} from '#src/utils/error';
 import {MediaPostModel, Sources} from '#types';
 import {
@@ -181,7 +182,11 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
     log('downloadVideoCron', 'started in', ms, 'ms');
 
     setTimeout(async () => {
-        const {result: randomSource} = await getOneSource({random: true, emptyFirebaseUrl: true});
+        const db = knex(dbConfig);
+        const {result: randomSource} = await getOneSource(
+            {random: true, emptyFirebaseUrl: true},
+            db,
+        );
         if (!randomSource) {
             log('all videos are downloaded');
             downloadVideoCron(DelayMS.Min5);
@@ -212,15 +217,18 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                     const duration = await getVideoDuration(downloadURL);
                     log('duration:', duration);
 
-                    const updatedSource = await updateSource({
-                        id: mediaId,
-                        firebaseUrl: downloadURL,
-                        duration,
-                    });
+                    const updatedSource = await updateSource(
+                        {
+                            id: mediaId,
+                            firebaseUrl: downloadURL,
+                            duration,
+                        },
+                        db,
+                    );
                     log('duration and url updated', updatedSource);
 
                     // Get scenarios and accounts to send bulk messages
-                    const {result: accounts} = await getAllAccounts({});
+                    const {result: accounts} = await getAllAccounts({}, db);
 
                     // Publish bulk messages for each account and scenario pair
                     if (accounts.length > 0) {
@@ -242,9 +250,9 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                 log({preprocessVideoCatch: error});
 
                 if (media.attempt) {
-                    await deleteSource({id: mediaId});
+                    await deleteSource({id: mediaId}, db);
                 } else {
-                    await updateSource({id: mediaId, attempt: 2});
+                    await updateSource({id: mediaId, attempt: 2}, db);
                 }
             } finally {
                 if (existsSync(mediaId.toString())) {

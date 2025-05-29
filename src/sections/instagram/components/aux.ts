@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {getAccountById} from '#src/db';
+import knex from 'knex';
+
+import {dbConfig, getAccountById} from '#src/db';
 import {IResponse} from '#src/types/common';
 import {
     GetAllCommentsForPostsParams,
@@ -226,8 +228,9 @@ export const getAllCommentsForPosts = async ({
 export const getInstagramInsightsFirebase = async (
     params: UiGetInsightsParams,
 ): IResponse<UiGetInsightsResponse> => {
+    const db = knex(dbConfig);
     const {id} = params;
-    const {result: account} = await getAccountById({id: Number(id)});
+    const {result: account} = await getAccountById({id: Number(id)}, db);
     if (!account) {
         throw new ThrownError(`account with id ${id} was not found`, 400);
     }
@@ -245,6 +248,7 @@ export const getInstagramInsightsFirebase = async (
 export const getInstagramMediaFirebase = async (
     params: UiGetInstagramMediaParams,
 ): IResponse<UiGetInstagramMediaResponse> => {
+    const db = knex(dbConfig);
     const {id: accountName, accessToken} = params;
 
     let token: string;
@@ -255,7 +259,7 @@ export const getInstagramMediaFirebase = async (
         if (!accountName) {
             throw new ThrownError('account name is not provided', 400);
         }
-        const {result: account} = await getAccountById({id: Number(accountName)});
+        const {result: account} = await getAccountById({id: Number(accountName)}, db);
         if (!account) {
             throw new ThrownError(`account with id ${accountName} was not found`, 400);
         }

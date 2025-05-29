@@ -5,53 +5,31 @@ import {Knex, knex} from 'knex';
 import {Model} from 'objection';
 import {z} from 'zod';
 
+import {ApiFunctionPrototype} from '#src/types/common';
 import {ThrownError} from '#src/utils/error';
 import {logError} from '#utils';
 
 // Import configuration based on environment
 const environment = process.env.APP_ENV || 'development';
-const config = require(path.join(__dirname, '../../knexfile'))[environment];
+export const dbConfig = require(path.join(__dirname, '../../knexfile'))[environment];
 
-// Initialize knex
-const db: Knex = knex(config);
-
-// Bind all Models to the knex instance
-Model.knex(db);
-
-export default db;
-
-export async function testConnection(): Promise<boolean> {
-    try {
-        // Test the connection by getting the current timestamp from the database
-        await db.raw('SELECT NOW()');
-        console.log('Database connection successful');
-        return true;
-    } catch (error) {
-        console.error('Database connection failed:', error);
-        return false;
-    }
-}
-
-export async function closeConnection(): Promise<void> {
-    try {
-        await db.destroy();
-        console.log('Database connection closed');
-    } catch (error) {
-        console.error('Error closing database connection:', error);
-        throw error;
-    }
-}
+export const getDb = () => {
+    const db: Knex = knex(dbConfig);
+    Model.knex(db);
+    return db;
+};
 
 // REST HTTP method type
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 // Enhanced wrapper for route handlers with validation and method checking
 export const wrapper = <RequestArgs, ResponseArgs>(
-    fn: (args: RequestArgs) => Promise<{result: ResponseArgs; code?: number}>,
+    fn: ApiFunctionPrototype<RequestArgs, ResponseArgs>,
     validator: z.ZodType<RequestArgs>,
     allowedMethod?: HttpMethod | HttpMethod[],
 ) => {
     return async (req: Request, res: Response) => {
+        const db = getDb();
         try {
             // Check HTTP method if specified
             if (allowedMethod) {
@@ -77,7 +55,7 @@ export const wrapper = <RequestArgs, ResponseArgs>(
 
                 const validatedData = validator.parse(dataToValidate) as RequestArgs;
 
-                const {code = 200, result} = await fn(validatedData);
+                const {code = 200, result} = await fn(validatedData, db);
                 res.status(code).json(result);
             } catch (validationError) {
                 if (validationError instanceof z.ZodError) {
@@ -99,5 +77,7 @@ export const wrapper = <RequestArgs, ResponseArgs>(
                 res.status(500).json({error: 'Internal server error: ' + String(error)});
             }
         }
+
+        db.destroy();
     };
 };

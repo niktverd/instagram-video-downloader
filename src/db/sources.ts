@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {OrderByDirection, Transaction} from 'objection';
+import {OrderByDirection} from 'objection';
 
 import {Source} from '../models/Source';
-
-import db from './utils';
 
 import {
     CreateSourceParamsSchema,
@@ -13,7 +11,7 @@ import {
     GetOneSourceParamsSchema as _GetOneSourceParamsSchema,
     GetSourceByIdParamsSchema as _GetSourceByIdParamsSchema,
 } from '#schemas/handlers/source';
-import {IResponse} from '#src/types/common';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {
     CreateSourceParams,
     CreateSourceResponse,
@@ -30,23 +28,23 @@ import {
     UpdateSourceResponse as _UpdateSourceResponse,
 } from '#types';
 
-export async function createSource(
-    params: CreateSourceParams,
-    trx?: Transaction,
-): IResponse<CreateSourceResponse> {
+export const createSource: ApiFunctionPrototype<CreateSourceParams, CreateSourceResponse> = async (
+    params,
+    db,
+) => {
     const validatedParams = CreateSourceParamsSchema.parse(params);
-    const source = await Source.query(trx || db).insert(validatedParams);
+    const source = await Source.query(db).insert(validatedParams);
 
     return {
         result: source,
         code: 200,
     };
-}
+};
 
-export async function getAllSources(
-    params: GetAllSourcesParams,
-    trx?: Transaction,
-): IResponse<GetAllSourcesResponse> {
+export const getAllSources: ApiFunctionPrototype<
+    GetAllSourcesParams,
+    GetAllSourcesResponse
+> = async (params, db) => {
     const {
         page = 1,
         limit = 10,
@@ -54,7 +52,7 @@ export async function getAllSources(
         sortOrder = 'desc',
         notInThePreparedVideos = false,
     } = GetAllSourcesParamsSchema.parse(params);
-    const query = Source.query(trx || db);
+    const query = Source.query(db);
 
     if (sortBy) {
         query.orderBy(sortBy, sortOrder as OrderByDirection);
@@ -80,14 +78,14 @@ export async function getAllSources(
         },
         code: 200,
     };
-}
+};
 
-export async function getOneSource(
-    params: GetOneSourceParams,
-    trx?: Transaction,
-): IResponse<GetOneSourceResponse> {
+export const getOneSource: ApiFunctionPrototype<GetOneSourceParams, GetOneSourceResponse> = async (
+    params,
+    db,
+) => {
     const {emptyFirebaseUrl, random, id} = params;
-    const query = Source.query(trx || db);
+    const query = Source.query(db);
 
     if (id) {
         query.where('id', id);
@@ -107,12 +105,12 @@ export async function getOneSource(
         result: source,
         code: 200,
     };
-}
+};
 
-export async function updateSource(
-    params: UpdateSourceParams,
-    trx?: Transaction,
-): IResponse<UpdateSourceResponse> {
+export const updateSource: ApiFunctionPrototype<UpdateSourceParams, UpdateSourceResponse> = async (
+    params,
+    db,
+) => {
     const {id, ...updateData} = UpdateSourceParamsSchema.parse(params);
 
     const cleanUpdateData: any = {};
@@ -125,34 +123,34 @@ export async function updateSource(
         cleanUpdateData[key] = val;
     });
 
-    const source = await Source.query(trx || db).patchAndFetchById(id, cleanUpdateData);
+    const source = await Source.query(db).patchAndFetchById(id, cleanUpdateData);
 
     return {
         result: source,
         code: 200,
     };
-}
+};
 
-export async function deleteSource(
-    params: DeleteSourceParams,
-    trx?: Transaction,
-): IResponse<DeleteSourceResponse> {
-    const deletedCount = await Source.query(trx || db).deleteById(params.id);
+export const deleteSource: ApiFunctionPrototype<DeleteSourceParams, DeleteSourceResponse> = async (
+    params,
+    db,
+) => {
+    const deletedCount = await Source.query(db).deleteById(params.id);
 
     return {
         result: deletedCount,
         code: 200,
     };
-}
+};
 
-export async function getSourceById(
-    params: GetSourceByIdParams,
-    trx?: Transaction,
-): IResponse<GetSourceByIdResponse> {
-    const source = await Source.query(trx || db).findById(params.id);
+export const getSourceById: ApiFunctionPrototype<
+    GetSourceByIdParams,
+    GetSourceByIdResponse
+> = async (params, db) => {
+    const source = await Source.query(db).findById(params.id);
 
     return {
         result: source,
         code: 200,
     };
-}
+};

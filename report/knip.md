@@ -31,7 +31,7 @@
 | :-------------- | :-------------------------------------------------------------------- | :------- |
 | getSvg          | src/sections/cloud-run/components/reels-creator/create-video.ts:22:17 | error    |
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
-| preprocessVideo | src/sections/chore/components/preprocess-video.ts:54:14               | error    |
+| preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
 | default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | default         | src/models/InstagramLocation.ts:24:8                                  | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |

@@ -23,6 +23,8 @@ import {
     getOnePreparedVideo,
     updateInstagramMediaContainer,
 } from '#src/db';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {PublishIntagramV4PostResponse} from '#src/types/publishInstagram';
 import {ThrownError} from '#src/utils/error';
 import {IAccount, InstagramLocationSource, MediaPostModelOld} from '#types';
 import {
@@ -318,31 +320,52 @@ export const canInstagramPostBePublished = async ({
     }
 };
 
-export const prepareMediaContainersForAccount = async (account: IAccount) => {
-    const {result: mediaContainers} = await getLimitedInstagramMediaContainers({
-        accountId: account.id,
-        random: true,
-        notPublished: true,
-        limit: 10,
-    });
+export const prepareMediaContainersForAccount: ApiFunctionPrototype<
+    IAccount,
+    PublishIntagramV4PostResponse
+> = async (account, db) => {
+    const {result: mediaContainers} = await getLimitedInstagramMediaContainers(
+        {
+            accountId: account.id,
+            random: true,
+            notPublished: true,
+            limit: 10,
+        },
+        db,
+    );
 
     if (mediaContainers.length) {
         log('Not necessary to prepare media containers', mediaContainers);
-        return;
+        return {
+            result: {
+                success: true,
+                message: 'success',
+            },
+            code: 200,
+        };
     }
 
-    const preparedVideo = await getOnePreparedVideo({
-        accountId: account.id,
-        hasFirebaseUrl: true,
-        random: true,
-        notInInstagramMediaContainers: true,
-        fetchGraphScenario: true,
-        fetchGraphSource: true,
-    });
+    const {result: preparedVideo} = await getOnePreparedVideo(
+        {
+            accountId: account.id,
+            hasFirebaseUrl: true,
+            random: true,
+            notInInstagramMediaContainers: true,
+            fetchGraphScenario: true,
+            fetchGraphSource: true,
+        },
+        db,
+    );
 
     if (!preparedVideo) {
         log('Has no prepared video', preparedVideo);
-        return;
+        return {
+            result: {
+                success: true,
+                message: 'success',
+            },
+            code: 200,
+        };
     }
 
     const caption = prepareCaption(preparedVideo.scenario?.texts);
@@ -369,31 +392,50 @@ export const prepareMediaContainersForAccount = async (account: IAccount) => {
         });
 
         if (result.success) {
-            await createInstagramMediaContainer({
-                accountId: account.id,
-                preparedVideoId: preparedVideo.id,
-                containerId: result.mediaContainerId,
-            });
+            await createInstagramMediaContainer(
+                {
+                    accountId: account.id,
+                    preparedVideoId: preparedVideo.id,
+                    containerId: result.mediaContainerId,
+                },
+                db,
+            );
         }
 
         log(result);
     }
+
+    return {
+        result: {
+            success: true,
+            message: 'success',
+        },
+    };
 };
 
-export const publishRandomInstagramContainerForAccount = async (account: IAccount) => {
+export const publishRandomInstagramContainerForAccount: ApiFunctionPrototype<
+    IAccount,
+    PublishIntagramV4PostResponse
+> = async (account, db) => {
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        const {result: mediaContainers} = await getLimitedInstagramMediaContainers({
-            accountId: account.id,
-            random: true,
-            notPublished: true,
-            limit: 1,
-        });
+        const {result: mediaContainers} = await getLimitedInstagramMediaContainers(
+            {
+                accountId: account.id,
+                random: true,
+                notPublished: true,
+                limit: 1,
+            },
+            db,
+        );
 
         if (!mediaContainers.length) {
             return {
-                success: false,
-                message: 'no_media_containers',
+                result: {
+                    success: false,
+                    message: 'no_media_containers',
+                },
+                code: 200,
             };
         }
 
@@ -406,26 +448,38 @@ export const publishRandomInstagramContainerForAccount = async (account: IAccoun
         });
 
         if (publishResponse.success) {
-            await updateInstagramMediaContainer({
-                id: mediaContainer.id as number,
-                attempts: ((mediaContainer.attempts || 0) as number) + 1,
-                error: publishResponse.error || '',
-                mediaId: publishResponse.postId || '',
-                lastCheckedIGStatus: publishResponse.lastCheckedIGStatus || '',
-                isPublished: true,
-            });
+            await updateInstagramMediaContainer(
+                {
+                    id: mediaContainer.id as number,
+                    attempts: ((mediaContainer.attempts || 0) as number) + 1,
+                    error: publishResponse.error || '',
+                    mediaId: publishResponse.postId || '',
+                    lastCheckedIGStatus: publishResponse.lastCheckedIGStatus || '',
+                    isPublished: true,
+                },
+                db,
+            );
 
-            return publishResponse;
+            return {
+                result: {
+                    success: true,
+                    message: 'success',
+                },
+                code: 200,
+            };
         } else {
             const newAttempts = ((mediaContainer.attempts || 0) as number) + 1;
-            await updateInstagramMediaContainer({
-                id: mediaContainer.id as number,
-                attempts: newAttempts,
-                error: publishResponse.error || '',
-                lastCheckedIGStatus: publishResponse.lastCheckedIGStatus || '',
-                isBlocked: newAttempts > 3,
-                blockedReason: newAttempts > 3 ? 'Too many attempts' : undefined,
-            });
+            await updateInstagramMediaContainer(
+                {
+                    id: mediaContainer.id as number,
+                    attempts: newAttempts,
+                    error: publishResponse.error || '',
+                    lastCheckedIGStatus: publishResponse.lastCheckedIGStatus || '',
+                    isBlocked: newAttempts > 3,
+                    blockedReason: newAttempts > 3 ? 'Too many attempts' : undefined,
+                },
+                db,
+            );
 
             await delay(DelayMS.Sec5);
         }

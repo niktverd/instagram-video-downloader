@@ -1,11 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {Transaction} from 'objection';
-
 import {InstagramMediaContainer} from '../models/InstagramMediaContainer';
 
-import db from './utils';
-
-import {IResponse} from '#src/types/common';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {ThrownError} from '#src/utils/error';
 import {
     CreateInstagramMediaContainerParams,
@@ -22,9 +17,10 @@ import {
     UpdateInstagramMediaContainerResponse,
 } from '#types';
 
-export async function createInstagramMediaContainer(
-    params: CreateInstagramMediaContainerParams,
-): IResponse<CreateInstagramMediaContainerResponse> {
+export const createInstagramMediaContainer: ApiFunctionPrototype<
+    CreateInstagramMediaContainerParams,
+    CreateInstagramMediaContainerResponse
+> = async (params, db) => {
     const preparedVideoPromise = await db.transaction(async (trx) => {
         const preparedVideo = await InstagramMediaContainer.query(trx).insert(params);
 
@@ -35,13 +31,13 @@ export async function createInstagramMediaContainer(
         result: preparedVideoPromise,
         code: 200,
     };
-}
+};
 
-export async function getInstagramMediaContainerById(
-    params: GetInstagramMediaContainerByIdParams,
-    trx?: Transaction,
-): IResponse<GetInstagramMediaContainerByIdResponse> {
-    const preparedVideo = await InstagramMediaContainer.query(trx || db).findById(params.id);
+export const getInstagramMediaContainerById: ApiFunctionPrototype<
+    GetInstagramMediaContainerByIdParams,
+    GetInstagramMediaContainerByIdResponse
+> = async (params, db) => {
+    const preparedVideo = await InstagramMediaContainer.query(db).findById(params.id);
 
     if (!preparedVideo) {
         throw new ThrownError('InstagramMediaContainer not found', 404);
@@ -51,14 +47,14 @@ export async function getInstagramMediaContainerById(
         result: preparedVideo,
         code: 200,
     };
-}
+};
 
-export async function getAllInstagramMediaContainers(
-    params: GetAllInstagramMediaContainersParams,
-    trx?: Transaction,
-): IResponse<GetAllInstagramMediaContainersResponse> {
+export const getAllInstagramMediaContainers: ApiFunctionPrototype<
+    GetAllInstagramMediaContainersParams,
+    GetAllInstagramMediaContainersResponse
+> = async (params, db) => {
     const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
-    const query = InstagramMediaContainer.query(trx || db);
+    const query = InstagramMediaContainer.query(db);
 
     if (sortBy) {
         query.orderBy(sortBy, sortOrder as 'asc' | 'desc');
@@ -76,15 +72,15 @@ export async function getAllInstagramMediaContainers(
         },
         code: 200,
     };
-}
+};
 
-export async function updateInstagramMediaContainer(
-    params: UpdateInstagramMediaContainerParams,
-    trx?: Transaction,
-): IResponse<UpdateInstagramMediaContainerResponse> {
+export const updateInstagramMediaContainer: ApiFunctionPrototype<
+    UpdateInstagramMediaContainerParams,
+    UpdateInstagramMediaContainerResponse
+> = async (params, db) => {
     const {id, ...updateData} = params;
 
-    const preparedVideoPromise = await (trx || db).transaction(async (t) => {
+    const preparedVideoPromise = await db.transaction(async (t) => {
         const preparedVideo = await InstagramMediaContainer.query(t).patchAndFetchById(
             id,
             updateData,
@@ -101,23 +97,24 @@ export async function updateInstagramMediaContainer(
         result: preparedVideoPromise,
         code: 200,
     };
-}
+};
 
-export async function deleteInstagramMediaContainer(
-    params: DeleteInstagramMediaContainerParams,
-    trx?: Transaction,
-): IResponse<DeleteInstagramMediaContainerResponse> {
-    const deletedCount = await InstagramMediaContainer.query(trx || db).deleteById(params.id);
+export const deleteInstagramMediaContainer: ApiFunctionPrototype<
+    DeleteInstagramMediaContainerParams,
+    DeleteInstagramMediaContainerResponse
+> = async (params, db) => {
+    const deletedCount = await InstagramMediaContainer.query(db).deleteById(params.id);
 
     return {
         result: deletedCount,
         code: 200,
     };
-}
+};
 
-export async function getLimitedInstagramMediaContainers(
-    params: GetLimitedInstagramMediaContainersParams,
-): IResponse<GetLimitedInstagramMediaContainersResponse> {
+export const getLimitedInstagramMediaContainers: ApiFunctionPrototype<
+    GetLimitedInstagramMediaContainersParams,
+    GetLimitedInstagramMediaContainersResponse
+> = async (params, db) => {
     const {accountId, limit = 3, notPublished, random, isBlocked = false} = params;
     const query = InstagramMediaContainer.query(db).where('isBlocked', isBlocked);
 
@@ -139,4 +136,4 @@ export async function getLimitedInstagramMediaContainers(
         result: preparedVideo,
         code: 200,
     };
-}
+};

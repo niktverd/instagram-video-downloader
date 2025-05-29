@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {omit} from 'lodash';
-import {Transaction} from 'objection';
 
 import {Account} from '../models/Account';
-
-import db from './utils';
 
 import {
     CreateAccountParams,
@@ -18,11 +15,15 @@ import {
     GetAllAccountsParams,
     GetAllAccountsResponse,
     UpdateAccountParams,
+    UpdateAccountResponse,
 } from '#src/types/account';
-import {IResponse} from '#src/types/common';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {ThrownError} from '#src/utils/error';
 
-export async function createAccount(params: CreateAccountParams): IResponse<CreateAccountResponse> {
+export const createAccount: ApiFunctionPrototype<
+    CreateAccountParams,
+    CreateAccountResponse
+> = async (params, db) => {
     const {availableScenarios, instagramLocations, ...accountParams} = params;
 
     const accountPromise = await db.transaction(async (trx) => {
@@ -56,13 +57,13 @@ export async function createAccount(params: CreateAccountParams): IResponse<Crea
         result: accountPromise,
         code: 200,
     };
-}
+};
 
-export async function getAccountById(
-    params: GetAccountByIdParams,
-    trx?: Transaction,
-): IResponse<GetAccountByIdResponse> {
-    const account = await Account.query(trx || db)
+export const getAccountById: ApiFunctionPrototype<
+    GetAccountByIdParams,
+    GetAccountByIdResponse
+> = async (params, db) => {
+    const account = await Account.query(db)
         .findById(params.id)
         .withGraphFetched('availableScenarios')
         .withGraphFetched('instagramLocations');
@@ -75,13 +76,13 @@ export async function getAccountById(
         result: account,
         code: 200,
     };
-}
+};
 
-export async function getAccountBySlug(
-    params: GetAccountBySlugParams,
-    trx?: Transaction,
-): IResponse<GetAccountBySlugResponse> {
-    const account = await Account.query(trx || db)
+export const getAccountBySlug: ApiFunctionPrototype<
+    GetAccountBySlugParams,
+    GetAccountBySlugResponse
+> = async (params, db) => {
+    const account = await Account.query(db)
         .where('slug', params.slug)
         .first()
         .withGraphFetched('availableScenarios')
@@ -95,14 +96,14 @@ export async function getAccountBySlug(
         result: account,
         code: 200,
     };
-}
+};
 
-export async function getAllAccounts(
-    params: GetAllAccountsParams,
-    trx?: Transaction,
-): IResponse<GetAllAccountsResponse> {
+export const getAllAccounts: ApiFunctionPrototype<
+    GetAllAccountsParams,
+    GetAllAccountsResponse
+> = async (params, db) => {
     const {onlyEnabled = false} = params;
-    const query = Account.query(trx || db)
+    const query = Account.query(db)
         .withGraphFetched('availableScenarios')
         .withGraphFetched('instagramLocations');
 
@@ -116,15 +117,15 @@ export async function getAllAccounts(
         result: accounts,
         code: 200,
     };
-}
+};
 
-export async function updateAccount(
-    params: UpdateAccountParams,
-    trx?: Transaction,
-): IResponse<Account> {
+export const updateAccount: ApiFunctionPrototype<
+    UpdateAccountParams,
+    UpdateAccountResponse
+> = async (params, db) => {
     const {id, availableScenarios, instagramLocations, ...updateData} = params;
 
-    const accountPromise = await (trx || db).transaction(async (t) => {
+    const accountPromise = await db.transaction(async (t) => {
         const account = await Account.query(t).patchAndFetchById(
             id,
             omit(updateData, 'availableScenarios', 'instagramLocations'),
@@ -168,15 +169,15 @@ export async function updateAccount(
         result: accountPromise,
         code: 200,
     };
-}
+};
 
-export async function deleteAccount(
-    params: DeleteAccountParams,
-    trx?: Transaction,
-): IResponse<DeleteAccountResponse> {
-    const deletedCount = await Account.query(trx || db).deleteById(params.id);
+export const deleteAccount: ApiFunctionPrototype<
+    DeleteAccountParams,
+    DeleteAccountResponse
+> = async (params, db) => {
+    const deletedCount = await Account.query(db).deleteById(params.id);
     return {
         result: deletedCount,
         code: 200,
     };
-}
+};
