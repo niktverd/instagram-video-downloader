@@ -13,6 +13,7 @@ import {Collection, DelayS} from '../constants';
 import {getScenarios} from '../sections/shared/scenarios';
 import {CreateSourceParams, IScenario, MediaPostModel, SourceV3} from '../types';
 
+import {ThrownError} from './error';
 import {log, logError} from './logging';
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -244,7 +245,7 @@ export const isTimeToPublishInstagram = async () => {
         log({schedule, now, diff, delay: DelayS.Min5});
 
         if (diff < DelayS.Min5) {
-            throw new Error('It is to early to publish container');
+            throw new ThrownError('It is to early to publish container', 400);
         }
     }
 };

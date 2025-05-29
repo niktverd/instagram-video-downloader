@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import {Request, Response} from 'express';
 
 import {createSource} from '#src/db';
+import {ThrownError} from '#src/utils/error';
 import {initiateRecordV3, log, logError} from '#utils';
 
 dotenv.config();
@@ -13,47 +14,42 @@ const getAttachment = (body: Request['body']) => {
     log(body);
 
     if (object !== 'instagram') {
-        log({object});
-        throw new Error('Object is not instagram');
+        throw new ThrownError('Object is not instagram', 400);
     }
 
     if (!entries?.length) {
-        log({entries});
-        throw new Error('entries is empty');
+        throw new ThrownError('entries is empty', 400);
     }
 
     const entry = entries[0];
 
     if (!entry) {
-        log({entry});
-        throw new Error('entry is undefined');
+        throw new ThrownError('entry is undefined', 400);
     }
 
     if (!entry.messaging) {
-        log({'entry.messaging': entry.messaging});
-        throw new Error('entry.messaging is undefined');
+        throw new ThrownError('entry.messaging is undefined', 400);
     }
 
     const [messaging] = entry.messaging;
     const senderId = messaging.sender?.id;
     const recipientId = messaging.recipient?.id;
-    log({senderId, recipientId, messaging});
 
     if (!availableSenders.includes(senderId?.toString())) {
-        log({availableSenders, senderId});
-        throw new Error('senderId is not allowed');
+        throw new ThrownError(
+            `senderId is not allowed, availableSenders: ${availableSenders.join(', ')}`,
+            400,
+        );
     }
 
     const attachments = messaging.message?.attachments;
     if (!attachments.length) {
-        log({attachments});
-        throw new Error('attachments is empty');
+        throw new ThrownError('attachments is empty', 400);
     }
 
     const [attachment] = attachments;
     if (!attachment) {
-        log({attachment});
-        throw new Error('attachment is undefined');
+        throw new ThrownError('attachment is undefined', 400);
     }
 
     return {senderId, recipientId, attachment};

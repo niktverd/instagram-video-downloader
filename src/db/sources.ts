@@ -13,6 +13,7 @@ import {
     GetOneSourceParamsSchema as _GetOneSourceParamsSchema,
     GetSourceByIdParamsSchema as _GetSourceByIdParamsSchema,
 } from '#schemas/handlers/source';
+import {IResponse} from '#src/types/common';
 import {
     CreateSourceParams,
     CreateSourceResponse,
@@ -25,23 +26,27 @@ import {
     GetSourceByIdParams,
     GetSourceByIdResponse,
     UpdateSourceParams,
+    UpdateSourceResponse,
     UpdateSourceResponse as _UpdateSourceResponse,
 } from '#types';
 
 export async function createSource(
     params: CreateSourceParams,
     trx?: Transaction,
-): Promise<CreateSourceResponse> {
+): IResponse<CreateSourceResponse> {
     const validatedParams = CreateSourceParamsSchema.parse(params);
     const source = await Source.query(trx || db).insert(validatedParams);
 
-    return source;
+    return {
+        result: source,
+        code: 200,
+    };
 }
 
 export async function getAllSources(
     params: GetAllSourcesParams,
     trx?: Transaction,
-): Promise<GetAllSourcesResponse> {
+): IResponse<GetAllSourcesResponse> {
     const {
         page = 1,
         limit = 10,
@@ -69,15 +74,18 @@ export async function getAllSources(
 
     // Result contains 'results' (array of data) and 'total' (total count)
     return {
-        sources: result.results,
-        count: result.total,
+        result: {
+            sources: result.results,
+            count: result.total,
+        },
+        code: 200,
     };
 }
 
 export async function getOneSource(
     params: GetOneSourceParams,
     trx?: Transaction,
-): Promise<GetOneSourceResponse> {
+): IResponse<GetOneSourceResponse> {
     const {emptyFirebaseUrl, random, id} = params;
     const query = Source.query(trx || db);
 
@@ -93,10 +101,18 @@ export async function getOneSource(
         query.orderByRaw('RANDOM()');
     }
 
-    return query.limit(1).first();
+    const source = await query.limit(1).first();
+
+    return {
+        result: source,
+        code: 200,
+    };
 }
 
-export async function updateSource(params: UpdateSourceParams, trx?: Transaction): Promise<Source> {
+export async function updateSource(
+    params: UpdateSourceParams,
+    trx?: Transaction,
+): IResponse<UpdateSourceResponse> {
     const {id, ...updateData} = UpdateSourceParamsSchema.parse(params);
 
     const cleanUpdateData: any = {};
@@ -110,23 +126,33 @@ export async function updateSource(params: UpdateSourceParams, trx?: Transaction
     });
 
     const source = await Source.query(trx || db).patchAndFetchById(id, cleanUpdateData);
-    return source;
+
+    return {
+        result: source,
+        code: 200,
+    };
 }
 
 export async function deleteSource(
     params: DeleteSourceParams,
     trx?: Transaction,
-): Promise<DeleteSourceResponse> {
+): IResponse<DeleteSourceResponse> {
     const deletedCount = await Source.query(trx || db).deleteById(params.id);
 
-    return deletedCount;
+    return {
+        result: deletedCount,
+        code: 200,
+    };
 }
 
 export async function getSourceById(
     params: GetSourceByIdParams,
     trx?: Transaction,
-): Promise<GetSourceByIdResponse> {
+): IResponse<GetSourceByIdResponse> {
     const source = await Source.query(trx || db).findById(params.id);
 
-    return source;
+    return {
+        result: source,
+        code: 200,
+    };
 }

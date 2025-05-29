@@ -4,6 +4,7 @@
  */
 
 import {PubSubAction, PubSubPayload, PubSubTopic} from './constants';
+import {ThrownError} from './error';
 import {log, logError} from './logging';
 
 import {GetAllAccountsResponse, IScenario} from '#types';
@@ -21,9 +22,8 @@ export const publishMessageToPubSub = async (
 ): Promise<boolean> => {
     try {
         const projectId = process.env.GCP_PROJECT_ID;
-        log('[pubsub-client] Project ID:', projectId, 'topicName:', topicName);
         if (!projectId) {
-            throw new Error('GCP_PROJECT_ID environment variable is not set');
+            throw new ThrownError('GCP_PROJECT_ID environment variable is not set', 400);
         }
 
         log('[pubsub-client] Publishing message to topic:', topicName);
@@ -107,8 +107,7 @@ export const publishBulkRunScenarioMessages = async (
         const projectId = process.env.GCP_PROJECT_ID;
         log('projectId:', projectId);
         if (!projectId) {
-            log('projectId is not set');
-            throw new Error('GCP_PROJECT_ID environment variable is not set');
+            throw new ThrownError('GCP_PROJECT_ID environment variable is not set');
         }
 
         log(

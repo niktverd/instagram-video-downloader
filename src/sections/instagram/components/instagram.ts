@@ -23,6 +23,7 @@ import {
     getOnePreparedVideo,
     updateInstagramMediaContainer,
 } from '#src/db';
+import {ThrownError} from '#src/utils/error';
 import {IAccount, InstagramLocationSource, MediaPostModelOld} from '#types';
 import {
     delay,
@@ -60,7 +61,7 @@ export async function createInstagramPostContainer({
 }: CreateInstagramPostContainerArgs) {
     try {
         if (!accessToken) {
-            throw new Error('Access token not found');
+            throw new ThrownError('Access token not found', 400);
         }
         // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         const postData: any = {
@@ -89,7 +90,7 @@ export async function createInstagramPostContainer({
         } else if (imageUrl) {
             postData.image_url = imageUrl;
         } else {
-            throw new Error('Data is not provided');
+            throw new ThrownError('Data is not provided', 400);
         }
         log({postData});
 
@@ -175,7 +176,13 @@ export async function publishInstagramPostContainer({
     try {
         log({containerId, accessToken});
         if (!accessToken || !containerId) {
-            throw new Error('Access token not found or container id is empty');
+            throw new ThrownError(
+                `Access token not found or container id is empty: ${JSON.stringify({
+                    accessToken,
+                    containerId,
+                })}`,
+                400,
+            );
         }
 
         // const statusResponse = await fetch(`https://graph.instagram.com/v21.0/${containerId}?fields=copyright_check_status&access_token=${accessToken}`);
@@ -188,7 +195,7 @@ export async function publishInstagramPostContainer({
 
         lastCheckedIGStatus = statusResponseJson.status_code;
         if (statusResponseJson.status_code !== 'FINISHED') {
-            throw new Error('Media is not ready to be published');
+            throw new ThrownError('Media is not ready to be published', 400);
         }
 
         // Then publish the container
@@ -290,7 +297,7 @@ export const canInstagramPostBePublished = async ({
     try {
         log({mediaContainerId, accessToken});
         if (!accessToken || !mediaContainerId) {
-            throw new Error('Access token not found or container id is empty');
+            throw new ThrownError('Access token not found or container id is empty', 400);
         }
 
         const statusResponse = await fetch(
@@ -301,7 +308,7 @@ export const canInstagramPostBePublished = async ({
         log({statusResponseJson});
 
         if (statusResponseJson.status_code !== 'FINISHED') {
-            throw new Error('Container is not ready to be published');
+            throw new ThrownError('Container is not ready to be published', 400);
         }
 
         return true;
@@ -312,7 +319,7 @@ export const canInstagramPostBePublished = async ({
 };
 
 export const prepareMediaContainersForAccount = async (account: IAccount) => {
-    const mediaContainers = await getLimitedInstagramMediaContainers({
+    const {result: mediaContainers} = await getLimitedInstagramMediaContainers({
         accountId: account.id,
         random: true,
         notPublished: true,
@@ -376,7 +383,7 @@ export const prepareMediaContainersForAccount = async (account: IAccount) => {
 export const publishRandomInstagramContainerForAccount = async (account: IAccount) => {
     // eslint-disable-next-line no-constant-condition
     while (true) {
-        const mediaContainers = await getLimitedInstagramMediaContainers({
+        const {result: mediaContainers} = await getLimitedInstagramMediaContainers({
             accountId: account.id,
             random: true,
             notPublished: true,

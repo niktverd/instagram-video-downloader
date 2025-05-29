@@ -11,6 +11,7 @@ import {
 import {ScenarioFunction} from './types';
 import {addRandomEffects} from './utils';
 
+import {ThrownError} from '#src/utils/error';
 import {ScenarioShortifyUnique} from '#types';
 import {getRandomElementOfArray, log, saveFileToDisk} from '#utils';
 
@@ -31,10 +32,10 @@ export const shortifyUnique: ScenarioFunction = async ({scenario, source, basePa
     const bannerVideoUrl = getRandomElementOfArray(bannerVideoUrls);
     log({mainVideoUrl, bannerVideoUrl});
     if (!bannerVideoUrl) {
-        throw new Error('Banner video URL is not found');
+        throw new ThrownError('Banner video URL is not found', 400);
     }
     if (!mainVideoUrl) {
-        throw new Error('Main video URL is not found');
+        throw new ThrownError('Main video URL is not found', 400);
     }
 
     //download videos

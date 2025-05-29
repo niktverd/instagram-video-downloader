@@ -9,6 +9,8 @@ import {
     CreatePreparedVideoParamsSchema,
     UpdatePreparedVideoParamsSchema,
 } from '#schemas/handlers/preparedVideo';
+import {IResponse} from '#src/types/common';
+import {ThrownError} from '#src/utils/error';
 import {
     CreatePreparedVideoParams,
     CreatePreparedVideoResponse,
@@ -27,32 +29,40 @@ import {
 
 export async function createPreparedVideo(
     params: CreatePreparedVideoParams,
-): Promise<CreatePreparedVideoResponse> {
-    return await db.transaction(async (trx) => {
+): IResponse<CreatePreparedVideoResponse> {
+    const preparedVideoPromise = await db.transaction(async (trx) => {
         const validatedParams = CreatePreparedVideoParamsSchema.parse(params);
         const preparedVideo = await PreparedVideo.query(trx).insert(validatedParams);
 
         return preparedVideo;
     });
+
+    return {
+        result: preparedVideoPromise,
+        code: 200,
+    };
 }
 
 export async function getPreparedVideoById(
     params: GetPreparedVideoByIdParams,
     trx?: Transaction,
-): Promise<GetPreparedVideoByIdResponse> {
+): IResponse<GetPreparedVideoByIdResponse> {
     const preparedVideo = await PreparedVideo.query(trx || db).findById(params.id);
 
     if (!preparedVideo) {
-        throw new Error('PreparedVideo not found');
+        throw new ThrownError('PreparedVideo not found', 404);
     }
 
-    return preparedVideo;
+    return {
+        result: preparedVideo,
+        code: 200,
+    };
 }
 
 export async function getAllPreparedVideos(
     params: GetAllPreparedVideosParams,
     trx?: Transaction,
-): Promise<GetAllPreparedVideosResponse> {
+): IResponse<GetAllPreparedVideosResponse> {
     const {
         page = 1,
         limit = 10,
@@ -88,34 +98,45 @@ export async function getAllPreparedVideos(
     const result = await query.page(pageNumber - 1, limitNumber); // Objection uses 0-based page indexing
 
     return {
-        preparedVideos: result.results,
-        count: result.total,
+        result: {
+            preparedVideos: result.results,
+            count: result.total,
+        },
+        code: 200,
     };
 }
 
 export async function updatePreparedVideo(
     params: UpdatePreparedVideoParams,
     trx?: Transaction,
-): Promise<PreparedVideo> {
+): IResponse<PreparedVideo> {
     const {id, ...updateData} = UpdatePreparedVideoParamsSchema.parse(params);
 
-    return await (trx || db).transaction(async (t) => {
+    const preparedVideoPromise = await (trx || db).transaction(async (t) => {
         const preparedVideo = await PreparedVideo.query(t).patchAndFetchById(id, updateData);
 
         if (!preparedVideo) {
-            throw new Error('PreparedVideo not found');
+            throw new ThrownError('PreparedVideo not found', 404);
         }
 
         return preparedVideo;
     });
+
+    return {
+        result: preparedVideoPromise,
+        code: 200,
+    };
 }
 
 export async function deletePreparedVideo(
     params: DeletePreparedVideoParams,
     trx?: Transaction,
-): Promise<DeletePreparedVideoResponse> {
+): IResponse<DeletePreparedVideoResponse> {
     const deletedCount = await PreparedVideo.query(trx || db).deleteById(params.id);
-    return deletedCount;
+    return {
+        result: deletedCount,
+        code: 200,
+    };
 }
 
 export async function getOnePreparedVideo(

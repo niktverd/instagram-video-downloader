@@ -2,6 +2,7 @@ import {addDoc, collection, doc, getDoc, getDocs, updateDoc} from 'firebase/fire
 
 import {firestore} from '#config/firebase';
 import {Collection} from '#src/constants';
+import {ThrownError} from '#src/utils/error';
 import {ScenarioV4, SourceV3} from '#types';
 import {log} from '#utils';
 
@@ -9,7 +10,7 @@ export const getScenarios = async (onlyEnabled = false) => {
     const collectionRef = collection(firestore, Collection.Scenarios);
     const snaps = await getDocs(collectionRef);
     if (snaps.empty) {
-        throw new Error(`Collection ${Collection.Scenarios} is empty`);
+        throw new ThrownError(`Collection ${Collection.Scenarios} is empty`, 400);
     }
     const data = snaps.docs.map((snap) => ({...snap.data(), id: 1} as ScenarioV4));
 
@@ -21,7 +22,7 @@ export const getScenario = async (id: string): Promise<ScenarioV4> => {
     const docRef = doc(colRef, id);
     const snap = await getDoc(docRef);
     if (!snap.exists()) {
-        throw new Error(`Scenario ${id} not found`);
+        throw new ThrownError(`Scenario ${id} not found`, 400);
     }
 
     return {...snap.data(), id: 1} as ScenarioV4;

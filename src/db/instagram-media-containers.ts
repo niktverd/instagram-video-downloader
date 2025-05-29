@@ -5,6 +5,8 @@ import {InstagramMediaContainer} from '../models/InstagramMediaContainer';
 
 import db from './utils';
 
+import {IResponse} from '#src/types/common';
+import {ThrownError} from '#src/utils/error';
 import {
     CreateInstagramMediaContainerParams,
     CreateInstagramMediaContainerResponse,
@@ -22,31 +24,39 @@ import {
 
 export async function createInstagramMediaContainer(
     params: CreateInstagramMediaContainerParams,
-): Promise<CreateInstagramMediaContainerResponse> {
-    return await db.transaction(async (trx) => {
+): IResponse<CreateInstagramMediaContainerResponse> {
+    const preparedVideoPromise = await db.transaction(async (trx) => {
         const preparedVideo = await InstagramMediaContainer.query(trx).insert(params);
 
         return preparedVideo;
     });
+
+    return {
+        result: preparedVideoPromise,
+        code: 200,
+    };
 }
 
 export async function getInstagramMediaContainerById(
     params: GetInstagramMediaContainerByIdParams,
     trx?: Transaction,
-): Promise<GetInstagramMediaContainerByIdResponse> {
+): IResponse<GetInstagramMediaContainerByIdResponse> {
     const preparedVideo = await InstagramMediaContainer.query(trx || db).findById(params.id);
 
     if (!preparedVideo) {
-        throw new Error('InstagramMediaContainer not found');
+        throw new ThrownError('InstagramMediaContainer not found', 404);
     }
 
-    return preparedVideo;
+    return {
+        result: preparedVideo,
+        code: 200,
+    };
 }
 
 export async function getAllInstagramMediaContainers(
     params: GetAllInstagramMediaContainersParams,
     trx?: Transaction,
-): Promise<GetAllInstagramMediaContainersResponse> {
+): IResponse<GetAllInstagramMediaContainersResponse> {
     const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
     const query = InstagramMediaContainer.query(trx || db);
 
@@ -60,42 +70,54 @@ export async function getAllInstagramMediaContainers(
     const result = await query.page(pageNumber - 1, limitNumber);
 
     return {
-        mediaContainers: result.results,
-        count: result.total,
+        result: {
+            mediaContainers: result.results,
+            count: result.total,
+        },
+        code: 200,
     };
 }
 
 export async function updateInstagramMediaContainer(
     params: UpdateInstagramMediaContainerParams,
     trx?: Transaction,
-): Promise<UpdateInstagramMediaContainerResponse> {
+): IResponse<UpdateInstagramMediaContainerResponse> {
     const {id, ...updateData} = params;
 
-    return await (trx || db).transaction(async (t) => {
+    const preparedVideoPromise = await (trx || db).transaction(async (t) => {
         const preparedVideo = await InstagramMediaContainer.query(t).patchAndFetchById(
             id,
             updateData,
         );
 
         if (!preparedVideo) {
-            throw new Error('InstagramMediaContainer not found');
+            throw new ThrownError('InstagramMediaContainer not found', 404);
         }
 
         return preparedVideo;
     });
+
+    return {
+        result: preparedVideoPromise,
+        code: 200,
+    };
 }
 
 export async function deleteInstagramMediaContainer(
     params: DeleteInstagramMediaContainerParams,
     trx?: Transaction,
-): Promise<DeleteInstagramMediaContainerResponse> {
+): IResponse<DeleteInstagramMediaContainerResponse> {
     const deletedCount = await InstagramMediaContainer.query(trx || db).deleteById(params.id);
-    return deletedCount;
+
+    return {
+        result: deletedCount,
+        code: 200,
+    };
 }
 
 export async function getLimitedInstagramMediaContainers(
     params: GetLimitedInstagramMediaContainersParams,
-): Promise<GetLimitedInstagramMediaContainersResponse> {
+): IResponse<GetLimitedInstagramMediaContainersResponse> {
     const {accountId, limit = 3, notPublished, random, isBlocked = false} = params;
     const query = InstagramMediaContainer.query(db).where('isBlocked', isBlocked);
 
@@ -113,5 +135,8 @@ export async function getLimitedInstagramMediaContainers(
 
     const preparedVideo = await query.limit(limit);
 
-    return preparedVideo;
+    return {
+        result: preparedVideo,
+        code: 200,
+    };
 }

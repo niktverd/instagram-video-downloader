@@ -13,6 +13,8 @@ import {
     GetScenarioByIdParamsSchema as _GetScenarioByIdParamsSchema,
     GetScenarioBySlugParamsSchema as _GetScenarioBySlugParamsSchema,
 } from '#schemas/handlers/scenario';
+import {IResponse} from '#src/types/common';
+import {ThrownError} from '#src/utils/error';
 import {
     CreateScenarioParams,
     CreateScenarioResponse,
@@ -25,14 +27,14 @@ import {
     GetScenarioBySlugParams,
     GetScenarioBySlugResponse,
     UpdateScenarioParams,
+    UpdateScenarioResponse,
     IScenario as _IScenario,
-    UpdateScenarioResponse as _UpdateScenarioResponse,
 } from '#types';
 
 export async function createScenario(
     params: CreateScenarioParams,
     trx?: Transaction,
-): Promise<CreateScenarioResponse> {
+): IResponse<CreateScenarioResponse> {
     const validatedParams = CreateScenarioParamsSchema.parse(params);
     const scenarioData: Record<string, any> = {
         slug: validatedParams.slug,
@@ -45,7 +47,7 @@ export async function createScenario(
         scenarioData.copiedFrom = validatedParams.copiedFrom;
     }
 
-    return await (trx || db).transaction(async (t) => {
+    const scenarioPromise = await (trx || db).transaction(async (t) => {
         console.log('scenarioData', scenarioData);
         const scenario = await Scenario.query(t).insert(scenarioData);
         console.log('scenario', scenario);
@@ -64,51 +66,65 @@ export async function createScenario(
 
         return scenario;
     });
+
+    return {
+        result: scenarioPromise,
+        code: 200,
+    };
 }
 
 export async function getScenarioById(
     params: GetScenarioByIdParams,
     trx?: Transaction,
-): Promise<GetScenarioByIdResponse> {
+): IResponse<GetScenarioByIdResponse> {
     const scenario = await Scenario.query(trx || db)
         .findById(params.id)
         .withGraphFetched('instagramLocations');
 
     if (!scenario) {
-        throw new Error('Scenario not found');
+        throw new ThrownError('Scenario not found', 404);
     }
 
-    return scenario;
+    return {
+        result: scenario,
+        code: 200,
+    };
 }
 
 export async function getScenarioBySlug(
     params: GetScenarioBySlugParams,
     trx?: Transaction,
-): Promise<GetScenarioBySlugResponse> {
+): IResponse<GetScenarioBySlugResponse> {
     const scenario = await Scenario.query(trx || db)
         .where('slug', params.slug)
         .first()
         .withGraphFetched('instagramLocations');
 
     if (!scenario) {
-        throw new Error('Scenario not found');
+        throw new ThrownError('Scenario not found', 404);
     }
 
-    return scenario;
+    return {
+        result: scenario,
+        code: 200,
+    };
 }
 
 export async function getAllScenarios(
     _params: GetAllScenariosParams,
     trx?: Transaction,
-): Promise<GetAllScenariosResponse> {
+): IResponse<GetAllScenariosResponse> {
     const scenarios = await Scenario.query(trx || db).withGraphFetched('instagramLocations');
-    return scenarios;
+    return {
+        result: scenarios,
+        code: 200,
+    };
 }
 
 export async function updateScenario(
     params: UpdateScenarioParams,
     trx?: Transaction,
-): Promise<Scenario> {
+): IResponse<UpdateScenarioResponse> {
     const {id, instagramLocations, ...updateData} = UpdateScenarioParamsSchema.parse(params);
 
     // Create a clean update object without undefined/null values that might cause type issues
@@ -122,10 +138,10 @@ export async function updateScenario(
         cleanUpdateData[key] = val;
     });
 
-    return await (trx || db).transaction(async (t) => {
+    const scenarioPromise = await (trx || db).transaction(async (t) => {
         const scenario = await Scenario.query(t).patchAndFetchById(id, cleanUpdateData);
         if (!scenario) {
-            throw new Error('Scenario not found');
+            throw new ThrownError('Scenario not found', 404);
         }
 
         // Handle instagram locations if provided
@@ -146,13 +162,21 @@ export async function updateScenario(
 
         return scenario;
     });
+
+    return {
+        result: scenarioPromise,
+        code: 200,
+    };
 }
 
 export async function deleteScenario(
     params: DeleteScenarioParams,
     trx?: Transaction,
-): Promise<DeleteScenarioResponse> {
+): IResponse<DeleteScenarioResponse> {
     console.log('params', params);
     const deletedCount = await Scenario.query(trx || db).deleteById(params.id);
-    return deletedCount;
+    return {
+        result: deletedCount,
+        code: 200,
+    };
 }

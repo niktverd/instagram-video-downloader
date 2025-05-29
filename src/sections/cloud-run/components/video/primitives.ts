@@ -4,6 +4,7 @@ import {dirname, join} from 'path';
 
 import ffmpeg, {FfmpegCommand} from 'fluent-ffmpeg';
 
+import {ThrownError} from '#src/utils/error';
 import {log, logError} from '#utils';
 
 type PrepareOoutputFileNameOptions = {
@@ -65,7 +66,7 @@ export const prepareOutputFileName = (
         return inputFileName.replace(extention, `${suffix}${extention}`);
     }
 
-    throw new Error('Not sufficient data provided');
+    throw new ThrownError('Not sufficient data provided', 400);
 };
 
 export const getVideoDuration = (inputPath: string): Promise<number> => {
@@ -725,7 +726,7 @@ export const changeVideoSpeed = async ({
 }: ChangeVideoSpeedArgs): Promise<string> => {
     log('changeVideoSpeed started');
     if (speed <= 0) {
-        throw new Error('Speed must be greater than 0');
+        throw new ThrownError('Speed must be greater than 0', 400);
     }
 
     const suffix = (speed > 1 ? '_speedup' : '_slowdown') + `-${speed}`;

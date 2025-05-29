@@ -3,15 +3,9 @@ import {Transaction} from 'objection';
 
 import db from './utils';
 
-import {
-    CreateUserParamsSchema,
-    UpdateUserParamsSchema,
-    DeleteUserParamsSchema as _DeleteUserParamsSchema,
-    GetAllUsersParamsSchema as _GetAllUsersParamsSchema,
-    GetUserByEmailParamsSchema as _GetUserByEmailParamsSchema,
-    GetUserByIdParamsSchema as _GetUserByIdParamsSchema,
-} from '#schemas/handlers/user';
+import {CreateUserParamsSchema, UpdateUserParamsSchema} from '#schemas/handlers/user';
 import {User} from '#src/models';
+import {IResponse} from '#src/types/common';
 import {
     CreateUserParams,
     CreateUserResponse,
@@ -25,12 +19,14 @@ import {
     GetUserByIdResponse,
     IUser,
     UpdateUserParams,
+    UpdateUserResponse,
 } from '#src/types/user';
+import {ThrownError} from '#src/utils/error';
 
 export async function createUser(
     params: CreateUserParams,
     trx?: Transaction,
-): Promise<CreateUserResponse> {
+): IResponse<CreateUserResponse> {
     const paramsValidated = CreateUserParamsSchema.parse(params);
 
     const userData: Omit<IUser, 'id'> = {
@@ -43,56 +39,77 @@ export async function createUser(
     };
 
     const user = await User.query(trx || db).insert(userData);
-    return user;
+    return {
+        result: user,
+        code: 200,
+    };
 }
 
 export async function getUserById(
     params: GetUserByIdParams,
     trx?: Transaction,
-): Promise<GetUserByIdResponse> {
+): IResponse<GetUserByIdResponse> {
     const user = await User.query(trx || db).findById(params.id);
     if (!user) {
-        throw new Error('User not found');
+        throw new ThrownError('User not found', 404);
     }
 
-    return user;
+    return {
+        result: user,
+        code: 200,
+    };
 }
 
 export async function getUserByEmail(
     params: GetUserByEmailParams,
     trx?: Transaction,
-): Promise<GetUserByEmailResponse> {
+): IResponse<GetUserByEmailResponse> {
     const user = await User.query(trx || db)
         .where('email', params.email)
         .first();
 
     if (!user) {
-        throw new Error('User not found');
+        throw new ThrownError('User not found', 404);
     }
 
-    return user;
+    return {
+        result: user,
+        code: 200,
+    };
 }
 
 export async function getAllUsers(
     _params: GetAllUsersParams,
     trx?: Transaction,
-): Promise<GetAllUsersResponse> {
+): IResponse<GetAllUsersResponse> {
     const users = await User.query(trx || db);
 
-    return users;
+    return {
+        result: users,
+        code: 200,
+    };
 }
 
-export async function updateUser(params: UpdateUserParams, trx?: Transaction): Promise<User> {
+export async function updateUser(
+    params: UpdateUserParams,
+    trx?: Transaction,
+): IResponse<UpdateUserResponse> {
     const {id, ...updateData} = UpdateUserParamsSchema.parse(params);
 
     const user = await User.query(trx || db).patchAndFetchById(id, updateData);
-    return user;
+    return {
+        result: user,
+        code: 200,
+    };
 }
 
 export async function deleteUser(
     params: DeleteUserParams,
     trx?: Transaction,
-): Promise<DeleteUserResponse> {
+): IResponse<DeleteUserResponse> {
     const deletedCount = await User.query(trx || db).deleteById(params.id);
-    return deletedCount;
+    return {
+        result: deletedCount,
+        code: 200,
+    };
 }

@@ -9,6 +9,7 @@ import {
 } from '../components';
 
 import {getAllAccounts} from '#src/db';
+import {ThrownError} from '#src/utils/error';
 import {delay, log, logError} from '#utils';
 import {stopHerokuApp} from '$/chore/components/heroku';
 
@@ -17,7 +18,7 @@ export const publishById = async (req: Request, res: Response) => {
         log({body: req.body});
         const {id, accessToken} = req.body;
         if (!id || !accessToken) {
-            throw new Error('no id or accessToken found in body');
+            throw new ThrownError('no id or accessToken found in body', 400);
         }
 
         const result = await publishInstagramPostContainer({
@@ -138,7 +139,7 @@ export const publishIntagramV4 = async (req: Request, res: Response) => {
     log(req.query);
 
     try {
-        const accounts = await getAllAccounts({onlyEnabled: true});
+        const {result: accounts} = await getAllAccounts({onlyEnabled: true});
 
         for (const account of accounts) {
             try {

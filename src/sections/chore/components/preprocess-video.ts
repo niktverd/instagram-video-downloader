@@ -19,6 +19,7 @@ import {uploadYoutubeVideo} from '../../youtube/components/youtube';
 import {firestore} from '#config/firebase';
 import {Collection, DelayMS, SECOND_VIDEO, accessTokensArray} from '#src/constants';
 import {deleteSource, getAllAccounts, getOneSource, updateSource} from '#src/db';
+import {ThrownError} from '#src/utils/error';
 import {MediaPostModel, Sources} from '#types';
 import {
     getInstagramPropertyName,
@@ -180,7 +181,7 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
     log('downloadVideoCron', 'started in', ms, 'ms');
 
     setTimeout(async () => {
-        const randomSource = await getOneSource({random: true, emptyFirebaseUrl: true});
+        const {result: randomSource} = await getOneSource({random: true, emptyFirebaseUrl: true});
         if (!randomSource) {
             log('all videos are downloaded');
             downloadVideoCron(DelayMS.Min5);
@@ -198,7 +199,7 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const sourceUrl = (media.sources as any)?.instagramReel?.url;
                     if (!sourceUrl) {
-                        throw new Error('media.sources.instagramReel is empty');
+                        throw new ThrownError('media.sources.instagramReel is empty', 400);
                     }
 
                     const downloadURL = await uploadFileFromUrl({
@@ -219,7 +220,7 @@ export const downloadVideoCron = (ms: number, calledFromApi = false) => {
                     log('duration and url updated', updatedSource);
 
                     // Get scenarios and accounts to send bulk messages
-                    const accounts = await getAllAccounts({});
+                    const {result: accounts} = await getAllAccounts({});
 
                     // Publish bulk messages for each account and scenario pair
                     if (accounts.length > 0) {

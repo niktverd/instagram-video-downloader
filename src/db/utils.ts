@@ -5,6 +5,7 @@ import {Knex, knex} from 'knex';
 import {Model} from 'objection';
 import {z} from 'zod';
 
+import {ThrownError} from '#src/utils/error';
 import {logError} from '#utils';
 
 // Import configuration based on environment
@@ -46,7 +47,7 @@ type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
 
 // Enhanced wrapper for route handlers with validation and method checking
 export const wrapper = <RequestArgs, ResponseArgs>(
-    fn: (args: RequestArgs) => Promise<ResponseArgs>,
+    fn: (args: RequestArgs) => Promise<{result: ResponseArgs; code?: number}>,
     validator: z.ZodType<RequestArgs>,
     allowedMethod?: HttpMethod | HttpMethod[],
 ) => {
@@ -56,13 +57,10 @@ export const wrapper = <RequestArgs, ResponseArgs>(
             if (allowedMethod) {
                 const methods = Array.isArray(allowedMethod) ? allowedMethod : [allowedMethod];
                 if (!methods.includes(req.method as HttpMethod)) {
-                    res.status(405).json({
-                        error: `Method ${req.method} not allowed. Allowed methods: ${methods.join(
-                            ', ',
-                        )}`,
-                    });
-
-                    return;
+                    throw new ThrownError(
+                        `Method ${req.method} not allowed. Allowed methods: ${methods.join(', ')}`,
+                        405,
+                    );
                 }
             }
 
@@ -79,22 +77,27 @@ export const wrapper = <RequestArgs, ResponseArgs>(
 
                 const validatedData = validator.parse(dataToValidate) as RequestArgs;
 
-                const result = await fn(validatedData);
-                res.status(200).json(result);
+                const {code = 200, result} = await fn(validatedData);
+                res.status(code).json(result);
             } catch (validationError) {
                 if (validationError instanceof z.ZodError) {
-                    res.status(400).json({
-                        error: 'Validation failed',
-                        details: validationError.format(),
-                    });
-                    return;
+                    throw new ThrownError(
+                        `Validation failed: ${JSON.stringify(validationError.format())}`,
+                        400,
+                    );
                 }
 
                 throw validationError;
             }
         } catch (error) {
-            logError('Error in wrapper:', String(error));
-            res.status(500).json({error: 'Internal server error: ' + String(error)});
+            console.log(req);
+            if (error instanceof ThrownError) {
+                logError('Error in wrapper:', String(error));
+                res.status(error.code).json({error: error.message});
+            } else {
+                logError('Error in wrapper:', String(error));
+                res.status(500).json({error: 'Internal server error: ' + String(error)});
+            }
         }
     };
 };

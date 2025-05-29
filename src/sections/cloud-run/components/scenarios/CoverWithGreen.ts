@@ -5,6 +5,7 @@ import {addSilentAudioStream, coverWithGreen, getVideoDuration, normalizeVideo} 
 import {ScenarioFunction} from './types';
 import {addRandomEffects} from './utils';
 
+import {ThrownError} from '#src/utils/error';
 import {ScenarioCoverWithGreenUnique} from '#types';
 import {getRandomElementOfArray, log, saveFileToDisk} from '#utils';
 
@@ -23,7 +24,7 @@ export const coverWithGreenScenario: ScenarioFunction = async ({scenario, source
 
     log({mainVideoUrl});
     if (!mainVideoUrl) {
-        throw new Error('Main video URL is not found');
+        throw new ThrownError('Main video URL is not found', 400);
     }
 
     const tempFilePath1 = join(basePath, 'first.mp4');

@@ -5,6 +5,7 @@ import {concatVideoFromList, normalizeVideo, saveFileList} from '../video/primit
 import {ScenarioFunction} from './types';
 import {addRandomEffects} from './utils';
 
+import {ThrownError} from '#src/utils/error';
 import {ScenarioAddBannerAtTheEndUnique} from '#types';
 import {log, saveFileToDisk} from '#utils';
 
@@ -20,10 +21,10 @@ export const addBannerInTheEndUnique: ScenarioFunction = async ({
     log('addBannerInTheEndUnique', {mainVideoUrl, extraBannerUrl});
 
     if (!mainVideoUrl) {
-        throw new Error('Main video URL is not found');
+        throw new ThrownError('Main video URL is not found', 400);
     }
     if (!extraBannerUrl) {
-        throw new Error('Extra banner URL is not found');
+        throw new ThrownError('Extra banner URL is not found', 400);
     }
 
     //download videos
