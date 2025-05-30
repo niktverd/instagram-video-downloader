@@ -36,9 +36,7 @@ export const createScenario: ApiFunctionPrototype<
     }
 
     const scenarioPromise = await db.transaction(async (t) => {
-        console.log('scenarioData', scenarioData);
         const scenario = await Scenario.query(t).insert(scenarioData);
-        console.log('scenario', scenario);
 
         // Handle instagram locations if provided
         if (validatedParams.instagramLocations?.length) {
@@ -162,7 +160,6 @@ export const deleteScenario: ApiFunctionPrototype<
     DeleteScenarioParams,
     DeleteScenarioResponse
 > = async (params, db) => {
-    console.log('params', params);
     const deletedCount = await Scenario.query(db).deleteById(params.id);
     return {
         result: deletedCount,

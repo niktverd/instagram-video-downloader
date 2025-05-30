@@ -1,10 +1,14 @@
 import {Express} from 'express';
 import request from 'supertest';
 
-import {CreateInstagramLocationParams} from '../../src/types/instagramLocation';
+import {
+    CreateInstagramLocationParams,
+    DeleteInstagramLocationParams,
+    UpdateInstagramLocationParams,
+} from '../../src/types/instagramLocation';
 
 export const createLocationHelper = async (
-    params: CreateInstagramLocationParams,
+    params: CreateInstagramLocationParams | undefined,
     testApp: Express,
 ) => {
     const paramsLocal: CreateInstagramLocationParams = params
@@ -24,4 +28,15 @@ export const createLocationHelper = async (
 
 export const getAllLocationsHelper = (testApp: Express) => {
     return request(testApp).get('/api/ui/get-all-instagram-locations');
+};
+
+export const updateLocationHelper = (
+    params: Partial<UpdateInstagramLocationParams>,
+    testApp: Express,
+) => {
+    return request(testApp).patch(`/api/ui/update-instagram-location`).send(params);
+};
+
+export const deleteLocationHelper = (params: DeleteInstagramLocationParams, testApp: Express) => {
+    return request(testApp).delete(`/api/ui/delete-instagram-location`).query(params);
 };

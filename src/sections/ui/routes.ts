@@ -4,12 +4,14 @@ import {
     createAccountPost,
     createInstagramLocationPost,
     createInstagramMediaContainerPost,
+    createPreparedVideoPost,
     createScenarioPost,
     createSourcePost,
     createUserPost,
     deleteAccountDelete,
     deleteInstagramLocationDelete,
     deleteInstagramMediaContainerDelete,
+    deletePreparedVideoDelete,
     deleteScenarioDelete,
     deleteSourceDelete,
     deleteUserDelete,
@@ -25,6 +27,7 @@ import {
     getAllUsersGet,
     getInstagramAccountInsightsGet,
     getOneSourceGet,
+    getPreparedVideoByIdGet,
     getScenarioByIdGet,
     getUserByEmailGet,
     getUserByIdGet,
@@ -39,6 +42,7 @@ import {
     updateAccountPatch,
     updateInstagramLocationPatch,
     updateInstagramMediaContainerPatch,
+    updatePreparedVideoPatch,
     updateScenarioPatch,
     updateSourcePatch,
     updateUserPatch,
@@ -70,6 +74,7 @@ router.get('/get-all-instagram-locations', getAllInstagramLocationsGet);
 // router.get('/get-instagram-location-by-id', getInstagramLocationByIdGet);
 router.get('/get-instagram-account-insights', getInstagramAccountInsightsGet);
 router.get('/get-all-comments-for-posts', getAllCommentsForPostsGet);
+router.get('/get-prepared-video-by-id', getPreparedVideoByIdGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddlePost);
@@ -81,6 +86,7 @@ router.post('/create-user', createUserPost);
 router.post('/create-source', createSourcePost);
 router.post('/create-instagram-media-container', createInstagramMediaContainerPost);
 router.post('/create-instagram-location', createInstagramLocationPost);
+router.post('/add-prepared-video', createPreparedVideoPost);
 
 // PATCH routes
 router.patch('/patch-scenario', updateScenarioPatch);
@@ -89,6 +95,7 @@ router.patch('/update-user', updateUserPatch);
 router.patch('/update-source', updateSourcePatch);
 router.patch('/update-instagram-media-container', updateInstagramMediaContainerPatch);
 router.patch('/update-instagram-location', updateInstagramLocationPatch);
+router.patch('/patch-prepared-video', updatePreparedVideoPatch);
 
 // DELETE routes
 router.delete('/delete-user', deleteUserDelete);
@@ -97,5 +104,6 @@ router.delete('/delete-scenario', deleteScenarioDelete);
 router.delete('/delete-source', deleteSourceDelete);
 router.delete('/delete-instagram-media-container', deleteInstagramMediaContainerDelete);
 router.delete('/delete-instagram-location', deleteInstagramLocationDelete);
+router.delete('/delete-prepared-video', deletePreparedVideoDelete);
 
 export default router;
