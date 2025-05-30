@@ -1,8 +1,12 @@
 import dotenv from 'dotenv';
 import {Request, Response} from 'express';
 
-import {createSource} from '#src/db';
-import {initiateRecordV3, log, logError} from '#utils';
+import {MessageWebhookV3Schema} from '#schemas/handlers';
+import {createSource, wrapper} from '#src/db';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {MessageWebhookV3Params, MessageWebhookV3Response} from '#src/types/instagramApi';
+import {ThrownError} from '#src/utils/error';
+import {initiateRecordV3, log} from '#utils';
 
 dotenv.config();
 
@@ -13,47 +17,42 @@ const getAttachment = (body: Request['body']) => {
     log(body);
 
     if (object !== 'instagram') {
-        log({object});
-        throw new Error('Object is not instagram');
+        throw new ThrownError('Object is not instagram', 400);
     }
 
     if (!entries?.length) {
-        log({entries});
-        throw new Error('entries is empty');
+        throw new ThrownError('entries is empty', 400);
     }
 
     const entry = entries[0];
 
     if (!entry) {
-        log({entry});
-        throw new Error('entry is undefined');
+        throw new ThrownError('entry is undefined', 400);
     }
 
     if (!entry.messaging) {
-        log({'entry.messaging': entry.messaging});
-        throw new Error('entry.messaging is undefined');
+        throw new ThrownError('entry.messaging is undefined', 400);
     }
 
     const [messaging] = entry.messaging;
     const senderId = messaging.sender?.id;
     const recipientId = messaging.recipient?.id;
-    log({senderId, recipientId, messaging});
 
     if (!availableSenders.includes(senderId?.toString())) {
-        log({availableSenders, senderId});
-        throw new Error('senderId is not allowed');
+        throw new ThrownError(
+            `senderId is not allowed, availableSenders: ${availableSenders.join(', ')}`,
+            400,
+        );
     }
 
     const attachments = messaging.message?.attachments;
     if (!attachments.length) {
-        log({attachments});
-        throw new Error('attachments is empty');
+        throw new ThrownError('attachments is empty', 400);
     }
 
     const [attachment] = attachments;
     if (!attachment) {
-        log({attachment});
-        throw new Error('attachment is undefined');
+        throw new ThrownError('attachment is undefined', 400);
     }
 
     return {senderId, recipientId, attachment};
@@ -67,41 +66,46 @@ export const hubChallangeWebhook = (req: Request, res: Response) => {
     res.status(200).send(hubChallenge);
 };
 
-export const messageWebhookV3 = async (req: Request, res: Response) => {
-    try {
-        log(req.query);
-        log(req.body?.entry?.length);
+const messageWebhookV3: ApiFunctionPrototype<
+    MessageWebhookV3Params,
+    MessageWebhookV3Response
+> = async (params, db) => {
+    const {senderId, recipientId, attachment} = getAttachment(params.body);
+    const {type, payload} = attachment;
+    log({senderId, type, payload});
 
-        const {senderId, recipientId, attachment} = getAttachment(req.body);
-        const {type, payload} = attachment;
-        log({senderId, type, payload});
+    const {url, title = ''} = payload;
+    const originalHashtags: string[] = title?.match(/#\w+/g) || [];
 
-        const {url, title = ''} = payload;
-        const originalHashtags: string[] = title?.match(/#\w+/g) || [];
-
-        const data = await initiateRecordV3(
-            {
-                instagramReel: {
-                    url,
-                    senderId,
-                    title,
-                    originalHashtags,
-                    owner: '',
-                },
+    const data = initiateRecordV3(
+        {
+            instagramReel: {
+                url,
+                senderId,
+                title,
+                originalHashtags,
+                owner: '',
             },
-            req.body,
-            senderId,
-            recipientId,
-        );
+        },
+        params.body,
+        senderId,
+        recipientId,
+    );
 
-        console.log('before create source');
-        const sourceRecord = await createSource(data);
-        console.log('after create source');
+    const sourceRecord = await createSource(data, db);
+    log('firestoreDoc', sourceRecord);
 
-        log('firestoreDoc', sourceRecord);
-        res.status(200).send('success');
-    } catch (error) {
-        logError('Error: ', error);
-        res.status(404).send('NotFound');
-    }
+    return {
+        result: {
+            success: true,
+            message: 'success',
+        },
+        code: 200,
+    };
 };
+
+export const messageWebhookV3Post = wrapper<MessageWebhookV3Params, MessageWebhookV3Response>(
+    messageWebhookV3,
+    MessageWebhookV3Schema,
+    'POST',
+);

@@ -1,9 +1,11 @@
 /* eslint-disable valid-jsdoc */
 // import * as firebase from 'firebase/app';
 import {collection, getDocs, getFirestore} from 'firebase/firestore';
+import {TransactionOrKnex} from 'objection';
 
-import db from '../db/utils';
 import User from '../models/User';
+
+import {getDb} from '#src/db';
 
 /**
  * Utility function to migrate users from Firestore to PostgreSQL
@@ -20,7 +22,8 @@ export async function migrateUsers(): Promise<void> {
         let migratedCount = 0;
 
         // Transaction to ensure all users are migrated together
-        await db.transaction(async (trx) => {
+        const db = getDb();
+        await db.transaction(async (trx: TransactionOrKnex) => {
             for (const doc of usersSnapshot.docs) {
                 const userData = doc.data();
 
@@ -58,6 +61,7 @@ export async function migrateUsers(): Promise<void> {
 export async function validateDatabaseSetup(): Promise<boolean> {
     try {
         // Test database connection
+        const db = getDb();
         await db.raw('SELECT 1');
 
         // Check if users table exists

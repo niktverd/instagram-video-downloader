@@ -1,18 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {Transaction} from 'objection';
-
 import {Scenario} from '../models/Scenario';
 
-import db from './utils';
-
-import {
-    CreateScenarioParamsSchema,
-    UpdateScenarioParamsSchema,
-    DeleteScenarioParamsSchema as _DeleteScenarioParamsSchema,
-    GetAllScenariosParamsSchema as _GetAllScenariosParamsSchema,
-    GetScenarioByIdParamsSchema as _GetScenarioByIdParamsSchema,
-    GetScenarioBySlugParamsSchema as _GetScenarioBySlugParamsSchema,
-} from '#schemas/handlers/scenario';
+import {CreateScenarioParamsSchema, UpdateScenarioParamsSchema} from '#schemas/handlers/scenario';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {ThrownError} from '#src/utils/error';
 import {
     CreateScenarioParams,
     CreateScenarioResponse,
@@ -25,15 +15,15 @@ import {
     GetScenarioBySlugParams,
     GetScenarioBySlugResponse,
     UpdateScenarioParams,
-    IScenario as _IScenario,
-    UpdateScenarioResponse as _UpdateScenarioResponse,
+    UpdateScenarioResponse,
 } from '#types';
 
-export async function createScenario(
-    params: CreateScenarioParams,
-    trx?: Transaction,
-): Promise<CreateScenarioResponse> {
+export const createScenario: ApiFunctionPrototype<
+    CreateScenarioParams,
+    CreateScenarioResponse
+> = async (params, db) => {
     const validatedParams = CreateScenarioParamsSchema.parse(params);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scenarioData: Record<string, any> = {
         slug: validatedParams.slug,
         enabled: validatedParams.enabled ?? true,
@@ -45,10 +35,8 @@ export async function createScenario(
         scenarioData.copiedFrom = validatedParams.copiedFrom;
     }
 
-    return await (trx || db).transaction(async (t) => {
-        console.log('scenarioData', scenarioData);
+    const scenarioPromise = await db.transaction(async (t) => {
         const scenario = await Scenario.query(t).insert(scenarioData);
-        console.log('scenario', scenario);
 
         // Handle instagram locations if provided
         if (validatedParams.instagramLocations?.length) {
@@ -64,54 +52,69 @@ export async function createScenario(
 
         return scenario;
     });
-}
 
-export async function getScenarioById(
-    params: GetScenarioByIdParams,
-    trx?: Transaction,
-): Promise<GetScenarioByIdResponse> {
-    const scenario = await Scenario.query(trx || db)
+    return {
+        result: scenarioPromise,
+        code: 200,
+    };
+};
+
+export const getScenarioById: ApiFunctionPrototype<
+    GetScenarioByIdParams,
+    GetScenarioByIdResponse
+> = async (params, db) => {
+    const scenario = await Scenario.query(db)
         .findById(params.id)
         .withGraphFetched('instagramLocations');
 
     if (!scenario) {
-        throw new Error('Scenario not found');
+        throw new ThrownError('Scenario not found', 404);
     }
 
-    return scenario;
-}
+    return {
+        result: scenario,
+        code: 200,
+    };
+};
 
-export async function getScenarioBySlug(
-    params: GetScenarioBySlugParams,
-    trx?: Transaction,
-): Promise<GetScenarioBySlugResponse> {
-    const scenario = await Scenario.query(trx || db)
+export const getScenarioBySlug: ApiFunctionPrototype<
+    GetScenarioBySlugParams,
+    GetScenarioBySlugResponse
+> = async (params, db) => {
+    const scenario = await Scenario.query(db)
         .where('slug', params.slug)
         .first()
         .withGraphFetched('instagramLocations');
 
     if (!scenario) {
-        throw new Error('Scenario not found');
+        throw new ThrownError('Scenario not found', 404);
     }
 
-    return scenario;
-}
+    return {
+        result: scenario,
+        code: 200,
+    };
+};
 
-export async function getAllScenarios(
-    _params: GetAllScenariosParams,
-    trx?: Transaction,
-): Promise<GetAllScenariosResponse> {
-    const scenarios = await Scenario.query(trx || db).withGraphFetched('instagramLocations');
-    return scenarios;
-}
+export const getAllScenarios: ApiFunctionPrototype<
+    GetAllScenariosParams,
+    GetAllScenariosResponse
+> = async (_params, db) => {
+    const scenarios = await Scenario.query(db).withGraphFetched('instagramLocations');
+    return {
+        result: scenarios,
+        code: 200,
+    };
+};
 
-export async function updateScenario(
-    params: UpdateScenarioParams,
-    trx?: Transaction,
-): Promise<Scenario> {
+export const updateScenario: ApiFunctionPrototype<
+    UpdateScenarioParams,
+    UpdateScenarioResponse
+> = async (params, db) => {
     const {id, instagramLocations, ...updateData} = UpdateScenarioParamsSchema.parse(params);
 
     // Create a clean update object without undefined/null values that might cause type issues
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cleanUpdateData: any = {};
 
     Object.entries(updateData).forEach(([key, val]) => {
@@ -122,10 +125,10 @@ export async function updateScenario(
         cleanUpdateData[key] = val;
     });
 
-    return await (trx || db).transaction(async (t) => {
+    const scenarioPromise = await db.transaction(async (t) => {
         const scenario = await Scenario.query(t).patchAndFetchById(id, cleanUpdateData);
         if (!scenario) {
-            throw new Error('Scenario not found');
+            throw new ThrownError('Scenario not found', 404);
         }
 
         // Handle instagram locations if provided
@@ -146,13 +149,20 @@ export async function updateScenario(
 
         return scenario;
     });
-}
 
-export async function deleteScenario(
-    params: DeleteScenarioParams,
-    trx?: Transaction,
-): Promise<DeleteScenarioResponse> {
-    console.log('params', params);
-    const deletedCount = await Scenario.query(trx || db).deleteById(params.id);
-    return deletedCount;
-}
+    return {
+        result: scenarioPromise,
+        code: 200,
+    };
+};
+
+export const deleteScenario: ApiFunctionPrototype<
+    DeleteScenarioParams,
+    DeleteScenarioResponse
+> = async (params, db) => {
+    const deletedCount = await Scenario.query(db).deleteById(params.id);
+    return {
+        result: deletedCount,
+        code: 200,
+    };
+};

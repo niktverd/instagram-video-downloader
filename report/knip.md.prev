@@ -14,27 +14,37 @@
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
-| typescript-json-schema | package.json:77:6 | error    |
-| dotenv-cli             | package.json:60:6 | error    |
-| uuid                   | package.json:78:6 | error    |
-| pg                     | package.json:73:6 | error    |
+| typescript-json-schema | package.json:80:6 | error    |
+| cors                   | package.json:60:6 | error    |
+| uuid                   | package.json:81:6 | error    |
+| pg                     | package.json:76:6 | error    |
 
-## Unused devDependencies (1)
+## Unused devDependencies (4)
 
-| Name        | Location          | Severity |
-| :---------- | :---------------- | :------- |
-| @types/uuid | package.json:89:6 | error    |
+| Name             | Location           | Severity |
+| :--------------- | :----------------- | :------- |
+| supertest        | package.json:100:6 | error    |
+| @types/supertest | package.json:94:6  | error    |
+| @types/cors      | package.json:86:6  | error    |
+| @types/uuid      | package.json:95:6  | error    |
 
-## Unused exports (6)
+## Unlisted binaries (1)
+
+| Name   | Location     | Severity |
+| :----- | :----------- | :------- |
+| podman | package.json | error    |
+
+## Unused exports (7)
 
 | Name            | Location                                                              | Severity |
 | :-------------- | :-------------------------------------------------------------------- | :------- |
 | getSvg          | src/sections/cloud-run/components/reels-creator/create-video.ts:22:17 | error    |
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
-| preprocessVideo | src/sections/chore/components/preprocess-video.ts:53:14               | error    |
+| preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
 | default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | default         | src/models/InstagramLocation.ts:24:8                                  | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
+| default         | src/routes.ts:20:8                                                    | error    |
 
 ## Unused exported enum members (3)
 

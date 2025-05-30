@@ -3,17 +3,17 @@ description: 'Provides shared variables across workflows'
 
 outputs:
   project_id:
-    description: "GCP Project ID"
+    description: 'GCP Project ID'
     value: ${{ steps.vars.outputs.project_id }}
   region:
-    description: "GCP Region"
+    description: 'GCP Region'
     value: ${{ steps.vars.outputs.region }}
   service_configs:
-    description: "Service configurations JSON"
+    description: 'Service configurations JSON'
     value: ${{ steps.vars.outputs.service_configs }}
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - id: vars
       shell: bash
@@ -21,7 +21,7 @@ runs:
         # Base configurations
         echo "project_id=media-automation-6aff2" >> $GITHUB_OUTPUT
         echo "region=europe-central2" >> $GITHUB_OUTPUT
-        
+
         # Service configurations as JSON
         cat << 'EOF' >> $GITHUB_OUTPUT
         service_configs={
@@ -50,4 +50,4 @@ runs:
             "concurrency": 2
           }
         }
-        EOF 
+        EOF

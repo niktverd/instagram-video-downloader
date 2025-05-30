@@ -38,23 +38,23 @@ jobs:
       (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_mode != 'update-pubsub-only')
     outputs:
       image_tag: ${{ steps.image.outputs.tag }}
-    
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
-      
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-      
+
       - name: Authorize Docker push
         run: gcloud auth configure-docker
-      
+
       - name: Build and Push Image
         id: image
         run: |
@@ -73,29 +73,29 @@ jobs:
     outputs:
       service_url: ${{ steps.deploy.outputs.url }}
       service_name: ${{ steps.deploy.outputs.name }}
-    
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
-      
+
       - name: Get shared vars
         id: shared
         uses: ./.github/actions/shared-vars
-      
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-      
+
       - name: Deploy Small Tier
         id: deploy
         run: |
           SERVICE_NAME="${{ fromJson(steps.shared.outputs.service_configs).small.name }}"
-          
+
           gcloud run deploy $SERVICE_NAME \
             --image ${{ needs.build-image.outputs.image_tag }} \
             --platform managed \
@@ -108,7 +108,7 @@ jobs:
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,TIER=small,ENABLE_PUBSUB=true,ENABLE_STDERR=false,ENABLE_PROGRESS=false \
             --allow-unauthenticated
-          
+
           SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region $REGION --format='value(status.url)')
           echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
           echo "name=$SERVICE_NAME" >> $GITHUB_OUTPUT
@@ -123,29 +123,29 @@ jobs:
     outputs:
       service_url: ${{ steps.deploy.outputs.url }}
       service_name: ${{ steps.deploy.outputs.name }}
-    
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
-      
+
       - name: Get shared vars
         id: shared
         uses: ./.github/actions/shared-vars
-      
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-      
+
       - name: Deploy Medium Tier
         id: deploy
         run: |
           SERVICE_NAME="${{ fromJson(steps.shared.outputs.service_configs).medium.name }}"
-          
+
           gcloud run deploy $SERVICE_NAME \
             --image ${{ needs.build-image.outputs.image_tag }} \
             --platform managed \
@@ -158,7 +158,7 @@ jobs:
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,TIER=medium,ENABLE_PUBSUB=true,ENABLE_STDERR=false,ENABLE_PROGRESS=false \
             --allow-unauthenticated
-          
+
           SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region $REGION --format='value(status.url)')
           echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
           echo "name=$SERVICE_NAME" >> $GITHUB_OUTPUT
@@ -173,29 +173,29 @@ jobs:
     outputs:
       service_url: ${{ steps.deploy.outputs.url }}
       service_name: ${{ steps.deploy.outputs.name }}
-    
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
-      
+
       - name: Get shared vars
         id: shared
         uses: ./.github/actions/shared-vars
-      
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-      
+
       - name: Deploy Large Tier
         id: deploy
         run: |
           SERVICE_NAME="${{ fromJson(steps.shared.outputs.service_configs).large.name }}"
-          
+
           gcloud run deploy $SERVICE_NAME \
             --image ${{ needs.build-image.outputs.image_tag }} \
             --platform managed \
@@ -208,7 +208,7 @@ jobs:
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
             --set-env-vars APP_ENV=cloud-run,TIER=large,ENABLE_PUBSUB=true,ENABLE_STDERR=false,ENABLE_PROGRESS=false \
             --allow-unauthenticated
-          
+
           SERVICE_URL=$(gcloud run services describe $SERVICE_NAME --region $REGION --format='value(status.url)')
           echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
           echo "name=$SERVICE_NAME" >> $GITHUB_OUTPUT
@@ -222,24 +222,24 @@ jobs:
         (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
         (github.event_name == 'workflow_dispatch' && (github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'update-pubsub-only'))
       )
-    
+
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.branch || github.ref }}
-      
+
       - name: Get shared vars
         id: shared
         uses: ./.github/actions/shared-vars
-      
+
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-      
+
       - name: Get service URLs
         id: urls
         run: |
@@ -253,28 +253,28 @@ jobs:
             MEDIUM_URL="${{ needs.deploy-medium-tier.outputs.service_url }}"
             LARGE_URL="${{ needs.deploy-large-tier.outputs.service_url }}"
           fi
-          
+
           echo "small=$SMALL_URL" >> $GITHUB_OUTPUT
           echo "medium=$MEDIUM_URL" >> $GITHUB_OUTPUT
           echo "large=$LARGE_URL" >> $GITHUB_OUTPUT
-      
+
       - name: Create Topics
         run: |
           # Main topic
           gcloud pubsub topics create instagram-video-tasks || echo "Topic already exists"
-          
+
           # Dead letter topics
           gcloud pubsub topics create instagram-video-tasks-dead-1 || echo "Topic already exists"
           gcloud pubsub topics create instagram-video-tasks-dead-2 || echo "Topic already exists"
           gcloud pubsub topics create instagram-video-tasks-dead-3 || echo "Topic already exists"
-      
+
       - name: Setup Main Subscription (Small Tier)
         run: |
           SUBSCRIPTION_NAME="instagram-video-tasks-push-small"
-          
+
           # Delete existing subscription if any
           gcloud pubsub subscriptions delete $SUBSCRIPTION_NAME --quiet || true
-          
+
           # Create new subscription
           gcloud pubsub subscriptions create $SUBSCRIPTION_NAME \
             --topic=instagram-video-tasks \
@@ -285,14 +285,14 @@ jobs:
             --max-delivery-attempts=3 \
             --min-retry-delay=30s \
             --max-retry-delay=60s
-      
+
       - name: Setup Dead Letter 1 Subscription (Medium Tier)
         run: |
           SUBSCRIPTION_NAME="instagram-video-tasks-dead-1-push-medium"
-          
+
           # Delete existing subscription if any
           gcloud pubsub subscriptions delete $SUBSCRIPTION_NAME --quiet || true
-          
+
           # Create new subscription
           gcloud pubsub subscriptions create $SUBSCRIPTION_NAME \
             --topic=instagram-video-tasks-dead-1 \
@@ -303,14 +303,14 @@ jobs:
             --max-delivery-attempts=3 \
             --min-retry-delay=60s \
             --max-retry-delay=120s
-      
+
       - name: Setup Dead Letter 2 Subscription (Large Tier)
         run: |
           SUBSCRIPTION_NAME="instagram-video-tasks-dead-2-push-large"
-          
+
           # Delete existing subscription if any
           gcloud pubsub subscriptions delete $SUBSCRIPTION_NAME --quiet || true
-          
+
           # Create new subscription
           gcloud pubsub subscriptions create $SUBSCRIPTION_NAME \
             --topic=instagram-video-tasks-dead-2 \
@@ -321,20 +321,20 @@ jobs:
             --max-delivery-attempts=3 \
             --min-retry-delay=120s \
             --max-retry-delay=300s
-      
+
       - name: Setup Final Dead Letter Pull Subscription
         run: |
           SUBSCRIPTION_NAME="instagram-video-tasks-dead-3-pull"
-          
+
           # Delete existing subscription if any
           gcloud pubsub subscriptions delete $SUBSCRIPTION_NAME --quiet || true
-          
+
           # Create pull subscription for manual inspection
           gcloud pubsub subscriptions create $SUBSCRIPTION_NAME \
             --topic=instagram-video-tasks-dead-3 \
             --ack-deadline=600 \
             --message-retention-duration=7d
-      
+
       - name: Summary
         run: |
           echo "## Deployment Summary"
@@ -348,4 +348,4 @@ jobs:
           echo "1. instagram-video-tasks → Small Tier (1GB/1CPU, max 100 instances)"
           echo "2. instagram-video-tasks-dead-1 → Medium Tier (2GB/1CPU, max 10 instances)"
           echo "3. instagram-video-tasks-dead-2 → Large Tier (4GB/2CPU, max 2 instances)"
-          echo "4. instagram-video-tasks-dead-3 → Manual inspection (pull subscription)" 
+          echo "4. instagram-video-tasks-dead-3 → Manual inspection (pull subscription)"

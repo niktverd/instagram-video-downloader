@@ -1,7 +1,16 @@
-import {PublishBulkRunScenarioMessagesByIdsParams, PushPubSubTestParams} from '#src/types/pubsub';
+import {IResponse} from '#src/types/common';
+import {
+    PublishBulkRunScenarioMessagesByIdsParams,
+    PublishBulkRunScenarioMessagesByIdsResponse,
+    PushPubSubTestParams,
+    PushPubSubTestResponse,
+} from '#src/types/pubsub';
+import {ThrownError} from '#src/utils/error';
 import {PubSubAction, PubSubTopic, log, logError} from '#utils';
 
-export const pushPubSubTest = async (params: PushPubSubTestParams) => {
+export const pushPubSubTest = async (
+    params: PushPubSubTestParams,
+): IResponse<PushPubSubTestResponse> => {
     const {accountId, scenarioId, sourceId} = params;
     try {
         const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;
@@ -17,8 +26,7 @@ export const pushPubSubTest = async (params: PushPubSubTestParams) => {
         );
 
         if (!pubsubProjectId) {
-            log('[pubsub] Error: Missing project ID');
-            throw new Error('Missing project ID');
+            throw new ThrownError('[pubsub]: Missing project ID', 400);
         }
 
         const testMessage = {
@@ -45,16 +53,15 @@ export const pushPubSubTest = async (params: PushPubSubTestParams) => {
 
         if (success) {
             return {
-                success: true,
-                message: 'Test message published to Pub/Sub',
-                topic,
-                authMethod: 'service_account',
-                ...(accountId && {accountId}),
-                ...(scenarioId && {scenarioId}),
-                ...(sourceId && {sourceId}),
+                result: {
+                    success: true,
+                    message: 'Test message published to Pub/Sub',
+                    topic,
+                    authMethod: 'service_account',
+                },
             };
         } else {
-            throw new Error('Failed to publish test message to Pub/Sub');
+            throw new ThrownError('Failed to publish test message to Pub/Sub', 400);
         }
     } catch (error) {
         logError('Error in push-pubsub test endpoint:', error);
@@ -69,15 +76,14 @@ export const pushPubSubTest = async (params: PushPubSubTestParams) => {
  */
 export const publishBulkRunScenarioMessagesByIds = async (
     params: PublishBulkRunScenarioMessagesByIdsParams,
-): Promise<{success: boolean; count: number}> => {
+): IResponse<PublishBulkRunScenarioMessagesByIdsResponse> => {
     try {
         const {sourceIds, accountIds, scenarioIds} = params;
         log('publishBulkRunScenarioMessagesByIds');
         const projectId = process.env.GCP_PROJECT_ID;
         log('projectId:', projectId);
         if (!projectId) {
-            log('projectId is not set');
-            throw new Error('GCP_PROJECT_ID environment variable is not set');
+            throw new ThrownError('[pubsub]: GCP_PROJECT_ID environment variable is not set', 400);
         }
 
         log(
@@ -196,13 +202,22 @@ export const publishBulkRunScenarioMessagesByIds = async (
             log(
                 `[pubsub-client] Successfully published ${successCount}/${totalMessages} messages in batch, ${projectId}`,
             );
-            return {success: true, count: successCount};
+            return {
+                result: {
+                    success: true,
+                    message: `Successfully published ${successCount}/${totalMessages} messages in batch, ${projectId}`,
+                },
+            };
         } else {
-            log('[pubsub-client] No messages were successfully published');
-            throw new Error('No messages were successfully published');
+            throw new ThrownError('[pubsub]: No messages were successfully published', 400);
         }
     } catch (error) {
-        logError('[pubsub-client] Error publishing bulk messages to Pub/Sub:', error);
-        throw error;
+        if (error instanceof ThrownError) {
+            throw error;
+        }
+        throw new ThrownError(
+            `[pubsub]: Error publishing bulk messages to Pub/Sub: ${JSON.stringify(error)}`,
+            500,
+        );
     }
 };

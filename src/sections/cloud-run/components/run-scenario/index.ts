@@ -6,9 +6,14 @@ import {getVideoDuration} from '../video';
 
 import {createPreparedVideo, getAccountById, getScenarioById, getSourceById} from '#src/db';
 import {hasPreparedVideoBeenCreated, uploadFileToServer} from '#src/sections/shared';
-import {CloudRunCreateScenarioVideoParams} from '#src/types/cloud-run';
+import {
+    CloudRunCreateScenarioVideoParams,
+    CloudRunCreateScenarioVideoResponse,
+} from '#src/types/cloud-run';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {ScenarioType} from '#src/types/enums';
 import {IScenario} from '#src/types/scenario';
+import {ThrownError} from '#src/utils/error';
 import {getWorkingDirectoryForVideo, log} from '#utils';
 
 // eslint-disable-next-line valid-jsdoc
@@ -16,10 +21,15 @@ import {getWorkingDirectoryForVideo, log} from '#utils';
  * Handler for Pub/Sub push messages
  * Processes messages sent from Pub/Sub to our webhook endpoint
  */
-export const runScenarioHandler = async ({
-    message: {data, messageId, publishTime, attributes: attributes},
-    subscription: _subscription,
-}: CloudRunCreateScenarioVideoParams): Promise<void> => {
+export const runScenarioHandler: ApiFunctionPrototype<
+    CloudRunCreateScenarioVideoParams,
+    CloudRunCreateScenarioVideoResponse
+> = async (params, db) => {
+    const {
+        message: {data, messageId, publishTime, attributes: attributes},
+        subscription: _subscription,
+    } = params;
+
     // Remove express req/res, just business logic
     // Pub/Sub messages are received as base64-encoded strings
     // All validation is done in the wrapper
@@ -41,27 +51,26 @@ export const runScenarioHandler = async ({
         publishTime,
     });
 
-    if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId})) {
-        logLocal('Prepared video already exists');
-        return;
+    if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId}, db)) {
+        return {
+            result: undefined,
+            code: 200,
+        };
     }
 
-    const scenario = await getScenarioById({id: scenarioId});
+    const {result: scenario} = await getScenarioById({id: scenarioId}, db);
     if (!scenario) {
-        logLocal('Scenario not found', {scenarioId});
-        throw new Error('Scenario not found');
+        throw new ThrownError(`Scenario with id ${scenarioId} not found`, 404);
     }
 
-    const account = await getAccountById({id: accountId});
+    const {result: account} = await getAccountById({id: accountId}, db);
     if (!account) {
-        logLocal('Account not found', {accountId});
-        throw new Error('Account not found');
+        throw new ThrownError(`Account with id ${accountId} not found`, 404);
     }
 
-    const source = await getSourceById({id: sourceId});
+    const {result: source} = await getSourceById({id: sourceId}, db);
     if (!source) {
-        logLocal('Source not found', {sourceId});
-        throw new Error('Source not found');
+        throw new ThrownError(`Source with id ${sourceId} not found`, 404);
     }
 
     logLocal({scenario, account, source});
@@ -72,36 +81,39 @@ export const runScenarioHandler = async ({
         ),
     );
     if (!isScenarioInAccount) {
-        logLocal('Scenario not in account', {scenarioId, accountId});
-        throw new Error('Scenario not in account');
+        throw new ThrownError(
+            `Scenario with id ${scenarioId} not in account with id ${accountId}`,
+            400,
+        );
     }
 
     const isScenarioEnabled = scenario.enabled;
     if (!isScenarioEnabled) {
-        logLocal('Scenario is not enabled', {scenarioId, status: scenario.enabled});
-        throw new Error('Scenario is not enabled');
+        throw new ThrownError(`Scenario with id ${scenarioId} is not enabled`, 400);
     }
 
     const scenarioWorkflow = ScenarioMap[scenario.type as ScenarioType];
     if (!scenarioWorkflow) {
-        logLocal('Scenario workflow not found', {
-            scenarioId,
-            scenarioType: scenario.type,
-            ScenarioMap,
-        });
-        throw new Error('Scenario workflow not found');
+        throw new ThrownError(
+            `Scenario workflow not found for scenario with id ${scenarioId}`,
+            400,
+        );
     }
 
     const {scenario: scenarioFunction, schema} = scenarioWorkflow;
     const {success, error} = schema.safeParse(scenario);
     if (!success) {
-        logLocal('Scenario is not valid', {scenarioId, error});
-        throw new Error('Scenario is not valid');
+        throw new ThrownError(
+            `Scenario with id ${scenarioId} is not valid: ${JSON.stringify(error)}`,
+            400,
+        );
     }
 
     if (!scenarioFunction) {
-        logLocal('Scenario function not found', {scenarioId});
-        throw new Error('Scenario function not found');
+        throw new ThrownError(
+            `Scenario function not found for scenario with id ${scenarioId}`,
+            400,
+        );
     }
 
     logLocal('Scenario function found', {scenarioId});
@@ -122,13 +134,16 @@ export const runScenarioHandler = async ({
     );
     logLocal('downloadURL', {downloadURL});
     // update database
-    const savedPreparedVideo = await createPreparedVideo({
-        firebaseUrl: downloadURL,
-        scenarioId,
-        sourceId,
-        accountId,
-        duration,
-    });
+    const savedPreparedVideo = await createPreparedVideo(
+        {
+            firebaseUrl: downloadURL,
+            scenarioId,
+            sourceId,
+            accountId,
+            duration,
+        },
+        db,
+    );
     logLocal('video added to database', savedPreparedVideo);
     // delete tempfiles
     const deleteTempFiles = true;
@@ -136,4 +151,9 @@ export const runScenarioHandler = async ({
         rmSync(basePath, {recursive: true});
         logLocal('temp files deleted');
     }
+
+    return {
+        result: undefined,
+        code: 200,
+    };
 };

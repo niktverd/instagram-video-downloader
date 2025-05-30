@@ -2,8 +2,9 @@ import dotenv from 'dotenv';
 // import * as firebase from 'firebase/app';
 import {initializeApp} from 'firebase/app';
 
-import db from '../db/utils';
 import {migrateUsers, validateDatabaseSetup} from '../utils/migrationHelper';
+
+import {getDb} from '#src/db';
 
 // Load environment variables
 dotenv.config();
@@ -21,6 +22,7 @@ const firebaseConfig = {
 initializeApp(firebaseConfig);
 
 async function run() {
+    const db = getDb();
     try {
         console.log('Starting migration from Firestore to PostgreSQL...');
 

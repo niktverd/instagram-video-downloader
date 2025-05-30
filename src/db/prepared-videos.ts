@@ -1,14 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {OrderByDirection, Transaction} from 'objection';
+import {OrderByDirection} from 'objection';
 
 import {PreparedVideo} from '../models/PreparedVideo';
-
-import db from './utils';
 
 import {
     CreatePreparedVideoParamsSchema,
     UpdatePreparedVideoParamsSchema,
 } from '#schemas/handlers/preparedVideo';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {ThrownError} from '#src/utils/error';
 import {
     CreatePreparedVideoParams,
     CreatePreparedVideoResponse,
@@ -21,38 +20,48 @@ import {
     GetPreparedVideoByIdParams,
     GetPreparedVideoByIdResponse,
     UpdatePreparedVideoParams,
+    UpdatePreparedVideoResponse,
     IPreparedVideo as _IPreparedVideo,
     UpdatePreparedVideoResponse as _UpdatePreparedVideoResponse,
 } from '#types';
 
-export async function createPreparedVideo(
-    params: CreatePreparedVideoParams,
-): Promise<CreatePreparedVideoResponse> {
-    return await db.transaction(async (trx) => {
+export const createPreparedVideo: ApiFunctionPrototype<
+    CreatePreparedVideoParams,
+    CreatePreparedVideoResponse
+> = async (params, db) => {
+    const preparedVideoPromise = await db.transaction(async (trx) => {
         const validatedParams = CreatePreparedVideoParamsSchema.parse(params);
         const preparedVideo = await PreparedVideo.query(trx).insert(validatedParams);
 
         return preparedVideo;
     });
-}
 
-export async function getPreparedVideoById(
-    params: GetPreparedVideoByIdParams,
-    trx?: Transaction,
-): Promise<GetPreparedVideoByIdResponse> {
-    const preparedVideo = await PreparedVideo.query(trx || db).findById(params.id);
+    return {
+        result: preparedVideoPromise,
+        code: 200,
+    };
+};
+
+export const getPreparedVideoById: ApiFunctionPrototype<
+    GetPreparedVideoByIdParams,
+    GetPreparedVideoByIdResponse
+> = async (params, db) => {
+    const preparedVideo = await PreparedVideo.query(db).findById(params.id);
 
     if (!preparedVideo) {
-        throw new Error('PreparedVideo not found');
+        throw new ThrownError('PreparedVideo not found', 404);
     }
 
-    return preparedVideo;
-}
+    return {
+        result: preparedVideo,
+        code: 200,
+    };
+};
 
-export async function getAllPreparedVideos(
-    params: GetAllPreparedVideosParams,
-    trx?: Transaction,
-): Promise<GetAllPreparedVideosResponse> {
+export const getAllPreparedVideos: ApiFunctionPrototype<
+    GetAllPreparedVideosParams,
+    GetAllPreparedVideosResponse
+> = async (params, db) => {
     const {
         page = 1,
         limit = 10,
@@ -63,7 +72,7 @@ export async function getAllPreparedVideos(
         accountIds,
     } = params;
 
-    const query = PreparedVideo.query(trx || db);
+    const query = PreparedVideo.query(db);
 
     if (sortBy) {
         query.orderBy(sortBy, sortOrder as OrderByDirection);
@@ -88,39 +97,51 @@ export async function getAllPreparedVideos(
     const result = await query.page(pageNumber - 1, limitNumber); // Objection uses 0-based page indexing
 
     return {
-        preparedVideos: result.results,
-        count: result.total,
+        result: {
+            preparedVideos: result.results,
+            count: result.total,
+        },
+        code: 200,
     };
-}
+};
 
-export async function updatePreparedVideo(
-    params: UpdatePreparedVideoParams,
-    trx?: Transaction,
-): Promise<PreparedVideo> {
+export const updatePreparedVideo: ApiFunctionPrototype<
+    UpdatePreparedVideoParams,
+    UpdatePreparedVideoResponse
+> = async (params, db) => {
     const {id, ...updateData} = UpdatePreparedVideoParamsSchema.parse(params);
 
-    return await (trx || db).transaction(async (t) => {
+    const preparedVideoPromise = await db.transaction(async (t) => {
         const preparedVideo = await PreparedVideo.query(t).patchAndFetchById(id, updateData);
 
         if (!preparedVideo) {
-            throw new Error('PreparedVideo not found');
+            throw new ThrownError('PreparedVideo not found', 404);
         }
 
         return preparedVideo;
     });
-}
 
-export async function deletePreparedVideo(
-    params: DeletePreparedVideoParams,
-    trx?: Transaction,
-): Promise<DeletePreparedVideoResponse> {
-    const deletedCount = await PreparedVideo.query(trx || db).deleteById(params.id);
-    return deletedCount;
-}
+    return {
+        result: preparedVideoPromise,
+        code: 200,
+    };
+};
 
-export async function getOnePreparedVideo(
-    params: GetOnePreparedVideoParams,
-): Promise<GetOnePreparedVideoResponse> {
+export const deletePreparedVideo: ApiFunctionPrototype<
+    DeletePreparedVideoParams,
+    DeletePreparedVideoResponse
+> = async (params, db) => {
+    const deletedCount = await PreparedVideo.query(db).deleteById(params.id);
+    return {
+        result: deletedCount,
+        code: 200,
+    };
+};
+
+export const getOnePreparedVideo: ApiFunctionPrototype<
+    GetOnePreparedVideoParams,
+    GetOnePreparedVideoResponse
+> = async (params, db) => {
     const {
         hasFirebaseUrl,
         firebaseUrl,
@@ -174,5 +195,8 @@ export async function getOnePreparedVideo(
 
     const preparedVideo = await query.first().withGraphFetched('scenario');
 
-    return preparedVideo;
-}
+    return {
+        result: preparedVideo,
+        code: 200,
+    };
+};

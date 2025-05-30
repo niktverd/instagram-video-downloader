@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import {Transaction} from 'objection';
-
 import {InstagramLocation} from '../models/InstagramLocation';
 import {
     CreateInstagramLocationParams,
@@ -15,37 +12,47 @@ import {
     UpdateInstagramLocationResponse,
 } from '../types/instagramLocation';
 
-import db from './utils';
+import {ApiFunctionPrototype} from '#src/types/common';
+import {ThrownError} from '#src/utils/error';
 
-export async function createInstagramLocation(
-    params: CreateInstagramLocationParams,
-): Promise<CreateInstagramLocationResponse> {
-    return await db.transaction(async (trx) => {
+export const createInstagramLocation: ApiFunctionPrototype<
+    CreateInstagramLocationParams,
+    CreateInstagramLocationResponse
+> = async (params, db) => {
+    const locationPromise = await db.transaction(async (trx) => {
         const location = await InstagramLocation.query(trx).insert(params);
 
         return location;
     });
-}
 
-export async function getInstagramLocationById(
-    params: GetInstagramLocationByIdParams,
-    trx?: Transaction,
-): Promise<GetInstagramLocationByIdResponse> {
-    const location = await InstagramLocation.query(trx || db).findById(params.id);
+    return {
+        result: locationPromise,
+        code: 200,
+    };
+};
+
+export const getInstagramLocationById: ApiFunctionPrototype<
+    GetInstagramLocationByIdParams,
+    GetInstagramLocationByIdResponse
+> = async (params, db) => {
+    const location = await InstagramLocation.query(db).findById(params.id);
 
     if (!location) {
-        throw new Error('InstagramLocation not found');
+        throw new ThrownError('InstagramLocation not found', 404);
     }
 
-    return location;
-}
+    return {
+        result: location,
+        code: 200,
+    };
+};
 
-export async function getAllInstagramLocations(
-    params: GetAllInstagramLocationsParams,
-    trx?: Transaction,
-): Promise<GetAllInstagramLocationsResponse> {
+export const getAllInstagramLocations: ApiFunctionPrototype<
+    GetAllInstagramLocationsParams,
+    GetAllInstagramLocationsResponse
+> = async (params, db) => {
     const {page = 1, limit = 10, sortBy, sortOrder = 'desc'} = params;
-    const query = InstagramLocation.query(trx || db);
+    const query = InstagramLocation.query(db);
 
     if (sortBy) {
         query.orderBy(sortBy, sortOrder as 'asc' | 'desc');
@@ -71,32 +78,43 @@ export async function getAllInstagramLocations(
     const result = await query.page(pageNumber - 1, limitNumber);
 
     return {
-        locations: result.results,
-        count: result.total,
+        result: {
+            locations: result.results,
+            count: result.total,
+        },
+        code: 200,
     };
-}
+};
 
-export async function updateInstagramLocation(
-    params: UpdateInstagramLocationParams,
-    trx?: Transaction,
-): Promise<UpdateInstagramLocationResponse> {
+export const updateInstagramLocation: ApiFunctionPrototype<
+    UpdateInstagramLocationParams,
+    UpdateInstagramLocationResponse
+> = async (params, db) => {
     const {id, ...updateData} = params;
 
-    return await (trx || db).transaction(async (t) => {
+    const locationPromise = await db.transaction(async (t) => {
         const location = await InstagramLocation.query(t).patchAndFetchById(id, updateData);
 
         if (!location) {
-            throw new Error('InstagramLocation not found');
+            throw new ThrownError('InstagramLocation not found', 404);
         }
 
         return location;
     });
-}
 
-export async function deleteInstagramLocation(
-    params: DeleteInstagramLocationParams,
-    trx?: Transaction,
-): Promise<DeleteInstagramLocationResponse> {
-    const deletedCount = await InstagramLocation.query(trx || db).deleteById(params.id);
-    return deletedCount;
-}
+    return {
+        result: locationPromise,
+        code: 200,
+    };
+};
+
+export const deleteInstagramLocation: ApiFunctionPrototype<
+    DeleteInstagramLocationParams,
+    DeleteInstagramLocationResponse
+> = async (params, db) => {
+    const deletedCount = await InstagramLocation.query(db).deleteById(params.id);
+    return {
+        result: deletedCount,
+        code: 200,
+    };
+};

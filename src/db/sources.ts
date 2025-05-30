@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {OrderByDirection, Transaction} from 'objection';
+import {OrderByDirection} from 'objection';
 
 import {Source} from '../models/Source';
-
-import db from './utils';
 
 import {
     CreateSourceParamsSchema,
@@ -13,6 +11,7 @@ import {
     GetOneSourceParamsSchema as _GetOneSourceParamsSchema,
     GetSourceByIdParamsSchema as _GetSourceByIdParamsSchema,
 } from '#schemas/handlers/source';
+import {ApiFunctionPrototype} from '#src/types/common';
 import {
     CreateSourceParams,
     CreateSourceResponse,
@@ -25,23 +24,27 @@ import {
     GetSourceByIdParams,
     GetSourceByIdResponse,
     UpdateSourceParams,
+    UpdateSourceResponse,
     UpdateSourceResponse as _UpdateSourceResponse,
 } from '#types';
 
-export async function createSource(
-    params: CreateSourceParams,
-    trx?: Transaction,
-): Promise<CreateSourceResponse> {
+export const createSource: ApiFunctionPrototype<CreateSourceParams, CreateSourceResponse> = async (
+    params,
+    db,
+) => {
     const validatedParams = CreateSourceParamsSchema.parse(params);
-    const source = await Source.query(trx || db).insert(validatedParams);
+    const source = await Source.query(db).insert(validatedParams);
 
-    return source;
-}
+    return {
+        result: source,
+        code: 200,
+    };
+};
 
-export async function getAllSources(
-    params: GetAllSourcesParams,
-    trx?: Transaction,
-): Promise<GetAllSourcesResponse> {
+export const getAllSources: ApiFunctionPrototype<
+    GetAllSourcesParams,
+    GetAllSourcesResponse
+> = async (params, db) => {
     const {
         page = 1,
         limit = 10,
@@ -49,7 +52,7 @@ export async function getAllSources(
         sortOrder = 'desc',
         notInThePreparedVideos = false,
     } = GetAllSourcesParamsSchema.parse(params);
-    const query = Source.query(trx || db);
+    const query = Source.query(db);
 
     if (sortBy) {
         query.orderBy(sortBy, sortOrder as OrderByDirection);
@@ -69,17 +72,20 @@ export async function getAllSources(
 
     // Result contains 'results' (array of data) and 'total' (total count)
     return {
-        sources: result.results,
-        count: result.total,
+        result: {
+            sources: result.results,
+            count: result.total,
+        },
+        code: 200,
     };
-}
+};
 
-export async function getOneSource(
-    params: GetOneSourceParams,
-    trx?: Transaction,
-): Promise<GetOneSourceResponse> {
+export const getOneSource: ApiFunctionPrototype<GetOneSourceParams, GetOneSourceResponse> = async (
+    params,
+    db,
+) => {
     const {emptyFirebaseUrl, random, id} = params;
-    const query = Source.query(trx || db);
+    const query = Source.query(db);
 
     if (id) {
         query.where('id', id);
@@ -93,10 +99,18 @@ export async function getOneSource(
         query.orderByRaw('RANDOM()');
     }
 
-    return query.limit(1).first();
-}
+    const source = await query.limit(1).first();
 
-export async function updateSource(params: UpdateSourceParams, trx?: Transaction): Promise<Source> {
+    return {
+        result: source,
+        code: 200,
+    };
+};
+
+export const updateSource: ApiFunctionPrototype<UpdateSourceParams, UpdateSourceResponse> = async (
+    params,
+    db,
+) => {
     const {id, ...updateData} = UpdateSourceParamsSchema.parse(params);
 
     const cleanUpdateData: any = {};
@@ -109,24 +123,34 @@ export async function updateSource(params: UpdateSourceParams, trx?: Transaction
         cleanUpdateData[key] = val;
     });
 
-    const source = await Source.query(trx || db).patchAndFetchById(id, cleanUpdateData);
-    return source;
-}
+    const source = await Source.query(db).patchAndFetchById(id, cleanUpdateData);
 
-export async function deleteSource(
-    params: DeleteSourceParams,
-    trx?: Transaction,
-): Promise<DeleteSourceResponse> {
-    const deletedCount = await Source.query(trx || db).deleteById(params.id);
+    return {
+        result: source,
+        code: 200,
+    };
+};
 
-    return deletedCount;
-}
+export const deleteSource: ApiFunctionPrototype<DeleteSourceParams, DeleteSourceResponse> = async (
+    params,
+    db,
+) => {
+    const deletedCount = await Source.query(db).deleteById(params.id);
 
-export async function getSourceById(
-    params: GetSourceByIdParams,
-    trx?: Transaction,
-): Promise<GetSourceByIdResponse> {
-    const source = await Source.query(trx || db).findById(params.id);
+    return {
+        result: deletedCount,
+        code: 200,
+    };
+};
 
-    return source;
-}
+export const getSourceById: ApiFunctionPrototype<
+    GetSourceByIdParams,
+    GetSourceByIdResponse
+> = async (params, db) => {
+    const source = await Source.query(db).findById(params.id);
+
+    return {
+        result: source,
+        code: 200,
+    };
+};

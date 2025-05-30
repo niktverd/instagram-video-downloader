@@ -72,8 +72,28 @@ module.exports = {
             directory: './seeds',
         },
         pool: {
-            min: 2,
-            max: 100,
+            min: 1,
+            max: 19,
+        },
+    },
+    test: {
+        client: 'pg',
+        connection: {
+            host,
+            port,
+            user,
+            password,
+            database,
+        },
+        migrations: {
+            directory: './migrations',
+        },
+        seeds: {
+            directory: './seeds',
+        },
+        pool: {
+            min: 1,
+            max: 2,
         },
     },
 };

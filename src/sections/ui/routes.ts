@@ -1,23 +1,24 @@
 import {Router as expressRouter} from 'express';
 
-import {clearPreprod} from '../shared';
-
 import {
     createAccountPost,
     createInstagramLocationPost,
     createInstagramMediaContainerPost,
+    createPreparedVideoPost,
     createScenarioPost,
     createSourcePost,
     createUserPost,
     deleteAccountDelete,
     deleteInstagramLocationDelete,
     deleteInstagramMediaContainerDelete,
+    deletePreparedVideoDelete,
     deleteScenarioDelete,
     deleteSourceDelete,
     deleteUserDelete,
     getAccountByIdGet,
     getAccountBySlugGet,
     getAllAccountsGet,
+    getAllCommentsForPostsGet,
     getAllInstagramLocationsGet,
     getAllInstagramMediaContainersGet,
     getAllPreparedVideosGet,
@@ -26,23 +27,22 @@ import {
     getAllUsersGet,
     getInstagramAccountInsightsGet,
     getOneSourceGet,
+    getPreparedVideoByIdGet,
     getScenarioByIdGet,
     getUserByEmailGet,
     getUserByIdGet,
-    uiConvertImageToVideo,
-    uiCreateVideoByScenario,
-    uiDownloadVideoFromSourceV3,
-    uiGetInsights,
-    uiGetInstagramMedia,
-    uiGetInstagramUserIdByMediaId,
-    uiGetMediaPosts,
-    uiGetUserContent,
-    uiSavePostForFutherAnalysis,
-    uiSplitVideoInTheMiddle,
-    uiTestGreenScreen,
+    uiConvertImageToVideoPost,
+    uiGetInsightsGet,
+    uiGetInstagramMediaGet,
+    uiGetInstagramUserIdByMediaIdGet,
+    uiGetMediaPostsGet,
+    uiGetUserContentGet,
+    uiSplitVideoInTheMiddlePost,
+    uiTestGreenScreenPost,
     updateAccountPatch,
     updateInstagramLocationPatch,
     updateInstagramMediaContainerPatch,
+    updatePreparedVideoPatch,
     updateScenarioPatch,
     updateSourcePatch,
     updateUserPatch,
@@ -51,19 +51,18 @@ import {
 const router = expressRouter();
 
 // GET routes
-router.get('/get-media-posts', uiGetMediaPosts);
+router.get('/get-media-posts', uiGetMediaPostsGet);
 router.get('/get-scenarios', getAllScenariosGet);
 router.get('/get-scenario-by-id', getScenarioByIdGet);
 router.get('/get-accounts', getAllAccountsGet);
 router.get('/get-account-by-id', getAccountByIdGet);
 router.get('/get-account-by-slug', getAccountBySlugGet);
-router.get('/create-video-by-scenario', uiCreateVideoByScenario);
-router.get('/download-video-from-source-v3', uiDownloadVideoFromSourceV3);
-router.get('/get-insights', uiGetInsights);
-router.get('/get-media', uiGetInstagramMedia);
+// router.get('/download-video-from-source-v3', uiDownloadVideoFromSourceV3);
+router.get('/get-insights', uiGetInsightsGet);
+router.get('/get-media', uiGetInstagramMediaGet);
 // router.get('/get-user-by-id', uiGetInstagramUserById);
-router.get('/get-owner-by-media-id', uiGetInstagramUserIdByMediaId);
-router.get('/get-user-content', uiGetUserContent);
+router.get('/get-owner-by-media-id', uiGetInstagramUserIdByMediaIdGet);
+router.get('/get-user-content', uiGetUserContentGet);
 router.get('/get-user-by-id', getUserByIdGet);
 router.get('/get-user-by-email', getUserByEmailGet);
 router.get('/get-all-users', getAllUsersGet);
@@ -74,18 +73,20 @@ router.get('/get-all-prepared-videos', getAllPreparedVideosGet);
 router.get('/get-all-instagram-locations', getAllInstagramLocationsGet);
 // router.get('/get-instagram-location-by-id', getInstagramLocationByIdGet);
 router.get('/get-instagram-account-insights', getInstagramAccountInsightsGet);
+router.get('/get-all-comments-for-posts', getAllCommentsForPostsGet);
+router.get('/get-prepared-video-by-id', getPreparedVideoByIdGet);
 
 // POST routes
-router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddle);
-router.post('/test-green-screen', uiTestGreenScreen);
+router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddlePost);
+router.post('/test-green-screen', uiTestGreenScreenPost);
 router.post('/add-scenario', createScenarioPost);
 router.post('/add-account', createAccountPost);
-router.post('/convert-image-to-video', uiConvertImageToVideo);
-router.post('/save-post-for-futher-analysis', uiSavePostForFutherAnalysis);
+router.post('/convert-image-to-video', uiConvertImageToVideoPost);
 router.post('/create-user', createUserPost);
 router.post('/create-source', createSourcePost);
 router.post('/create-instagram-media-container', createInstagramMediaContainerPost);
 router.post('/create-instagram-location', createInstagramLocationPost);
+router.post('/add-prepared-video', createPreparedVideoPost);
 
 // PATCH routes
 router.patch('/patch-scenario', updateScenarioPatch);
@@ -94,13 +95,15 @@ router.patch('/update-user', updateUserPatch);
 router.patch('/update-source', updateSourcePatch);
 router.patch('/update-instagram-media-container', updateInstagramMediaContainerPatch);
 router.patch('/update-instagram-location', updateInstagramLocationPatch);
+router.patch('/patch-prepared-video', updatePreparedVideoPatch);
+
 // DELETE routes
-router.delete('/clear-proprod-database', clearPreprod);
 router.delete('/delete-user', deleteUserDelete);
 router.delete('/delete-account', deleteAccountDelete);
 router.delete('/delete-scenario', deleteScenarioDelete);
 router.delete('/delete-source', deleteSourceDelete);
 router.delete('/delete-instagram-media-container', deleteInstagramMediaContainerDelete);
 router.delete('/delete-instagram-location', deleteInstagramLocationDelete);
+router.delete('/delete-prepared-video', deletePreparedVideoDelete);
 
 export default router;

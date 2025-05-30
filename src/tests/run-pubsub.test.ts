@@ -17,6 +17,7 @@
 // Import the express types directly to avoid using aliased modules
 import {Request} from 'express';
 
+import {getDb} from '#src/db';
 import {runScenarioHandler} from '#src/sections/cloud-run/components/run-scenario';
 
 // Mock for log function
@@ -77,6 +78,7 @@ const createEncodedData = (data: any) => {
 };
 
 const runPubSubTests = async () => {
+    const db = getDb();
     log('Starting PubSub handler tests');
 
     // Create mock response
@@ -109,7 +111,7 @@ const runPubSubTests = async () => {
 
     // Call the handler
     try {
-        await runScenarioHandler(basicMessageReq.body);
+        await runScenarioHandler(basicMessageReq.body, db);
         log('Response status:', mockRes.getLastStatus());
         // Expected: 204 No Content
     } catch (error) {
@@ -149,7 +151,7 @@ const runPubSubTests = async () => {
 
     // Call the handler
     try {
-        await runScenarioHandler(detailedMessageReq.body);
+        await runScenarioHandler(detailedMessageReq.body, db);
         log('Response status:', mockRes.getLastStatus());
         // Expected: 204 No Content
     } catch (error) {

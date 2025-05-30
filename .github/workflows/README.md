@@ -84,6 +84,7 @@ When triggering manually from Actions tab:
 ### Cost Optimization
 
 This tiered approach optimizes costs by:
+
 - Processing most tasks on cheaper small instances
 - Automatically escalating to larger instances only for complex tasks
 - Limiting expensive large instances to only 2 concurrent
@@ -95,11 +96,13 @@ The original workflow deploys a single service with 2GB RAM and 1 CPU.
 ### Manual Deployment
 
 When triggering manually:
+
 - **Branch**: Select which branch to deploy
 
 ## Shared Configuration
 
 Configuration is centralized in:
+
 - `.github/actions/shared-vars/action.yml` - Service configurations
 - `.github/config/shared.env` - Environment variables
 - Secrets in GitHub repository settings
@@ -111,4 +114,4 @@ Failed tasks that reach `instagram-video-tasks-dead-3` require manual inspection
 ```bash
 # View messages in final dead letter queue
 gcloud pubsub subscriptions pull instagram-video-tasks-dead-3-pull --auto-ack
-``` 
+```
