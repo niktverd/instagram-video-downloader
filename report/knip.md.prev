@@ -14,19 +14,19 @@
 
 | Name                   | Location          | Severity |
 | :--------------------- | :---------------- | :------- |
-| typescript-json-schema | package.json:79:6 | error    |
+| typescript-json-schema | package.json:80:6 | error    |
 | cors                   | package.json:60:6 | error    |
-| uuid                   | package.json:80:6 | error    |
-| pg                     | package.json:75:6 | error    |
+| uuid                   | package.json:81:6 | error    |
+| pg                     | package.json:76:6 | error    |
 
 ## Unused devDependencies (4)
 
 | Name             | Location           | Severity |
 | :--------------- | :----------------- | :------- |
 | supertest        | package.json:100:6 | error    |
-| @types/supertest | package.json:93:6  | error    |
-| @types/cors      | package.json:85:6  | error    |
-| @types/uuid      | package.json:94:6  | error    |
+| @types/supertest | package.json:94:6  | error    |
+| @types/cors      | package.json:86:6  | error    |
+| @types/uuid      | package.json:95:6  | error    |
 
 ## Unlisted binaries (1)
 
