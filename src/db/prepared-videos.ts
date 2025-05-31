@@ -19,6 +19,7 @@ import {
     GetOnePreparedVideoResponse,
     GetPreparedVideoByIdParams,
     GetPreparedVideoByIdResponse,
+    IPreparedVideo,
     UpdatePreparedVideoParams,
     UpdatePreparedVideoResponse,
     IPreparedVideo as _IPreparedVideo,
@@ -70,7 +71,46 @@ export const getAllPreparedVideos: ApiFunctionPrototype<
         scenarioIds,
         sourceIds,
         accountIds,
+        findDuplicates,
     } = params;
+
+    if (findDuplicates) {
+        // Группируем по accountId, sourceId, scenarioId и ищем группы с count > 1
+        const subquery = PreparedVideo.query(db)
+            .select('accountId', 'sourceId', 'scenarioId')
+            .count('* as count')
+            .groupBy('accountId', 'sourceId', 'scenarioId')
+            .havingRaw('count(*) > 1');
+
+        // page/limit для групп
+        const groups = await subquery.page(Number(page) - 1, Number(limit));
+        const groupRows = groups.results;
+        const groupCount = groups.total;
+
+        // Для каждой группы — получить все видео из этой группы
+        let preparedVideos: IPreparedVideo[] = [];
+        if (groupRows.length > 0) {
+            const orConditions = groupRows.map((g) => {
+                return {
+                    accountId: g.accountId,
+                    sourceId: g.sourceId,
+                    scenarioId: g.scenarioId,
+                };
+            });
+            preparedVideos = await PreparedVideo.query(db).where((builder) => {
+                orConditions.forEach((cond) => {
+                    builder.orWhere(cond);
+                });
+            });
+        }
+        return {
+            result: {
+                preparedVideos,
+                count: groupCount,
+            },
+            code: 200,
+        };
+    }
 
     const query = PreparedVideo.query(db);
 

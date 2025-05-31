@@ -2,6 +2,7 @@ import {
     createInstagramMediaContainer,
     deleteInstagramMediaContainer,
     getAllInstagramMediaContainers,
+    getInstagramMediaContainerById,
     updateInstagramMediaContainer,
     wrapper,
 } from '../../../db';
@@ -10,6 +11,7 @@ import {
     CreateInstagramMediaContainerParamsSchema,
     DeleteInstagramMediaContainerParamsSchema,
     GetAllInstagramMediaContainersParamsSchema,
+    GetInstagramMediaContainerByIdParamsSchema,
     UpdateInstagramMediaContainerParamsSchema,
 } from '#schemas/handlers/instagramMediaContainer';
 import {
@@ -19,6 +21,8 @@ import {
     DeleteInstagramMediaContainerResponse,
     GetAllInstagramMediaContainersParams,
     GetAllInstagramMediaContainersResponse,
+    GetInstagramMediaContainerByIdParams,
+    GetInstagramMediaContainerByIdResponse,
     UpdateInstagramMediaContainerParams,
     UpdateInstagramMediaContainerResponse,
 } from '#types';
@@ -42,3 +46,8 @@ export const deleteInstagramMediaContainerDelete = wrapper<
     DeleteInstagramMediaContainerParams,
     DeleteInstagramMediaContainerResponse
 >(deleteInstagramMediaContainer, DeleteInstagramMediaContainerParamsSchema, 'DELETE');
+
+export const getInstagramMediaContainerByIdGet = wrapper<
+    GetInstagramMediaContainerByIdParams,
+    GetInstagramMediaContainerByIdResponse
+>(getInstagramMediaContainerById, GetInstagramMediaContainerByIdParamsSchema, 'GET');

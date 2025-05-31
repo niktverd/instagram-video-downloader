@@ -26,6 +26,7 @@ import {
     getAllSourcesGet,
     getAllUsersGet,
     getInstagramAccountInsightsGet,
+    getInstagramMediaContainerByIdGet,
     getOneSourceGet,
     getPreparedVideoByIdGet,
     getScenarioByIdGet,
@@ -69,6 +70,7 @@ router.get('/get-all-users', getAllUsersGet);
 router.get('/get-all-sources', getAllSourcesGet);
 router.get('/get-one-source', getOneSourceGet);
 router.get('/get-all-instagram-media-containers', getAllInstagramMediaContainersGet);
+router.get('/get-instagram-media-container-by-id', getInstagramMediaContainerByIdGet);
 router.get('/get-all-prepared-videos', getAllPreparedVideosGet);
 router.get('/get-all-instagram-locations', getAllInstagramLocationsGet);
 // router.get('/get-instagram-location-by-id', getInstagramLocationByIdGet);
