@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {queryToBoolean, queryToNumberArray} from '#utils';
+import {queryToBoolean, queryToNumberArray} from '#src/schemas/helpers';
 
 export const zodOptionalNumberArray = () =>
     z

@@ -1,204 +1,131 @@
+/* eslint-disable no-not-accumulator-reassign/no-not-accumulator-reassign */
+/* eslint-disable no-param-reassign */
 import fs from 'fs';
 import path from 'path';
 
-import ts from 'typescript';
-
-// Configure TypeScript compiler options
-const compilerOptions: ts.CompilerOptions = {
-    declaration: true,
-    emitDeclarationOnly: true,
-    outDir: 'sharedTypes',
-    skipLibCheck: true,
-    target: ts.ScriptTarget.ES2020,
-    module: ts.ModuleKind.ESNext,
-    moduleResolution: ts.ModuleResolutionKind.NodeJs,
-    paths: {
-        '#src/*': ['./src/*'],
-        '#schemas/*': ['./schemas/*'],
-    },
-    baseUrl: '.',
-};
-
-const exportFiles = ['src/types/index.ts', 'src/schemas/index.ts'];
-
-// Path of source file that contains Zod schemas
-const paths = exportFiles.map((file) => path.resolve(__dirname, file));
-
-// Create a program with the input files
-const program = ts.createProgram(paths, compilerOptions);
-
-// Custom transformer to resolve path aliases
-const pathAliasTransformer = (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-    return (sourceFile: ts.SourceFile): ts.SourceFile => {
-        // Function to visit each node and transform imports
-        const visitor = (node: ts.Node): ts.Node => {
-            // Check if node is an import declaration
-            if (
-                ts.isImportDeclaration(node) &&
-                node.moduleSpecifier &&
-                ts.isStringLiteral(node.moduleSpecifier)
-            ) {
-                const importPath = node.moduleSpecifier.text;
-
-                // Check if the import uses a path alias
-                if (importPath.startsWith('#src/')) {
-                    // Convert #src/ to relative path without src/
-                    const relativePath = importPath.replace('#src/', '../');
-                    return ts.factory.updateImportDeclaration(
-                        node,
-                        node.modifiers,
-                        node.importClause,
-                        ts.factory.createStringLiteral(relativePath),
-                        undefined,
-                    );
-                }
-
-                // Check if the import uses #schemas alias
-                if (importPath.startsWith('#schemas/')) {
-                    // Convert #schemas/ to relative path
-                    const relativePath = importPath.replace('#schemas/', '../schemas/');
-                    return ts.factory.updateImportDeclaration(
-                        node,
-                        node.modifiers,
-                        node.importClause,
-                        ts.factory.createStringLiteral(relativePath),
-                        undefined,
-                    );
-                }
-            }
-            return ts.visitEachChild(node, visitor, context);
-        };
-
-        return ts.visitNode(sourceFile, visitor) as ts.SourceFile;
-    };
-};
-
-// Emit only .d.ts files with path alias transformer
-const customTransformers: ts.CustomTransformers = {
-    before: [pathAliasTransformer],
-};
-
-const emitResult = program.emit(undefined, undefined, undefined, true, customTransformers);
-
-if (emitResult.emitSkipped) {
-    console.error('Error generating types:');
-    emitResult.diagnostics.forEach((diagnostic) => {
-        if (diagnostic.file) {
-            const {line, character} = ts.getLineAndCharacterOfPosition(
-                diagnostic.file,
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                diagnostic.start!,
-            );
-            const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-            console.error(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
-        } else {
-            console.error(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+// Utility: Recursively get all .ts files in a directory, skipping common.ts and common/index.ts
+function getAllTSFiles(dir: string): string[] {
+    let results: string[] = [];
+    const list = fs.readdirSync(dir, {withFileTypes: true});
+    for (const file of list) {
+        const filePath = path.join(dir, file.name);
+        if (file.isDirectory()) {
+            results = results.concat(getAllTSFiles(filePath));
+        } else if (
+            file.name.endsWith('.ts') &&
+            !file.name.endsWith('.d.ts') &&
+            file.name !== 'common.ts' &&
+            !(file.name === 'index.ts' && path.basename(path.dirname(filePath)) === 'common')
+        ) {
+            results.push(filePath);
         }
-    });
-    process.exit(1);
-} else {
-    // Create sharedTypes directory if it doesn't exist
-    const sharedTypesDir = path.resolve(__dirname, 'sharedTypes');
-    if (!fs.existsSync(sharedTypesDir)) {
-        fs.mkdirSync(sharedTypesDir, {recursive: true});
     }
-
-    // Process generated .d.ts files to fix any remaining path aliases
-    const processGeneratedFiles = (dir: string) => {
-        const files = fs.readdirSync(dir, {withFileTypes: true});
-
-        for (const file of files) {
-            const filePath = path.join(dir, file.name);
-
-            if (file.isDirectory()) {
-                processGeneratedFiles(filePath);
-            } else if (file.name.endsWith('.d.ts')) {
-                let content = fs.readFileSync(filePath, 'utf8');
-
-                // Replace any remaining path aliases in the generated .d.ts files
-                // Remove src/ from the path
-                content = content.replace(/from\s+['"]#src\/(.*?)['"]/g, 'from "../$1"');
-
-                // Replace #schemas paths with ../schemas/
-                content = content.replace(
-                    /from\s+['"]#schemas\/(.*?)['"]/g,
-                    'from "../schemas/$1"',
-                );
-
-                // Also fix any direct references to src/
-                content = content.replace(/from\s+['"]\.\.\/src\/(.*?)['"]/g, 'from "../$1"');
-
-                // Remove 'declare' keyword from enum declarations
-                content = content.replace(/export\s+declare\s+enum/g, 'export enum');
-
-                // Fix paths for imports from '../types/enums' in schema files
-                if (filePath.includes('/schemas/models/')) {
-                    content = content.replace(
-                        /from\s+['"]\.\.\/types\/enums['"]/g,
-                        'from "../../types/enums"',
-                    );
-                } else if (filePath.includes('/schemas/')) {
-                    content = content.replace(
-                        /from\s+['"]\.\.\/\.\.\/types\/enums['"]/g,
-                        'from "../types/enums"',
-                    );
-                }
-
-                // // Remove server-specific imports
-                // content = content.replace(/import\s+.*?\s+from\s+['"]objection['"];\s*\n?/g, '');
-                // content = content.replace(/import\s+.*?\s+from\s+['"]express['"];\s*\n?/g, '');
-                // content = content.replace(/import\s+.*?\s+from\s+['"]knex['"];\s*\n?/g, '');
-
-                // // Remove function declarations - including everything until semicolon
-                // content = content.replace(/export\s+declare\s+function\s+[^;]*;/g, '');
-
-                // // Remove export declare const - including everything until semicolon
-                // content = content.replace(/export\s+declare\s+const\s+[^;]*;/g, '');
-
-                // Clean up multiple newlines that might be created by our replacements
-                content = content.replace(/\n{3,}/g, '\n\n');
-
-                // Add eslint-disable comment for any type if it contains 'any'
-                if (
-                    content.includes(': any') ||
-                    content.includes('<any>') ||
-                    content.includes(': Array<any>') ||
-                    content.includes(': Record<string, any>')
-                ) {
-                    content = `/* eslint-disable @typescript-eslint/no-explicit-any */\n${content}`;
-                }
-
-                // Write the processed content to a .ts file instead of .d.ts
-                const tsFilePath = filePath.replace('.d.ts', '.ts');
-                fs.writeFileSync(tsFilePath, content);
-                // Remove the original .d.ts file
-                fs.unlinkSync(filePath);
-            }
-        }
-    };
-
-    processGeneratedFiles(sharedTypesDir);
-
-    // Generate index.ts file instead of index.d.ts
-    const generateIndexFile = () => {
-        const exports = exportFiles
-            .map((file) => {
-                const parsedPath = path.parse(file);
-                // Remove src/ from the path
-                const relativePath = `./${parsedPath.dir.replace('src/', '')}/${parsedPath.name}`;
-                return `export * from '${relativePath}';`;
-            })
-            .join('\n');
-
-        const indexContent = `// Auto-generated from source files - DO NOT EDIT
-/* eslint-disable @typescript-eslint/no-explicit-any */
-${exports}
-`;
-
-        fs.writeFileSync(path.join(sharedTypesDir, 'index.ts'), indexContent);
-    };
-
-    generateIndexFile();
-
-    console.log('✅ Types successfully generated in sharedTypes/ directory as .ts files');
+    return results;
 }
+
+// Utility: Ensure directory exists
+function ensureDir(filePath: string) {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, {recursive: true});
+    }
+}
+
+// Utility: Recursively remove all files and folders in a directory
+function clearDir(dir: string) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir)) {
+        const entryPath = path.join(dir, entry);
+        if (fs.lstatSync(entryPath).isDirectory()) {
+            clearDir(entryPath);
+            fs.rmdirSync(entryPath);
+        } else {
+            fs.unlinkSync(entryPath);
+        }
+    }
+}
+
+// Universal alias replacer: #name/* => relative path to sharedTypes/name/*
+function replaceAliases(content: string, destFile: string): string {
+    // from '#name/...'
+    content = content.replace(
+        /from ['"]#([a-zA-Z0-9_-]+)\/(.*?)['"]/g,
+        (_m: string, alias: string, p1: string) => {
+            let rel = path
+                .relative(
+                    path.dirname(destFile),
+                    path.join(
+                        path.dirname(destFile).split('sharedTypes')[0] + `sharedTypes/${alias}`,
+                        p1,
+                    ),
+                )
+                .replace(/\\/g, '/');
+            rel = rel.replace(/\/src\//g, '/'); // remove /src/ from path
+            return `from './${rel.startsWith('.') ? rel : './' + rel}'`;
+        },
+    );
+    // dynamic import('#name/...')
+    content = content.replace(
+        /import\(['"]#([a-zA-Z0-9_-]+)\/(.*?)['"]\)/g,
+        (_m: string, alias: string, p1: string) => {
+            let rel = path
+                .relative(
+                    path.dirname(destFile),
+                    path.join(
+                        path.dirname(destFile).split('sharedTypes')[0] + `sharedTypes/${alias}`,
+                        p1,
+                    ),
+                )
+                .replace(/\\/g, '/');
+            rel = rel.replace(/\/src\//g, '/'); // remove /src/ from path
+            return `import('./${rel.startsWith('.') ? rel : './' + rel}')`;
+        },
+    );
+    return content;
+}
+
+// Copy file, just replacing aliases
+function processAndCopyFile(srcFile: string, destFile: string) {
+    let content = fs.readFileSync(srcFile, 'utf8');
+    // Заменить алиасы на относительные пути
+    content = replaceAliases(content, destFile);
+    ensureDir(destFile);
+    fs.writeFileSync(destFile, content);
+}
+
+// Копировать все .ts-файлы из srcDir в destDir, обрабатывая схемы
+function copyDirWithProcessing(srcDir: string, destDir: string) {
+    const files = getAllTSFiles(srcDir);
+    for (const srcFile of files) {
+        const relPath = path.relative(srcDir, srcFile);
+        const destFile = path.join(destDir, relPath);
+        processAndCopyFile(srcFile, destFile);
+    }
+}
+
+// MAIN COPY LOGIC
+const sharedTypesDir = path.resolve(__dirname, 'sharedTypes');
+const srcTypesDir = path.resolve(__dirname, 'src/types');
+const srcSchemasDir = path.resolve(__dirname, 'src/schemas');
+const destTypesDir = path.join(sharedTypesDir, 'types');
+const destSchemasDir = path.join(sharedTypesDir, 'schemas');
+
+clearDir(sharedTypesDir);
+
+copyDirWithProcessing(srcTypesDir, destTypesDir);
+copyDirWithProcessing(srcSchemasDir, destSchemasDir);
+
+function generateIndex(sharedTypesDirLocal: string) {
+    // Получаем версию zod из package.json
+    const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf8'));
+    const zodVersion =
+        (pkg.dependencies && pkg.dependencies.zod) ||
+        (pkg.devDependencies && pkg.devDependencies.zod) ||
+        'unknown';
+    const content = `// Auto-generated. Do not edit\n// zod version: ${zodVersion}\nexport * from './types';\n`;
+    fs.writeFileSync(path.join(sharedTypesDirLocal, 'index.ts'), content);
+}
+
+generateIndex(sharedTypesDir);
+
+console.log('✅ sharedTypes успешно сгенерированы!');
