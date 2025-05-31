@@ -1,6 +1,7 @@
 import {
     createPreparedVideo,
     deletePreparedVideo,
+    findPreparedVideoDuplicates,
     getAllPreparedVideos,
     getPreparedVideoById,
     updatePreparedVideo,
@@ -10,6 +11,7 @@ import {
 import {
     CreatePreparedVideoParamsSchema,
     DeletePreparedVideoParamsSchema,
+    FindPreparedVideoDuplicatesParamsSchema,
     GetAllPreparedVideosParamsSchema,
     GetPreparedVideoByIdParamsSchema,
     UpdatePreparedVideoParamsSchema,
@@ -19,6 +21,8 @@ import {
     CreatePreparedVideoResponse,
     DeletePreparedVideoParams,
     DeletePreparedVideoResponse,
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse,
     GetAllPreparedVideosParams,
     GetAllPreparedVideosResponse,
     GetPreparedVideoByIdParams,
@@ -51,3 +55,8 @@ export const deletePreparedVideoDelete = wrapper<
     DeletePreparedVideoParams,
     DeletePreparedVideoResponse
 >(deletePreparedVideo, DeletePreparedVideoParamsSchema, 'DELETE');
+
+export const findPreparedVideoDuplicatesGet = wrapper<
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse
+>(findPreparedVideoDuplicates, FindPreparedVideoDuplicatesParamsSchema, 'GET');

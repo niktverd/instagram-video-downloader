@@ -15,6 +15,7 @@ import {
     deleteScenarioDelete,
     deleteSourceDelete,
     deleteUserDelete,
+    findPreparedVideoDuplicatesGet,
     getAccountByIdGet,
     getAccountBySlugGet,
     getAllAccountsGet,
@@ -77,6 +78,7 @@ router.get('/get-all-instagram-locations', getAllInstagramLocationsGet);
 router.get('/get-instagram-account-insights', getInstagramAccountInsightsGet);
 router.get('/get-all-comments-for-posts', getAllCommentsForPostsGet);
 router.get('/get-prepared-video-by-id', getPreparedVideoByIdGet);
+router.get('/get-prepared-video-duplicates', findPreparedVideoDuplicatesGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddlePost);

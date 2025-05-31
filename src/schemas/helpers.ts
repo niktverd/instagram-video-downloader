@@ -26,3 +26,16 @@ export const queryToBoolean = (val: unknown): boolean => {
     }
     return false;
 };
+
+export const queryToNumber = (val: unknown): number | undefined => {
+    if (typeof val === 'number') {
+        return val;
+    }
+
+    const num = Number(val);
+    if (isNaN(num)) {
+        return undefined;
+    }
+
+    return num;
+};

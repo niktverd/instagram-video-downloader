@@ -3,6 +3,7 @@ import {z} from 'zod';
 import {
     // CreatePreparedVideoParamsSchema,
     DeletePreparedVideoParamsSchema,
+    FindPreparedVideoDuplicatesParamsSchema,
     GetAllPreparedVideosParamsSchema,
     GetOnePreparedVideoParamsSchema,
     GetPreparedVideoByIdParamsSchema,
@@ -32,3 +33,8 @@ export type DeletePreparedVideoResponse = number;
 
 export type GetOnePreparedVideoParams = z.infer<typeof GetOnePreparedVideoParamsSchema>;
 export type GetOnePreparedVideoResponse = IPreparedVideo | undefined;
+
+export type FindPreparedVideoDuplicatesParams = z.infer<
+    typeof FindPreparedVideoDuplicatesParamsSchema
+>;
+export type FindPreparedVideoDuplicatesResponse = IPreparedVideo[];

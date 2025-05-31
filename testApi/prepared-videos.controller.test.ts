@@ -7,6 +7,7 @@ import {
     buildPreparedVideoPayload,
     createPreparedVideoHelper,
     deletePreparedVideoHelper,
+    findPreparedVideoDuplicatesHelper,
     getAllPreparedVideosHelper,
     getPreparedVideoByIdHelper,
     updatePreparedVideoHelper,
@@ -107,5 +108,33 @@ describe('prepared-videos.controller', () => {
         expect(response2.body).toBeDefined();
         expect(response2.body.id).toBe(response.body.id);
         expect(response2.status).toBeLessThan(299);
+    });
+
+    it('findPreparedVideoDuplicatesPost: should return duplicates for same accountId, sourceId, scenarioId', async () => {
+        const ids = await createDeps();
+        // Создаём 2 дубликата
+        const payload1 = buildPreparedVideoPayload(ids);
+        const payload2 = buildPreparedVideoPayload(ids);
+        payload2.firebaseUrl = 'https://dummy.firebase.com/other.mp4';
+        await createPreparedVideoHelper(payload1, testApp);
+        await createPreparedVideoHelper(payload2, testApp);
+
+        // Запрос на поиск дубликатов
+        const res = await findPreparedVideoDuplicatesHelper(
+            {
+                accountId: ids.accountId,
+                sourceId: ids.sourceId,
+                scenarioId: ids.scenarioId,
+            },
+            testApp,
+        );
+        expect(res.status).toBeLessThan(299);
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body.length).toBe(2);
+        // Проверяем, что оба firebaseUrl присутствуют
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const urls = res.body.map((v: any) => v.firebaseUrl);
+        expect(urls).toContain(payload1.firebaseUrl);
+        expect(urls).toContain(payload2.firebaseUrl);
     });
 });

@@ -56,3 +56,10 @@ export async function deletePreparedVideoHelper(
 ) {
     return request(testApp).delete('/api/ui/delete-prepared-video').query(params);
 }
+
+export async function findPreparedVideoDuplicatesHelper(
+    params: {accountId: number; sourceId: number; scenarioId: number},
+    testApp: Express = app,
+) {
+    return request(testApp).get('/api/ui/get-prepared-video-duplicates').query(params);
+}

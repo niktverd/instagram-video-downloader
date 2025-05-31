@@ -13,6 +13,8 @@ import {
     CreatePreparedVideoResponse,
     DeletePreparedVideoParams,
     DeletePreparedVideoResponse,
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse,
     GetAllPreparedVideosParams,
     GetAllPreparedVideosResponse,
     GetOnePreparedVideoParams,
@@ -239,4 +241,20 @@ export const getOnePreparedVideo: ApiFunctionPrototype<
         result: preparedVideo,
         code: 200,
     };
+};
+
+export const findPreparedVideoDuplicates: ApiFunctionPrototype<
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse
+> = async (params, db) => {
+    const {accountId, sourceId, scenarioId} = params;
+    // Найти все видео с такими же accountId, sourceId, scenarioId
+    const videos = await PreparedVideo.query(db).where({accountId, sourceId, scenarioId});
+
+    // Если найдено больше одной — это дубликаты
+    if (videos.length > 1) {
+        return {result: videos, code: 200};
+    }
+
+    return {result: [], code: 200};
 };
