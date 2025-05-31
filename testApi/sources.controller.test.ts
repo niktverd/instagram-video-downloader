@@ -109,5 +109,6 @@ describe('sources.controller', () => {
         // Проверяем, что для day1 — 2 записи, для day2 — 1
         expect(res.body[day1]).toBe(2);
         expect(res.body[day2]).toBe(1);
+        await db.destroy();
     });
 });
