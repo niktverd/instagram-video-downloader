@@ -19,14 +19,12 @@
 | uuid                   | package.json:81:6 | error    |
 | pg                     | package.json:76:6 | error    |
 
-## Unused devDependencies (4)
+## Unused devDependencies (2)
 
-| Name             | Location           | Severity |
-| :--------------- | :----------------- | :------- |
-| supertest        | package.json:100:6 | error    |
-| @types/supertest | package.json:94:6  | error    |
-| @types/cors      | package.json:86:6  | error    |
-| @types/uuid      | package.json:95:6  | error    |
+| Name        | Location          | Severity |
+| :---------- | :---------------- | :------- |
+| @types/cors | package.json:86:6 | error    |
+| @types/uuid | package.json:95:6 | error    |
 
 ## Unlisted binaries (1)
 

@@ -31,6 +31,7 @@ import {
     getOneSourceGet,
     getPreparedVideoByIdGet,
     getScenarioByIdGet,
+    getSourcesStatisticsByDaysGet,
     getUserByEmailGet,
     getUserByIdGet,
     uiConvertImageToVideoPost,
@@ -79,6 +80,7 @@ router.get('/get-instagram-account-insights', getInstagramAccountInsightsGet);
 router.get('/get-all-comments-for-posts', getAllCommentsForPostsGet);
 router.get('/get-prepared-video-by-id', getPreparedVideoByIdGet);
 router.get('/get-prepared-video-duplicates', findPreparedVideoDuplicatesGet);
+router.get('/get-sources-statistics-by-days', getSourcesStatisticsByDaysGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddlePost);

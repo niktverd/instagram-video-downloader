@@ -1,3 +1,5 @@
+import request from 'supertest';
+
 import testApp from '../app';
 import * as sourcesController from '../src/sections/ui/controllers/sources.controller';
 
@@ -79,5 +81,33 @@ describe('sources.controller', () => {
         expect(response2.body).toBeDefined();
         expect(response2.body.id).toBe(response.body.id);
         expect(response2.status).toBeLessThan(299);
+    });
+
+    it('getSourcesStatisticsByDays: returns correct stats for given days', async () => {
+        // Создаём записи с разными датами
+        const now = new Date();
+        const day1 = now.toISOString().slice(0, 10);
+        const day2 = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10); // вчера
+
+        // Хак: создаём через createSourceHelper, потом патчим createdAt напрямую через knex
+        await createSourceHelper(undefined, testApp);
+        await createSourceHelper(undefined, testApp);
+        const src3 = await createSourceHelper(undefined, testApp);
+        // src1 и src2 — сегодня, src3 — вчера
+        const db = require('../src/db/utils').getDb();
+        await db('sources')
+            .where({id: src3.body.id})
+            .update({createdAt: `${day2}T12:00:00.000Z`});
+
+        // Запросим статистику
+        const res = await request(testApp)
+            .get('/api/ui/get-sources-statistics-by-days')
+            .query({days: [day1, day2]});
+        expect(res.status).toBeLessThan(300);
+        expect(res.body).toBeDefined();
+        expect(typeof res.body).toBe('object');
+        // Проверяем, что для day1 — 2 записи, для day2 — 1
+        expect(res.body[day1]).toBe(2);
+        expect(res.body[day2]).toBe(1);
     });
 });
