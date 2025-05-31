@@ -99,16 +99,22 @@ describe('sources.controller', () => {
             .where({id: src3.body.id})
             .update({createdAt: `${day2}T12:00:00.000Z`});
 
-        // Запросим статистику
-        const res = await request(testApp)
-            .get('/api/ui/get-sources-statistics-by-days')
-            .query({days: [day1, day2]});
-        expect(res.status).toBeLessThan(300);
-        expect(res.body).toBeDefined();
-        expect(typeof res.body).toBe('object');
-        // Проверяем, что для day1 — 2 записи, для day2 — 1
-        expect(res.body[day1]).toBe(2);
-        expect(res.body[day2]).toBe(1);
-        await db.destroy();
+        try {
+            // Запросим статистику
+            const res = await request(testApp)
+                .get('/api/ui/get-sources-statistics-by-days')
+                .query({days: [day1, day2]});
+            expect(res.status).toBeLessThan(300);
+            expect(res.body).toBeDefined();
+            expect(typeof res.body).toBe('object');
+            // Проверяем, что для day1 — 2 записи, для day2 — 1
+            expect(res.body[day1]).toBe(2);
+            expect(res.body[day2]).toBe(1);
+        } catch (error) {
+            console.log(error);
+            throw error;
+        } finally {
+            await db.destroy();
+        }
     });
 });

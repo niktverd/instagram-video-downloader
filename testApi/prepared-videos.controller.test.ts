@@ -1,5 +1,8 @@
+import request from 'supertest';
+
 import testApp from '../app';
 import * as preparedVideosController from '../src/sections/ui/controllers/prepared-videos.controller';
+import {CreatePreparedVideoResponse} from '../src/types/preparedVideo';
 
 import './clearDbBeforeEach';
 import {createAccountHelper} from './utils/accounts';
@@ -136,5 +139,56 @@ describe('prepared-videos.controller', () => {
         const urls = res.body.map((v: any) => v.firebaseUrl);
         expect(urls).toContain(payload1.firebaseUrl);
         expect(urls).toContain(payload2.firebaseUrl);
+    });
+
+    it('getPreparedVideosStatisticsByDays: returns correct stats for given days', async () => {
+        // Создаём записи с разными датами
+        const now = new Date();
+        const day1 = now.toISOString().slice(0, 10);
+        const day2 = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10); // вчера
+
+        // Хак: создаём через createPreparedVideoHelper, потом патчим createdAt напрямую через knex
+        let vid: CreatePreparedVideoResponse | undefined;
+        const scenario = await createScenarioHelper(undefined, testApp);
+        const account = await createAccountHelper(undefined, testApp);
+        for (let i = 0; i < 3; i++) {
+            const source = await createSourceHelper(undefined, testApp);
+            const ids = {
+                scenarioId: scenario.body.id,
+                sourceId: source.body.id,
+                accountId: account.body.id,
+            };
+            const payload = buildPreparedVideoPayload(ids);
+            const response = await createPreparedVideoHelper(payload, testApp);
+
+            vid = response.body;
+        }
+        if (!vid) {
+            throw new Error('vid is undefined');
+        }
+
+        // vid1 и vid2 — сегодня, vid3 — вчера
+        const db = require('../src/db/utils').getDb();
+        await db('preparedVideos')
+            .where({id: vid.id})
+            .update({createdAt: `${day2}T12:00:00.000Z`});
+
+        try {
+            // Запросим статистику
+            const res = await request(testApp)
+                .get('/api/ui/get-prepared-videos-statistics-by-days')
+                .query({days: [day1, day2]});
+            expect(res.status).toBeLessThan(300);
+            expect(res.body).toBeDefined();
+            expect(typeof res.body).toBe('object');
+            // Проверяем, что для day1 — 2 записи, для day2 — 1
+            expect(res.body[day1]).toBe(2);
+            expect(res.body[day2]).toBe(1);
+        } catch (error) {
+            console.log(error);
+            throw error;
+        } finally {
+            await db.destroy();
+        }
     });
 });

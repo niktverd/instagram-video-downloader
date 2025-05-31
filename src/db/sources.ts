@@ -23,6 +23,8 @@ import {
     GetOneSourceResponse,
     GetSourceByIdParams,
     GetSourceByIdResponse,
+    SourceStatisticsParams,
+    SourceStatisticsResponse,
     UpdateSourceParams,
     UpdateSourceResponse,
     UpdateSourceResponse as _UpdateSourceResponse,
@@ -156,8 +158,8 @@ export const getSourceById: ApiFunctionPrototype<
 };
 
 export const getSourcesStatisticsByDays: ApiFunctionPrototype<
-    {days: string[]},
-    Record<string, number>
+    SourceStatisticsParams,
+    SourceStatisticsResponse
 > = async (params, db) => {
     const {days} = params;
     if (!days.length) return {result: {}, code: 200};
