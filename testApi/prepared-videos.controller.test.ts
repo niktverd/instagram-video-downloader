@@ -169,11 +169,11 @@ describe('prepared-videos.controller', () => {
 
         // vid1 и vid2 — сегодня, vid3 — вчера
         const db = require('../src/db/utils').getDb();
-        await db('preparedVideos')
-            .where({id: vid.id})
-            .update({createdAt: `${day2}T12:00:00.000Z`});
-
         try {
+            await db('preparedVideos')
+                .where({id: vid.id})
+                .update({createdAt: `${day2}T12:00:00.000Z`});
+
             // Запросим статистику
             const res = await request(testApp)
                 .get('/api/ui/get-prepared-videos-statistics-by-days')
@@ -184,9 +184,6 @@ describe('prepared-videos.controller', () => {
             // Проверяем, что для day1 — 2 записи, для day2 — 1
             expect(res.body[day1]).toBe(2);
             expect(res.body[day2]).toBe(1);
-        } catch (error) {
-            console.log(error);
-            throw error;
         } finally {
             await db.destroy();
         }

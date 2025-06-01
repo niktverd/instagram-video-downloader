@@ -43,3 +43,9 @@ export const GetLimitedInstagramMediaContainersParamsSchema = z
         isBlocked: z.boolean().optional(),
     })
     .strict();
+
+export const InstagramMediaContainersStatisticsParamsSchema = z
+    .object({
+        days: z.array(z.string()),
+    })
+    .strict();

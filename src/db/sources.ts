@@ -162,7 +162,9 @@ export const getSourcesStatisticsByDays: ApiFunctionPrototype<
     SourceStatisticsResponse
 > = async (params, db) => {
     const {days} = params;
-    if (!days.length) return {result: {}, code: 200};
+    if (!days.length) {
+        return {result: {}, code: 200};
+    }
     const rows = (await Source.query(db)
         .select(db.raw(`to_char("createdAt", 'YYYY-MM-DD') as day`), db.raw('count(*) as count'))
         .whereIn(db.raw(`to_char("createdAt", 'YYYY-MM-DD')`), days)

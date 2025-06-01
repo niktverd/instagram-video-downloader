@@ -33,7 +33,9 @@ function ensureDir(filePath: string) {
 
 // Utility: Recursively remove all files and folders in a directory
 function clearDir(dir: string) {
-    if (!fs.existsSync(dir)) return;
+    if (!fs.existsSync(dir)) {
+        return;
+    }
     for (const entry of fs.readdirSync(dir)) {
         const entryPath = path.join(dir, entry);
         if (fs.lstatSync(entryPath).isDirectory()) {

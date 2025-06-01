@@ -95,11 +95,11 @@ describe('sources.controller', () => {
         const src3 = await createSourceHelper(undefined, testApp);
         // src1 и src2 — сегодня, src3 — вчера
         const db = require('../src/db/utils').getDb();
-        await db('sources')
-            .where({id: src3.body.id})
-            .update({createdAt: `${day2}T12:00:00.000Z`});
-
         try {
+            await db('sources')
+                .where({id: src3.body.id})
+                .update({createdAt: `${day2}T12:00:00.000Z`});
+
             // Запросим статистику
             const res = await request(testApp)
                 .get('/api/ui/get-sources-statistics-by-days')
@@ -110,9 +110,6 @@ describe('sources.controller', () => {
             // Проверяем, что для day1 — 2 записи, для day2 — 1
             expect(res.body[day1]).toBe(2);
             expect(res.body[day2]).toBe(1);
-        } catch (error) {
-            console.log(error);
-            throw error;
         } finally {
             await db.destroy();
         }

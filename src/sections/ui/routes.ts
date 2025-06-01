@@ -28,6 +28,7 @@ import {
     getAllUsersGet,
     getInstagramAccountInsightsGet,
     getInstagramMediaContainerByIdGet,
+    getInstagramMediaContainersStatisticsByDaysGet,
     getOneSourceGet,
     getPreparedVideoByIdGet,
     getPreparedVideosStatisticsByDaysGet,
@@ -83,6 +84,10 @@ router.get('/get-prepared-video-by-id', getPreparedVideoByIdGet);
 router.get('/get-prepared-video-duplicates', findPreparedVideoDuplicatesGet);
 router.get('/get-sources-statistics-by-days', getSourcesStatisticsByDaysGet);
 router.get('/get-prepared-videos-statistics-by-days', getPreparedVideosStatisticsByDaysGet);
+router.get(
+    '/get-instagram-media-containers-statistics-by-days',
+    getInstagramMediaContainersStatisticsByDaysGet,
+);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddlePost);
