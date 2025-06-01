@@ -20,4 +20,5 @@ module.exports = {
         '^\\$(.*)$': '<rootDir>/src/sections/$1',
         '^#types$': '<rootDir>/src/types/index.ts',
     },
+    setupFilesAfterEnv: ['<rootDir>/testApi/clearDbBeforeEach.js'],
 };

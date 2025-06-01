@@ -1,13 +1,15 @@
 # Knip report
 
-## Unused files (7)
+## Unused files (9)
 
 * src/config/database.ts
+* src/db/scripts/migrateToPostgres.ts
+* src/db/services/UserService.ts
 * src/sections/cloud-run/components/scenarios/CoverWithImage.ts
 * src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
 * src/sections/cloud-run/components/scenarios/common.ts
-* src/services/UserService.ts
 * src/tests/requests/imitateInstagramMessageWebhook.ts
+* src/utils/migrationHelper.ts
 * src/utils/scenarios.ts
 
 ## Unused dependencies (4)
@@ -32,7 +34,7 @@
 | :----- | :----------- | :------- |
 | podman | package.json | error    |
 
-## Unused exports (7)
+## Unused exports (10)
 
 | Name            | Location                                                              | Severity |
 | :-------------- | :-------------------------------------------------------------------- | :------- |
@@ -41,7 +43,10 @@
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
 | default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | default         | src/models/InstagramLocation.ts:24:8                                  | error    |
+| fetchDelete     | src/utils/fetchHelpers.ts:80:14                                       | error    |
+| fetchPatch      | src/utils/fetchHelpers.ts:62:14                                       | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
+| default         | src/models/User.ts:57:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
 ## Unused exported enum members (3)

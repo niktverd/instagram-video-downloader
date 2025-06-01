@@ -1,7 +1,7 @@
 import testApp from '../app';
 import * as accountsController from '../src/sections/ui/controllers/accounts.controller';
 
-import './clearDbBeforeEach';
+// import './clearDbBeforeEach';
 import {
     createAccountHelper,
     deleteAccountHelper,

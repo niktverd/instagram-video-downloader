@@ -3,7 +3,7 @@ import request from 'supertest';
 import testApp from '../app';
 import * as sourcesController from '../src/sections/ui/controllers/sources.controller';
 
-import './clearDbBeforeEach';
+// import './clearDbBeforeEach';
 import {
     createSourceHelper,
     deleteSourceHelper,

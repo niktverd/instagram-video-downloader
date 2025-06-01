@@ -66,3 +66,13 @@ export const PreparedVideosStatisticsParamsSchema = z
         days: z.array(z.string()),
     })
     .strict();
+
+export const HasPreparedVideoBeenCreatedParamsSchema = z
+    .object({
+        accountId: zodOptionalNumber(),
+        scenarioId: zodOptionalNumber(),
+        sourceId: zodOptionalNumber(),
+    })
+    .strict();
+
+export const HasPreparedVideoBeenCreatedResponseSchema = z.boolean();

@@ -18,6 +18,7 @@ export const getDb = () => {
     Model.knex(db);
     return db;
 };
+export const db = getDb();
 
 // REST HTTP method type
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -29,7 +30,6 @@ export const wrapper = <RequestArgs, ResponseArgs>(
     allowedMethod?: HttpMethod | HttpMethod[],
 ) => {
     return async (req: Request, res: Response) => {
-        const db = getDb();
         try {
             // Check HTTP method if specified
             if (allowedMethod) {
@@ -77,7 +77,5 @@ export const wrapper = <RequestArgs, ResponseArgs>(
                 res.status(500).json({error: 'Internal server error: ' + String(error)});
             }
         }
-
-        db.destroy();
     };
 };

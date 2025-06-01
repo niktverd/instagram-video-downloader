@@ -5,6 +5,7 @@ import {
     getAllPreparedVideos,
     getPreparedVideoById,
     getPreparedVideosStatisticsByDays,
+    hasPreparedVideoBeenCreated,
     updatePreparedVideo,
     wrapper,
 } from '../../../db';
@@ -15,6 +16,7 @@ import {
     FindPreparedVideoDuplicatesParamsSchema,
     GetAllPreparedVideosParamsSchema,
     GetPreparedVideoByIdParamsSchema,
+    HasPreparedVideoBeenCreatedParamsSchema,
     PreparedVideosStatisticsParamsSchema,
     UpdatePreparedVideoParamsSchema,
 } from '#schemas/handlers/preparedVideo';
@@ -29,6 +31,8 @@ import {
     GetAllPreparedVideosResponse,
     GetPreparedVideoByIdParams,
     GetPreparedVideoByIdResponse,
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse,
     PreparedVideosStatisticsParams,
     PreparedVideosStatisticsResponse,
     UpdatePreparedVideoParams,
@@ -69,3 +73,8 @@ export const getPreparedVideosStatisticsByDaysGet = wrapper<
     PreparedVideosStatisticsParams,
     PreparedVideosStatisticsResponse
 >(getPreparedVideosStatisticsByDays, PreparedVideosStatisticsParamsSchema, 'GET');
+
+export const hasPreparedVideoBeenCreatedGet = wrapper<
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse
+>(hasPreparedVideoBeenCreated, HasPreparedVideoBeenCreatedParamsSchema, 'GET');

@@ -4,7 +4,7 @@ import testApp from '../app';
 import * as preparedVideosController from '../src/sections/ui/controllers/prepared-videos.controller';
 import {CreatePreparedVideoResponse} from '../src/types/preparedVideo';
 
-import './clearDbBeforeEach';
+// import './clearDbBeforeEach';
 import {createAccountHelper} from './utils/accounts';
 import {
     buildPreparedVideoPayload,
@@ -187,5 +187,24 @@ describe('prepared-videos.controller', () => {
         } finally {
             await db.destroy();
         }
+    });
+
+    it('hasPreparedVideoBeenCreated: returns true for existing, false for non-existing', async () => {
+        const ids = await createDeps();
+        // Создаём видео
+        const payload = buildPreparedVideoPayload(ids);
+        await createPreparedVideoHelper(payload, testApp);
+        // Проверяем существующее
+        const res1 = await request(testApp)
+            .get('/api/ui/has-prepared-video-been-created')
+            .query(ids);
+        expect(res1.status).toBeLessThan(300);
+        expect(res1.body).toBe(true);
+        // Проверяем несуществующее
+        const res2 = await request(testApp)
+            .get('/api/ui/has-prepared-video-been-created')
+            .query({accountId: 999999, scenarioId: 999999, sourceId: 999999});
+        expect(res2.status).toBeLessThan(300);
+        expect(res2.body).toBe(false);
     });
 });

@@ -7,6 +7,8 @@ import {
     GetAllPreparedVideosParamsSchema,
     GetOnePreparedVideoParamsSchema,
     GetPreparedVideoByIdParamsSchema,
+    HasPreparedVideoBeenCreatedParamsSchema,
+    HasPreparedVideoBeenCreatedResponseSchema,
     PreparedVideosStatisticsParamsSchema,
     UpdatePreparedVideoParamsSchema,
 } from '#schemas/handlers/preparedVideo';
@@ -42,3 +44,10 @@ export type FindPreparedVideoDuplicatesResponse = IPreparedVideo[];
 
 export type PreparedVideosStatisticsParams = z.infer<typeof PreparedVideosStatisticsParamsSchema>;
 export type PreparedVideosStatisticsResponse = Record<string, number>;
+
+export type HasPreparedVideoBeenCreatedParams = z.infer<
+    typeof HasPreparedVideoBeenCreatedParamsSchema
+>;
+export type HasPreparedVideoBeenCreatedResponse = z.infer<
+    typeof HasPreparedVideoBeenCreatedResponseSchema
+>;

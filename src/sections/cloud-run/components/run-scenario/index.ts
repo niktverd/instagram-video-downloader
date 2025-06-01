@@ -4,8 +4,7 @@ import {rmSync, writeFileSync} from 'fs';
 import {ScenarioMap} from '../scenarios/ScenarioMap';
 import {getVideoDuration} from '../video';
 
-import {createPreparedVideo, getAccountById, getScenarioById, getSourceById} from '#src/db';
-import {hasPreparedVideoBeenCreated, uploadFileToServer} from '#src/sections/shared';
+import {IAccount} from '#src/types/account';
 import {
     CloudRunCreateScenarioVideoParams,
     CloudRunCreateScenarioVideoResponse,
@@ -13,8 +12,10 @@ import {
 import {ApiFunctionPrototype} from '#src/types/common';
 import {ScenarioType} from '#src/types/enums';
 import {IScenario} from '#src/types/scenario';
+import {ISource} from '#src/types/source';
 import {ThrownError} from '#src/utils/error';
-import {getWorkingDirectoryForVideo, log} from '#utils';
+import {fetchGet, fetchPost} from '#src/utils/fetchHelpers';
+import {FetchRoutes, getWorkingDirectoryForVideo, log, uploadFileToServer} from '#utils';
 
 // eslint-disable-next-line valid-jsdoc
 /**
@@ -24,7 +25,7 @@ import {getWorkingDirectoryForVideo, log} from '#utils';
 export const runScenarioHandler: ApiFunctionPrototype<
     CloudRunCreateScenarioVideoParams,
     CloudRunCreateScenarioVideoResponse
-> = async (params, db) => {
+> = async (params) => {
     const {
         message: {data, messageId, publishTime, attributes: attributes},
         subscription: _subscription,
@@ -51,24 +52,39 @@ export const runScenarioHandler: ApiFunctionPrototype<
         publishTime,
     });
 
-    if (await hasPreparedVideoBeenCreated({accountId, scenarioId, sourceId}, db)) {
+    const hasPreparedVideoBeenCreated = await fetchGet<boolean>({
+        route: FetchRoutes.hasPreparedVideoBeenCreated,
+        query: {accountId, scenarioId, sourceId},
+    });
+    if (hasPreparedVideoBeenCreated) {
         return {
             result: undefined,
             code: 200,
         };
     }
 
-    const {result: scenario} = await getScenarioById({id: scenarioId}, db);
+    const scenario = await fetchGet<IScenario>({
+        route: FetchRoutes.getScenario,
+        query: {id: scenarioId},
+    });
     if (!scenario) {
         throw new ThrownError(`Scenario with id ${scenarioId} not found`, 404);
     }
 
-    const {result: account} = await getAccountById({id: accountId}, db);
+    // const {result: account} = await getAccountById({id: accountId}, db);
+    const account = await fetchGet<IAccount>({
+        route: FetchRoutes.getAccountById,
+        query: {id: accountId},
+    });
     if (!account) {
         throw new ThrownError(`Account with id ${accountId} not found`, 404);
     }
 
-    const {result: source} = await getSourceById({id: sourceId}, db);
+    // const {result: source} = await getSourceById({id: sourceId}, db);
+    const source = await fetchGet<ISource>({
+        route: FetchRoutes.getOneSource,
+        query: {id: sourceId},
+    });
     if (!source) {
         throw new ThrownError(`Source with id ${sourceId} not found`, 404);
     }
@@ -134,16 +150,26 @@ export const runScenarioHandler: ApiFunctionPrototype<
     );
     logLocal('downloadURL', {downloadURL});
     // update database
-    const savedPreparedVideo = await createPreparedVideo(
-        {
+    // const savedPreparedVideo = await createPreparedVideo(
+    //     {
+    //         firebaseUrl: downloadURL,
+    //         scenarioId,
+    //         sourceId,
+    //         accountId,
+    //         duration,
+    //     },
+    //     db,
+    // );
+    const savedPreparedVideo = await fetchPost({
+        route: FetchRoutes.createPreparedVideo,
+        body: {
             firebaseUrl: downloadURL,
             scenarioId,
             sourceId,
             accountId,
             duration,
         },
-        db,
-    );
+    });
     logLocal('video added to database', savedPreparedVideo);
     // delete tempfiles
     const deleteTempFiles = true;

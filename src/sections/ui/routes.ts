@@ -36,6 +36,7 @@ import {
     getSourcesStatisticsByDaysGet,
     getUserByEmailGet,
     getUserByIdGet,
+    hasPreparedVideoBeenCreatedGet,
     uiConvertImageToVideoPost,
     uiGetInsightsGet,
     uiGetInstagramMediaGet,
@@ -88,6 +89,7 @@ router.get(
     '/get-instagram-media-containers-statistics-by-days',
     getInstagramMediaContainersStatisticsByDaysGet,
 );
+router.get('/has-prepared-video-been-created', hasPreparedVideoBeenCreatedGet);
 
 // POST routes
 router.post('/split-video-in-the-middle', uiSplitVideoInTheMiddlePost);

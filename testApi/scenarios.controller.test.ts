@@ -1,7 +1,7 @@
 import testApp from '../app';
 import * as scenariosController from '../src/sections/ui/controllers/scenarios.controller';
 
-import './clearDbBeforeEach';
+// import './clearDbBeforeEach';
 import {
     createScenarioHelper,
     deleteScenarioHelper,

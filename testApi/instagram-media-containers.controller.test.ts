@@ -2,6 +2,7 @@ import request from 'supertest';
 
 import testApp from '../app';
 
+// import './clearDbBeforeEach';
 import {createAccountHelper} from './utils/accounts';
 import {createInstagramMediaContainerHelper} from './utils/instagramMediaContainers';
 import {createPreparedVideoHelper} from './utils/prepared-videos';
@@ -32,9 +33,9 @@ describe('instagram-media-containers.controller', () => {
         const day2 = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10); // вчера
 
         // Создаём 3 контейнера, один переносим на вчера
-        await createInstagramMediaContainerHelper(basePayload, testApp);
-        await createInstagramMediaContainerHelper(basePayload, testApp);
-        await createInstagramMediaContainerHelper(basePayload, testApp);
+        createInstagramMediaContainerHelper(basePayload, testApp);
+        createInstagramMediaContainerHelper(basePayload, testApp);
+        createInstagramMediaContainerHelper(basePayload, testApp);
         const db = require('../src/db/utils').getDb();
 
         try {

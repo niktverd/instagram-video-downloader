@@ -21,6 +21,8 @@ import {
     GetOnePreparedVideoResponse,
     GetPreparedVideoByIdParams,
     GetPreparedVideoByIdResponse,
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse,
     IPreparedVideo,
     PreparedVideosStatisticsParams,
     PreparedVideosStatisticsResponse,
@@ -279,4 +281,14 @@ export const getPreparedVideosStatisticsByDays: ApiFunctionPrototype<
         if (!(day in result)) result[day] = 0;
     }
     return {result, code: 200};
+};
+
+export const hasPreparedVideoBeenCreated: ApiFunctionPrototype<
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse
+> = async (params, db) => {
+    const {accountId, scenarioId, sourceId} = params;
+    const video = await getOnePreparedVideo({accountId, scenarioId, sourceId}, db);
+
+    return {result: Boolean(video.result), code: video.code};
 };
