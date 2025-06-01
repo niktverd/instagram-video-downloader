@@ -1,5 +1,13 @@
 /* eslint-env jest */
+const {execSync} = require('child_process');
+
 const {db} = require('../src/db/utils');
+
+beforeAll(async () => {
+    // Откатываем все миграции и накатываем заново
+    execSync('npx knex migrate:rollback --all');
+    execSync('npx knex migrate:latest');
+});
 
 beforeEach(async () => {
     const {rows} = await db.raw(`

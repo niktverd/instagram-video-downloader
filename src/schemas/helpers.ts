@@ -39,3 +39,16 @@ export const queryToNumber = (val: unknown): number | undefined => {
 
     return num;
 };
+
+export const queryToNumberStrict = (val: unknown): number => {
+    if (typeof val === 'number') {
+        return val;
+    }
+
+    const num = Number(val);
+    if (isNaN(num)) {
+        throw new Error('Invalid number');
+    }
+
+    return num;
+};

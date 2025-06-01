@@ -2,7 +2,9 @@ import {z} from 'zod';
 
 import {BaseModel} from './BaseModel';
 
-export class User extends BaseModel {
+import {IUser} from '#types';
+
+export class User extends BaseModel implements IUser {
     id!: number;
     email!: string;
     displayName?: string;

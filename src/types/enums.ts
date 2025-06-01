@@ -20,3 +20,11 @@ export enum InstagramLocationSource {
     Scenario = 'scenario',
     Account = 'account',
 }
+
+export enum CloudRunScenarioExecutionStatusEnum {
+    InProgress = 'in-progress',
+    Success = 'success',
+    Fail = 'fail',
+    Cancelled = 'cancelled',
+    Timeout = 'timeout',
+}

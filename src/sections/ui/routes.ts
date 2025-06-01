@@ -2,6 +2,7 @@ import {Router as expressRouter} from 'express';
 
 import {
     createAccountPost,
+    createCloudRunScenarioExecutionPost,
     createInstagramLocationPost,
     createInstagramMediaContainerPost,
     createPreparedVideoPost,
@@ -19,6 +20,7 @@ import {
     getAccountByIdGet,
     getAccountBySlugGet,
     getAllAccountsGet,
+    getAllCloudRunScenarioExecutionGet,
     getAllCommentsForPostsGet,
     getAllInstagramLocationsGet,
     getAllInstagramMediaContainersGet,
@@ -46,6 +48,7 @@ import {
     uiSplitVideoInTheMiddlePost,
     uiTestGreenScreenPost,
     updateAccountPatch,
+    updateCloudRunScenarioExecutionStatusPatch,
     updateInstagramLocationPatch,
     updateInstagramMediaContainerPatch,
     updatePreparedVideoPatch,
@@ -102,6 +105,7 @@ router.post('/create-source', createSourcePost);
 router.post('/create-instagram-media-container', createInstagramMediaContainerPost);
 router.post('/create-instagram-location', createInstagramLocationPost);
 router.post('/add-prepared-video', createPreparedVideoPost);
+router.post('/cloud-run-scenario-execution', createCloudRunScenarioExecutionPost);
 
 // PATCH routes
 router.patch('/patch-scenario', updateScenarioPatch);
@@ -111,6 +115,7 @@ router.patch('/update-source', updateSourcePatch);
 router.patch('/update-instagram-media-container', updateInstagramMediaContainerPatch);
 router.patch('/update-instagram-location', updateInstagramLocationPatch);
 router.patch('/patch-prepared-video', updatePreparedVideoPatch);
+router.patch('/cloud-run-scenario-execution', updateCloudRunScenarioExecutionStatusPatch);
 
 // DELETE routes
 router.delete('/delete-user', deleteUserDelete);
@@ -120,5 +125,10 @@ router.delete('/delete-source', deleteSourceDelete);
 router.delete('/delete-instagram-media-container', deleteInstagramMediaContainerDelete);
 router.delete('/delete-instagram-location', deleteInstagramLocationDelete);
 router.delete('/delete-prepared-video', deletePreparedVideoDelete);
+
+// CloudRunScenarioExecution routes
+router.post('/create-cloud-run-scenario-execution', createCloudRunScenarioExecutionPost);
+router.get('/get-cloud-run-scenario-execution', getAllCloudRunScenarioExecutionGet);
+router.patch('/update-cloud-run-scenario-execution', updateCloudRunScenarioExecutionStatusPatch);
 
 export default router;

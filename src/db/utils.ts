@@ -68,7 +68,6 @@ export const wrapper = <RequestArgs, ResponseArgs>(
                 throw validationError;
             }
         } catch (error) {
-            console.log(req);
             if (error instanceof ThrownError) {
                 logError('Error in wrapper:', String(error));
                 res.status(error.code).json({error: error.message});

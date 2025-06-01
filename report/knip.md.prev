@@ -46,16 +46,19 @@
 | fetchDelete     | src/utils/fetchHelpers.ts:80:14                                       | error    |
 | fetchPatch      | src/utils/fetchHelpers.ts:62:14                                       | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
-| default         | src/models/User.ts:57:8                                               | error    |
+| default         | src/models/User.ts:59:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
-## Unused exported enum members (3)
+## Unused exported enum members (6)
 
-| Name        | Location              | Severity |
-| :---------- | :-------------------- | :------- |
-| RandomIndex | src/constants.ts:35:5 | error    |
-| Min2        | src/constants.ts:23:5 | error    |
-| Min1        | src/constants.ts:24:5 | error    |
+| Name        | Location                | Severity |
+| :---------- | :---------------------- | :------- |
+| Cancelled   | src/types/enums.ts:28:5 | error    |
+| Timeout     | src/types/enums.ts:29:5 | error    |
+| Fail        | src/types/enums.ts:27:5 | error    |
+| RandomIndex | src/constants.ts:35:5   | error    |
+| Min2        | src/constants.ts:23:5   | error    |
+| Min1        | src/constants.ts:24:5   | error    |
 
 ## Duplicate exports (5)
 

@@ -1,6 +1,11 @@
 import {z} from 'zod';
 
-import {queryToBoolean, queryToNumber, queryToNumberArray} from '#src/schemas/helpers';
+import {
+    queryToBoolean,
+    queryToNumber,
+    queryToNumberArray,
+    queryToNumberStrict,
+} from '#src/schemas/helpers';
 
 export const zodOptionalNumber = () =>
     z
@@ -9,6 +14,11 @@ export const zodOptionalNumber = () =>
         .transform((x) => (x === undefined ? undefined : (x as number))) as unknown as z.ZodType<
         number | undefined
     >;
+
+export const zodNumber = () =>
+    z
+        .preprocess(queryToNumberStrict, z.number())
+        .transform((x) => x as number) as unknown as z.ZodType<number>;
 
 export const zodOptionalNumberArray = () =>
     z
