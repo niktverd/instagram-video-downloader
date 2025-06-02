@@ -101,4 +101,9 @@ export enum FetchRoutes {
 
     // manual message to run scenarios
     scheduleSourceVideoCreation = '/pubsub/shedule-source-video-creation',
+
+    // cloud run scenario execution
+    createCloudRunScenarioExecution = '/ui/create-cloud-run-scenario-execution',
+    getAllCloudRunScenarioExecution = '/ui/get-cloud-run-scenario-execution',
+    updateCloudRunScenarioExecutionStatus = '/ui/update-cloud-run-scenario-execution',
 }
