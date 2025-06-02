@@ -1,8 +1,11 @@
 import {
     createPreparedVideo,
     deletePreparedVideo,
+    findPreparedVideoDuplicates,
     getAllPreparedVideos,
     getPreparedVideoById,
+    getPreparedVideosStatisticsByDays,
+    hasPreparedVideoBeenCreated,
     updatePreparedVideo,
     wrapper,
 } from '../../../db';
@@ -10,8 +13,11 @@ import {
 import {
     CreatePreparedVideoParamsSchema,
     DeletePreparedVideoParamsSchema,
+    FindPreparedVideoDuplicatesParamsSchema,
     GetAllPreparedVideosParamsSchema,
     GetPreparedVideoByIdParamsSchema,
+    HasPreparedVideoBeenCreatedParamsSchema,
+    PreparedVideosStatisticsParamsSchema,
     UpdatePreparedVideoParamsSchema,
 } from '#schemas/handlers/preparedVideo';
 import {
@@ -19,10 +25,16 @@ import {
     CreatePreparedVideoResponse,
     DeletePreparedVideoParams,
     DeletePreparedVideoResponse,
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse,
     GetAllPreparedVideosParams,
     GetAllPreparedVideosResponse,
     GetPreparedVideoByIdParams,
     GetPreparedVideoByIdResponse,
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse,
+    PreparedVideosStatisticsParams,
+    PreparedVideosStatisticsResponse,
     UpdatePreparedVideoParams,
     UpdatePreparedVideoResponse,
 } from '#types';
@@ -51,3 +63,18 @@ export const deletePreparedVideoDelete = wrapper<
     DeletePreparedVideoParams,
     DeletePreparedVideoResponse
 >(deletePreparedVideo, DeletePreparedVideoParamsSchema, 'DELETE');
+
+export const findPreparedVideoDuplicatesGet = wrapper<
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse
+>(findPreparedVideoDuplicates, FindPreparedVideoDuplicatesParamsSchema, 'GET');
+
+export const getPreparedVideosStatisticsByDaysGet = wrapper<
+    PreparedVideosStatisticsParams,
+    PreparedVideosStatisticsResponse
+>(getPreparedVideosStatisticsByDays, PreparedVideosStatisticsParamsSchema, 'GET');
+
+export const hasPreparedVideoBeenCreatedGet = wrapper<
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse
+>(hasPreparedVideoBeenCreated, HasPreparedVideoBeenCreatedParamsSchema, 'GET');

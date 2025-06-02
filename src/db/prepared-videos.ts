@@ -13,16 +13,21 @@ import {
     CreatePreparedVideoResponse,
     DeletePreparedVideoParams,
     DeletePreparedVideoResponse,
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse,
     GetAllPreparedVideosParams,
     GetAllPreparedVideosResponse,
     GetOnePreparedVideoParams,
     GetOnePreparedVideoResponse,
     GetPreparedVideoByIdParams,
     GetPreparedVideoByIdResponse,
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse,
+    IPreparedVideo,
+    PreparedVideosStatisticsParams,
+    PreparedVideosStatisticsResponse,
     UpdatePreparedVideoParams,
     UpdatePreparedVideoResponse,
-    IPreparedVideo as _IPreparedVideo,
-    UpdatePreparedVideoResponse as _UpdatePreparedVideoResponse,
 } from '#types';
 
 export const createPreparedVideo: ApiFunctionPrototype<
@@ -70,7 +75,46 @@ export const getAllPreparedVideos: ApiFunctionPrototype<
         scenarioIds,
         sourceIds,
         accountIds,
+        findDuplicates,
     } = params;
+
+    if (findDuplicates) {
+        // Группируем по accountId, sourceId, scenarioId и ищем группы с count > 1
+        const subquery = PreparedVideo.query(db)
+            .select('accountId', 'sourceId', 'scenarioId')
+            .count('* as count')
+            .groupBy('accountId', 'sourceId', 'scenarioId')
+            .havingRaw('count(*) > 1');
+
+        // page/limit для групп
+        const groups = await subquery.page(Number(page) - 1, Number(limit));
+        const groupRows = groups.results;
+        const groupCount = groups.total;
+
+        // Для каждой группы — получить все видео из этой группы
+        let preparedVideos: IPreparedVideo[] = [];
+        if (groupRows.length > 0) {
+            const orConditions = groupRows.map((g) => {
+                return {
+                    accountId: g.accountId,
+                    sourceId: g.sourceId,
+                    scenarioId: g.scenarioId,
+                };
+            });
+            preparedVideos = await PreparedVideo.query(db).where((builder) => {
+                orConditions.forEach((cond) => {
+                    builder.orWhere(cond);
+                });
+            });
+        }
+        return {
+            result: {
+                preparedVideos,
+                count: groupCount,
+            },
+            code: 200,
+        };
+    }
 
     const query = PreparedVideo.query(db);
 
@@ -199,4 +243,52 @@ export const getOnePreparedVideo: ApiFunctionPrototype<
         result: preparedVideo,
         code: 200,
     };
+};
+
+export const findPreparedVideoDuplicates: ApiFunctionPrototype<
+    FindPreparedVideoDuplicatesParams,
+    FindPreparedVideoDuplicatesResponse
+> = async (params, db) => {
+    const {accountId, sourceId, scenarioId} = params;
+    // Найти все видео с такими же accountId, sourceId, scenarioId
+    const videos = await PreparedVideo.query(db).where({accountId, sourceId, scenarioId});
+
+    // Если найдено больше одной — это дубликаты
+    if (videos.length > 1) {
+        return {result: videos, code: 200};
+    }
+
+    return {result: [], code: 200};
+};
+
+export const getPreparedVideosStatisticsByDays: ApiFunctionPrototype<
+    PreparedVideosStatisticsParams,
+    PreparedVideosStatisticsResponse
+> = async (params, db) => {
+    const {days} = params;
+    if (!days.length) {
+        return {result: {}, code: 200};
+    }
+    const rows = (await PreparedVideo.query(db)
+        .select(db.raw(`to_char("createdAt", 'YYYY-MM-DD') as day`), db.raw('count(*) as count'))
+        .whereIn(db.raw(`to_char("createdAt", 'YYYY-MM-DD')`), days)
+        .groupBy('day')) as unknown as Array<{day: string; count: string | number}>;
+    const result: Record<string, number> = {};
+    for (const row of rows) {
+        result[row.day] = Number(row.count);
+    }
+    for (const day of days) {
+        if (!(day in result)) result[day] = 0;
+    }
+    return {result, code: 200};
+};
+
+export const hasPreparedVideoBeenCreated: ApiFunctionPrototype<
+    HasPreparedVideoBeenCreatedParams,
+    HasPreparedVideoBeenCreatedResponse
+> = async (params, db) => {
+    const {accountId, scenarioId, sourceId} = params;
+    const video = await getOnePreparedVideo({accountId, scenarioId, sourceId}, db);
+
+    return {result: Boolean(video.result), code: video.code};
 };

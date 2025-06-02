@@ -3,6 +3,7 @@ import {
     deleteSource,
     getAllSources,
     getOneSource,
+    getSourcesStatisticsByDays,
     updateSource,
     wrapper,
 } from '../../../db';
@@ -12,6 +13,7 @@ import {
     DeleteSourceParamsSchema,
     GetAllSourcesParamsSchema,
     GetOneSourceParamsSchema,
+    SourceStatisticsParamsSchema,
     UpdateSourceParamsSchema,
 } from '#schemas/handlers/source';
 import {
@@ -23,6 +25,8 @@ import {
     GetAllSourcesResponse,
     GetOneSourceParams,
     GetOneSourceResponse,
+    SourceStatisticsParams,
+    SourceStatisticsResponse,
     UpdateSourceParams,
     UpdateSourceResponse,
 } from '#types';
@@ -56,3 +60,8 @@ export const deleteSourceDelete = wrapper<DeleteSourceParams, DeleteSourceRespon
     DeleteSourceParamsSchema,
     'DELETE',
 );
+
+export const getSourcesStatisticsByDaysGet = wrapper<
+    SourceStatisticsParams,
+    SourceStatisticsResponse
+>(getSourcesStatisticsByDays, SourceStatisticsParamsSchema, 'GET');

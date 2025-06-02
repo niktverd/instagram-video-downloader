@@ -24,7 +24,6 @@ import {
     createVideoOfFrame,
     normalizeVideo,
 } from '#src/sections/cloud-run/components/video';
-import {uploadFileToServer} from '#src/sections/shared/prepared-videos';
 import {IResponse} from '#src/types/common';
 import {
     ConvertImageToVideoParams,
@@ -38,7 +37,7 @@ import {
 } from '#src/types/uiCommon';
 import {ThrownError} from '#src/utils/error';
 import {MediaPostModel} from '#types';
-import {getWorkingDirectoryForVideo, saveFileToDisk} from '#utils';
+import {getWorkingDirectoryForVideo, saveFileToDisk, uploadFileToServer} from '#utils';
 
 export const getAllMediaPosts = async (
     params: GetAllMediaPostsParams,

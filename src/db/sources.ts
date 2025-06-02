@@ -23,6 +23,8 @@ import {
     GetOneSourceResponse,
     GetSourceByIdParams,
     GetSourceByIdResponse,
+    SourceStatisticsParams,
+    SourceStatisticsResponse,
     UpdateSourceParams,
     UpdateSourceResponse,
     UpdateSourceResponse as _UpdateSourceResponse,
@@ -153,4 +155,26 @@ export const getSourceById: ApiFunctionPrototype<
         result: source,
         code: 200,
     };
+};
+
+export const getSourcesStatisticsByDays: ApiFunctionPrototype<
+    SourceStatisticsParams,
+    SourceStatisticsResponse
+> = async (params, db) => {
+    const {days} = params;
+    if (!days.length) {
+        return {result: {}, code: 200};
+    }
+    const rows = (await Source.query(db)
+        .select(db.raw(`to_char("createdAt", 'YYYY-MM-DD') as day`), db.raw('count(*) as count'))
+        .whereIn(db.raw(`to_char("createdAt", 'YYYY-MM-DD')`), days)
+        .groupBy('day')) as unknown as Array<{day: string; count: string | number}>;
+    const result: Record<string, number> = {};
+    for (const row of rows) {
+        result[row.day] = Number(row.count);
+    }
+    for (const day of days) {
+        if (!(day in result)) result[day] = 0;
+    }
+    return {result, code: 200};
 };

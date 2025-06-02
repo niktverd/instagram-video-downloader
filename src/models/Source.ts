@@ -1,6 +1,8 @@
 import {BaseModel} from './BaseModel';
 
-export class Source extends BaseModel {
+import {ISource} from '#types';
+
+export class Source extends BaseModel implements ISource {
     id!: number;
     firebaseUrl!: string;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

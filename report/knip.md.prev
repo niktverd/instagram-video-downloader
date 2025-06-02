@@ -1,13 +1,15 @@
 # Knip report
 
-## Unused files (7)
+## Unused files (9)
 
 * src/config/database.ts
+* src/db/scripts/migrateToPostgres.ts
+* src/db/services/UserService.ts
 * src/sections/cloud-run/components/scenarios/CoverWithImage.ts
 * src/sections/cloud-run/components/scenarios/LognVideoWithShortInjections.ts
 * src/sections/cloud-run/components/scenarios/common.ts
-* src/services/UserService.ts
 * src/tests/requests/imitateInstagramMessageWebhook.ts
+* src/utils/migrationHelper.ts
 * src/utils/scenarios.ts
 
 ## Unused dependencies (4)
@@ -19,14 +21,12 @@
 | uuid                   | package.json:81:6 | error    |
 | pg                     | package.json:76:6 | error    |
 
-## Unused devDependencies (4)
+## Unused devDependencies (2)
 
-| Name             | Location           | Severity |
-| :--------------- | :----------------- | :------- |
-| supertest        | package.json:100:6 | error    |
-| @types/supertest | package.json:94:6  | error    |
-| @types/cors      | package.json:86:6  | error    |
-| @types/uuid      | package.json:95:6  | error    |
+| Name        | Location          | Severity |
+| :---------- | :---------------- | :------- |
+| @types/cors | package.json:86:6 | error    |
+| @types/uuid | package.json:95:6 | error    |
 
 ## Unlisted binaries (1)
 
@@ -34,7 +34,7 @@
 | :----- | :----------- | :------- |
 | podman | package.json | error    |
 
-## Unused exports (7)
+## Unused exports (9)
 
 | Name            | Location                                                              | Severity |
 | :-------------- | :-------------------------------------------------------------------- | :------- |
@@ -43,16 +43,20 @@
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
 | default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | default         | src/models/InstagramLocation.ts:24:8                                  | error    |
+| fetchDelete     | src/utils/fetchHelpers.ts:80:14                                       | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
+| default         | src/models/User.ts:59:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
-## Unused exported enum members (3)
+## Unused exported enum members (5)
 
-| Name        | Location              | Severity |
-| :---------- | :-------------------- | :------- |
-| RandomIndex | src/constants.ts:35:5 | error    |
-| Min2        | src/constants.ts:23:5 | error    |
-| Min1        | src/constants.ts:24:5 | error    |
+| Name        | Location                | Severity |
+| :---------- | :---------------------- | :------- |
+| Cancelled   | src/types/enums.ts:28:5 | error    |
+| Timeout     | src/types/enums.ts:29:5 | error    |
+| RandomIndex | src/constants.ts:35:5   | error    |
+| Min2        | src/constants.ts:23:5   | error    |
+| Min1        | src/constants.ts:24:5   | error    |
 
 ## Duplicate exports (5)
 

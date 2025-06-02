@@ -7,3 +7,4 @@ export * from './prepared-videos.controller';
 export * from './scenarios.controller';
 export * from './sources.controller';
 export * from './users.controller';
+export * from './cloud-run-scenario-executions.controller';

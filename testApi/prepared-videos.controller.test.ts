@@ -1,12 +1,16 @@
+import request from 'supertest';
+
 import testApp from '../app';
 import * as preparedVideosController from '../src/sections/ui/controllers/prepared-videos.controller';
+import {CreatePreparedVideoResponse} from '../src/types/preparedVideo';
 
-import './clearDbBeforeEach';
+// import './clearDbBeforeEach';
 import {createAccountHelper} from './utils/accounts';
 import {
     buildPreparedVideoPayload,
     createPreparedVideoHelper,
     deletePreparedVideoHelper,
+    findPreparedVideoDuplicatesHelper,
     getAllPreparedVideosHelper,
     getPreparedVideoByIdHelper,
     updatePreparedVideoHelper,
@@ -107,5 +111,100 @@ describe('prepared-videos.controller', () => {
         expect(response2.body).toBeDefined();
         expect(response2.body.id).toBe(response.body.id);
         expect(response2.status).toBeLessThan(299);
+    });
+
+    it('findPreparedVideoDuplicatesPost: should return duplicates for same accountId, sourceId, scenarioId', async () => {
+        const ids = await createDeps();
+        // Создаём 2 дубликата
+        const payload1 = buildPreparedVideoPayload(ids);
+        const payload2 = buildPreparedVideoPayload(ids);
+        payload2.firebaseUrl = 'https://dummy.firebase.com/other.mp4';
+        await createPreparedVideoHelper(payload1, testApp);
+        await createPreparedVideoHelper(payload2, testApp);
+
+        // Запрос на поиск дубликатов
+        const res = await findPreparedVideoDuplicatesHelper(
+            {
+                accountId: ids.accountId,
+                sourceId: ids.sourceId,
+                scenarioId: ids.scenarioId,
+            },
+            testApp,
+        );
+        expect(res.status).toBeLessThan(299);
+        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.body.length).toBe(2);
+        // Проверяем, что оба firebaseUrl присутствуют
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const urls = res.body.map((v: any) => v.firebaseUrl);
+        expect(urls).toContain(payload1.firebaseUrl);
+        expect(urls).toContain(payload2.firebaseUrl);
+    });
+
+    it('getPreparedVideosStatisticsByDays: returns correct stats for given days', async () => {
+        // Создаём записи с разными датами
+        const now = new Date();
+        const day1 = now.toISOString().slice(0, 10);
+        const day2 = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10); // вчера
+
+        // Хак: создаём через createPreparedVideoHelper, потом патчим createdAt напрямую через knex
+        let vid: CreatePreparedVideoResponse | undefined;
+        const scenario = await createScenarioHelper(undefined, testApp);
+        const account = await createAccountHelper(undefined, testApp);
+        for (let i = 0; i < 3; i++) {
+            const source = await createSourceHelper(undefined, testApp);
+            const ids = {
+                scenarioId: scenario.body.id,
+                sourceId: source.body.id,
+                accountId: account.body.id,
+            };
+            const payload = buildPreparedVideoPayload(ids);
+            const response = await createPreparedVideoHelper(payload, testApp);
+
+            vid = response.body;
+        }
+        if (!vid) {
+            throw new Error('vid is undefined');
+        }
+
+        // vid1 и vid2 — сегодня, vid3 — вчера
+        const db = require('../src/db/utils').getDb();
+        try {
+            await db('preparedVideos')
+                .where({id: vid.id})
+                .update({createdAt: `${day2}T12:00:00.000Z`});
+
+            // Запросим статистику
+            const res = await request(testApp)
+                .get('/api/ui/get-prepared-videos-statistics-by-days')
+                .query({days: [day1, day2]});
+            expect(res.status).toBeLessThan(300);
+            expect(res.body).toBeDefined();
+            expect(typeof res.body).toBe('object');
+            // Проверяем, что для day1 — 2 записи, для day2 — 1
+            expect(res.body[day1]).toBe(2);
+            expect(res.body[day2]).toBe(1);
+        } finally {
+            await db.destroy();
+        }
+    });
+
+    it('hasPreparedVideoBeenCreated: returns true for existing, false for non-existing', async () => {
+        const ids = await createDeps();
+        // Создаём видео
+        const payload = buildPreparedVideoPayload(ids);
+        await createPreparedVideoHelper(payload, testApp);
+        // Проверяем существующее
+        const res1 = await request(testApp)
+            .get('/api/ui/has-prepared-video-been-created')
+            .query(ids);
+        expect(res1.status).toBeLessThan(300);
+        expect(res1.body).toBe(true);
+        // Проверяем несуществующее
+        const res2 = await request(testApp)
+            .get('/api/ui/has-prepared-video-been-created')
+            .query({accountId: 999999, scenarioId: 999999, sourceId: 999999});
+        expect(res2.status).toBeLessThan(300);
+        expect(res2.body).toBe(false);
     });
 });

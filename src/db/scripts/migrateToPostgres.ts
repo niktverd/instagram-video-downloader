@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 // import * as firebase from 'firebase/app';
 import {initializeApp} from 'firebase/app';
 
-import {migrateUsers, validateDatabaseSetup} from '../utils/migrationHelper';
+import {migrateUsers, validateDatabaseSetup} from '../../utils/migrationHelper';
 
 import {getDb} from '#src/db';
 

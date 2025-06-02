@@ -6,6 +6,7 @@ import {
     GetAllInstagramMediaContainersParamsSchema,
     GetInstagramMediaContainerByIdParamsSchema,
     GetLimitedInstagramMediaContainersParamsSchema,
+    InstagramMediaContainersStatisticsParamsSchema,
     UpdateInstagramMediaContainerParamsSchema,
 } from '#schemas/handlers/instagramMediaContainer';
 import {InstagramMediaContainerSchema} from '#schemas/models/instagramMediaContainer';
@@ -42,3 +43,8 @@ export type GetLimitedInstagramMediaContainersParams = z.infer<
     typeof GetLimitedInstagramMediaContainersParamsSchema
 >;
 export type GetLimitedInstagramMediaContainersResponse = IInstagramMediaContainer[];
+
+export type InstagramMediaContainersStatisticsParams = z.infer<
+    typeof InstagramMediaContainersStatisticsParamsSchema
+>;
+export type InstagramMediaContainersStatisticsResponse = Record<string, number>;

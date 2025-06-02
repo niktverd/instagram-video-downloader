@@ -106,3 +106,4 @@ export * from './source';
 export * from './preparedVideo';
 export * from './user';
 export * from './enums';
+export * from './cloudRunScenarioExecution';

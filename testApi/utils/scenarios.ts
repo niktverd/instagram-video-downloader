@@ -4,9 +4,12 @@ import app from '../../app';
 import {InstagramLocationSource, ScenarioType} from '../../src/types/enums';
 import {DeleteScenarioParams, UpdateScenarioParams} from '../../src/types/scenario';
 
-// Minimal valid payload for creating a scenario
+function getUniqueSlug() {
+    return `test-scenario-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 const defaultCreatePayload = {
-    slug: 'test-scenario',
+    slug: getUniqueSlug(),
     type: ScenarioType.ScenarioAddBannerAtTheEndUnique,
     enabled: true,
     onlyOnce: false,
@@ -15,7 +18,12 @@ const defaultCreatePayload = {
 };
 
 export async function createScenarioHelper(payload = defaultCreatePayload, testApp = app) {
-    return request(testApp).post('/api/ui/add-scenario').send(payload);
+    const mergedPayload = {
+        ...defaultCreatePayload,
+        ...payload,
+        slug: payload?.slug || getUniqueSlug(),
+    };
+    return request(testApp).post('/api/ui/add-scenario').send(mergedPayload);
 }
 
 export async function getAllScenariosHelper(testApp = app, query = {}) {

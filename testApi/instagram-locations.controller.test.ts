@@ -1,7 +1,7 @@
 import testApp from '../app';
 import * as controller from '../src/sections/ui/controllers/instagram-locations.controller';
 
-import './clearDbBeforeEach';
+// import './clearDbBeforeEach';
 import {
     createLocationHelper,
     deleteLocationHelper,
