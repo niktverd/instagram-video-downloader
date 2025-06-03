@@ -58,7 +58,7 @@ jobs:
             --platform managed \
             --memory 1Gi \
             --cpu 1 \
-            --max-instances 100 \
+            --max-instances 10 \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
           echo "TIER1_URL=$URL" >> $GITHUB_ENV
@@ -76,7 +76,7 @@ jobs:
             --platform managed \
             --memory 2Gi \
             --cpu 1 \
-            --max-instances 10 \
+            --max-instances 5 \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
           echo "TIER2_URL=$URL" >> $GITHUB_ENV
