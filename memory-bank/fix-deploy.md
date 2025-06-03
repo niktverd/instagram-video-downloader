@@ -97,3 +97,122 @@
 - Нет дублирования выбора ветки
 - Всегда деплоится именно тот код, который выбран в "Use workflow from"
 - Меньше путаницы, проще поддержка, меньше багов 
+
+---
+
+## Ошибка при запуске Deploy Small Tier (shared-vars/action.yml)
+
+### Симптомы
+- Job "Deploy Small Tier (1GB/1CPU)" падает на шаге "Get shared vars"
+- Логи:
+  - Error: Unable to process file command 'output' successfully.
+  - Error: Invalid format '  "small": ***'
+
+### Причина
+- В кастомном action .github/actions/shared-vars/action.yml используется конструкция:
+  ```bash
+  cat << 'EOF' >> $GITHUB_OUTPUT
+  service_configs={ ... }
+  EOF
+  ```
+- GitHub Actions runner ожидает, что каждая строка, которую мы пишем в $GITHUB_OUTPUT, будет в формате `key=value` (одна строка — один output).
+- Если в $GITHUB_OUTPUT попадает многострочный JSON или любая строка, не соответствующая формату key=value, runner падает с ошибкой "Invalid format".
+- В данном случае весь JSON service_configs пишется как одна большая строка, но с переносами строк, что ломает парсер outputs.
+
+### Итог
+- Ошибка не в YAML workflow, а в bash-скрипте кастомного action: нельзя писать многострочные значения в $GITHUB_OUTPUT через cat << EOF.
+- Нужно сериализовать JSON в одну строку (без переносов) и писать одной строкой: echo "service_configs=<json>" >> $GITHUB_OUTPUT
+
+---
+
+## Навигационный промпт для фикса деплой флоу
+
+- Для изменения ресурсов/лимитов — смотри `.github/actions/shared-vars/action.yml` и `.github/config/shared.env`
+- Для изменения архитектуры/эскалации — смотри `.github/workflows/deploy-tiered-infrastructure.yml` и `README.md`
+- Для single-tier деплоя — смотри `.github/workflows/cloud-run-deploy.yml`
+- Для передачи переменных между workflow — смотри `.github/workflows/shared-config.yml`
+- Для переменных окружения — смотри `.github/config/shared.env`
+- Для мониторинга dead-letter — смотри секцию Monitoring в `README.md`
+
+Если фиксим деплой флоу — сначала определяем, какой tier/workflow/ресурс/триггер/секрет/переменная окружения нужен, потом ищем нужный файл по навигационному промпту выше. 
+
+---
+
+## План обновления деплой workflow (динамический выбор ветки через "Use workflow from")
+
+1. **Удалить input `branch` из workflow_dispatch**
+   - В файле `.github/workflows/deploy-tiered-infrastructure.yml` (и других, если есть):
+     - Убрать секцию inputs: branch
+     - Оставить только нужные inputs (например, deploy_mode)
+
+2. **Обновить шаги checkout**
+   - Везде, где используется actions/checkout, явно указать:
+     ```yaml
+     - uses: actions/checkout@v3
+       with:
+         ref: ${{ github.ref }}
+     ```
+   - Это гарантирует, что код и workflow берутся из выбранной в UI ветки
+
+3. **Удалить все упоминания/использование inputs.branch**
+   - Везде, где было `${{ github.event.inputs.branch }}` — заменить на `${{ github.ref }}`
+   - Проверить, чтобы не было рассинхрона между workflow-файлом и кодом
+
+4. **Обновить документацию**
+   - В `.github/workflows/README.md` и других доках:
+     - Убрать описание ручного выбора ветки через input
+     - Добавить пояснение: "Ветка для деплоя выбирается через стандартный GitHub UI (Use workflow from)"
+
+5. **Проверить все workflow, где был input branch**
+   - Повторить шаги 1-4 для всех workflow, где был input branch
+
+6. **Проверить, что deploy_mode и другие inputs работают как раньше**
+   - Оставить только реально нужные inputs (например, deploy_mode)
+   - Проверить, что dropdown для deploy_mode работает корректно
+
+7. **Smoke-тест**
+   - Запустить workflow из разных веток через UI
+   - Убедиться, что деплой и билд идут из выбранной ветки, а не из main по умолчанию
+
+---
+
+**Результат:**
+- Нет дублирования выбора ветки
+- Всегда деплоится именно тот код, который выбран в "Use workflow from"
+- Меньше путаницы, проще поддержка, меньше багов 
+
+---
+
+## План исправления бага с многострочным JSON в shared-vars/action.yml
+
+1. **Проблема**
+   - Многострочный JSON пишется в $GITHUB_OUTPUT через cat << EOF, что ломает GitHub Actions (ожидается key=value одной строкой).
+
+2. **Решение**
+   - Сформировать JSON как однострочную строку (minified, без переносов).
+   - Использовать echo для записи в $GITHUB_OUTPUT:
+     ```bash
+     echo "service_configs=$(echo '<JSON>' | jq -c .)" >> $GITHUB_OUTPUT
+     ```
+   - Если jq не доступен, собрать строку вручную или через printf.
+
+3. **Шаги по фиксу**
+   1. В файле `.github/actions/shared-vars/action.yml`:
+      - Заменить блок с cat << EOF на echo с однострочным JSON.
+      - Пример:
+        ```bash
+        echo "service_configs={\"small\":{...},\"medium\":{...},\"large\":{...}}" >> $GITHUB_OUTPUT
+        ```
+      - Либо использовать jq для минификации, если action запускается в окружении с jq.
+   2. Проверить, что все outputs (project_id, region, service_configs) пишутся одной строкой на output.
+   3. Убедиться, что downstream workflow корректно парсит JSON через fromJson.
+
+4. **Smoke-тест**
+   - Запустить workflow с новым action.
+   - Проверить, что шаг "Get shared vars" проходит без ошибок.
+   - Проверить, что деплой всех tier'ов работает (small/medium/large).
+
+5. **Документировать**
+   - Добавить в комментарии к action.yml причину, почему нельзя использовать cat << EOF для outputs.
+
+---
