@@ -22,32 +22,5 @@ runs:
         echo "project_id=media-automation-6aff2" >> $GITHUB_OUTPUT
         echo "region=europe-central2" >> $GITHUB_OUTPUT
 
-        # Service configurations as JSON
-        cat << 'EOF' >> $GITHUB_OUTPUT
-        service_configs={
-          "small": {
-            "name": "instagram-downloader-small",
-            "memory": "1Gi",
-            "cpu": "1",
-            "max_instances": 100,
-            "timeout": 300,
-            "concurrency": 10
-          },
-          "medium": {
-            "name": "instagram-downloader-medium",
-            "memory": "2Gi",
-            "cpu": "1", 
-            "max_instances": 10,
-            "timeout": 600,
-            "concurrency": 5
-          },
-          "large": {
-            "name": "instagram-downloader-large",
-            "memory": "4Gi",
-            "cpu": "2",
-            "max_instances": 2,
-            "timeout": 1000,
-            "concurrency": 2
-          }
-        }
-        EOF
+        # Service configurations as minified JSON (одна строка)
+        echo 'service_configs={"small":{"name":"instagram-downloader-small","memory":"1Gi","cpu":"1","max_instances":100,"timeout":300,"concurrency":10},"medium":{"name":"instagram-downloader-medium","memory":"2Gi","cpu":"1","max_instances":10,"timeout":600,"concurrency":5},"large":{"name":"instagram-downloader-large","memory":"4Gi","cpu":"2","max_instances":2,"timeout":1000,"concurrency":2}}' >> $GITHUB_OUTPUT

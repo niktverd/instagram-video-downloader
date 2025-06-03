@@ -48,15 +48,18 @@
 | default         | src/models/User.ts:59:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
-## Unused exported enum members (5)
+## Unused exported enum members (8)
 
-| Name        | Location                | Severity |
-| :---------- | :---------------------- | :------- |
-| Cancelled   | src/types/enums.ts:28:5 | error    |
-| Timeout     | src/types/enums.ts:29:5 | error    |
-| RandomIndex | src/constants.ts:35:5   | error    |
-| Min2        | src/constants.ts:23:5   | error    |
-| Min1        | src/constants.ts:24:5   | error    |
+| Name                         | Location                    | Severity |
+| :--------------------------- | :-------------------------- | :------- |
+| INSTAGRAM_VIDEO_EVENTS_TIER2 | src/utils/constants.ts:11:5 | error    |
+| INSTAGRAM_VIDEO_EVENTS_TIER3 | src/utils/constants.ts:12:5 | error    |
+| INSTAGRAM_VIDEO_EVENTS_DEAD  | src/utils/constants.ts:13:5 | error    |
+| Cancelled                    | src/types/enums.ts:28:5     | error    |
+| Timeout                      | src/types/enums.ts:29:5     | error    |
+| RandomIndex                  | src/constants.ts:35:5       | error    |
+| Min2                         | src/constants.ts:23:5       | error    |
+| Min1                         | src/constants.ts:24:5       | error    |
 
 ## Duplicate exports (5)
 

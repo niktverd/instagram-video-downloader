@@ -12,7 +12,7 @@ This repository contains two main deployment workflows:
 Both workflows can be triggered by:
 
 - **Automatic**: When a Pull Request is merged into the `main` branch
-- **Manual**: Via GitHub Actions tab with branch selection
+- **Manual**: Via GitHub Actions tab. **Ветка для деплоя выбирается через стандартный GitHub UI (Use workflow from) — это динамический селектор ветки, который определяет, из какой ветки будет запускаться workflow и деплоиться код.**
 
 ## deploy-tiered-infrastructure.yml
 
@@ -67,7 +67,6 @@ Both workflows can be triggered by:
 
 When triggering manually from Actions tab:
 
-- **Branch**: Select which branch to deploy
 - **Deploy Mode**:
   - `all` - Deploy all three tiers and setup Pub/Sub
   - `small-only` - Deploy only the small tier
@@ -97,7 +96,7 @@ The original workflow deploys a single service with 2GB RAM and 1 CPU.
 
 When triggering manually:
 
-- **Branch**: Select which branch to deploy
+- **Ветка для деплоя выбирается через стандартный GitHub UI (Use workflow from)**
 
 ## Shared Configuration
 
