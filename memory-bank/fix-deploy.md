@@ -125,94 +125,41 @@
 
 ---
 
-## Навигационный промпт для фикса деплой флоу
+## Ошибка: gcloud run deploy --image: expected one argument
 
-- Для изменения ресурсов/лимитов — смотри `.github/actions/shared-vars/action.yml` и `.github/config/shared.env`
-- Для изменения архитектуры/эскалации — смотри `.github/workflows/deploy-tiered-infrastructure.yml` и `README.md`
-- Для single-tier деплоя — смотри `.github/workflows/cloud-run-deploy.yml`
-- Для передачи переменных между workflow — смотри `.github/workflows/shared-config.yml`
-- Для переменных окружения — смотри `.github/config/shared.env`
-- Для мониторинга dead-letter — смотри секцию Monitoring в `README.md`
+### Симптомы
+- На шаге деплоя (Deploy Small Tier) падает с ошибкой:
+  - ERROR: (gcloud.run.deploy) argument --image: expected one argument
+  - Usage: gcloud run deploy ... --image IMAGE ...
+- Exit code 2
 
-Если фиксим деплой флоу — сначала определяем, какой tier/workflow/ресурс/триггер/секрет/переменная окружения нужен, потом ищем нужный файл по навигационному промпту выше. 
+### Причина
+- Переменная ${{ needs.build-image.outputs.image_tag }} пуста или невалидна (скорее всего, не была выставлена на предыдущем шаге или не проброшена как output).
+- В результате команда:
+  ```bash
+  gcloud run deploy $SERVICE_NAME \
+    --image ${{ needs.build-image.outputs.image_tag }} \
+    ...
+  ```
+  превращается в:
+  ```bash
+  gcloud run deploy instagram-downloader-small --image  ...
+  ```
+  (без значения для --image)
+- gcloud требует обязательный аргумент для --image, иначе падает с этой ошибкой.
 
----
+### Как диагностировать
+- Проверить, что шаг build-image реально выставляет output image_tag и что он не пустой.
+- Проверить, что в deploy-small-tier (и других tier) используется именно этот output.
+- В логах build-image найти строку echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT — убедиться, что $IMAGE_TAG не пустой.
+- В логах deploy-small-tier добавить debug echo перед деплоем:
+  ```bash
+  echo "IMAGE_TAG=${{ needs.build-image.outputs.image_tag }}"
+  ```
 
-## План обновления деплой workflow (динамический выбор ветки через "Use workflow from")
-
-1. **Удалить input `branch` из workflow_dispatch**
-   - В файле `.github/workflows/deploy-tiered-infrastructure.yml` (и других, если есть):
-     - Убрать секцию inputs: branch
-     - Оставить только нужные inputs (например, deploy_mode)
-
-2. **Обновить шаги checkout**
-   - Везде, где используется actions/checkout, явно указать:
-     ```yaml
-     - uses: actions/checkout@v3
-       with:
-         ref: ${{ github.ref }}
-     ```
-   - Это гарантирует, что код и workflow берутся из выбранной в UI ветки
-
-3. **Удалить все упоминания/использование inputs.branch**
-   - Везде, где было `${{ github.event.inputs.branch }}` — заменить на `${{ github.ref }}`
-   - Проверить, чтобы не было рассинхрона между workflow-файлом и кодом
-
-4. **Обновить документацию**
-   - В `.github/workflows/README.md` и других доках:
-     - Убрать описание ручного выбора ветки через input
-     - Добавить пояснение: "Ветка для деплоя выбирается через стандартный GitHub UI (Use workflow from)"
-
-5. **Проверить все workflow, где был input branch**
-   - Повторить шаги 1-4 для всех workflow, где был input branch
-
-6. **Проверить, что deploy_mode и другие inputs работают как раньше**
-   - Оставить только реально нужные inputs (например, deploy_mode)
-   - Проверить, что dropdown для deploy_mode работает корректно
-
-7. **Smoke-тест**
-   - Запустить workflow из разных веток через UI
-   - Убедиться, что деплой и билд идут из выбранной ветки, а не из main по умолчанию
-
----
-
-**Результат:**
-- Нет дублирования выбора ветки
-- Всегда деплоится именно тот код, который выбран в "Use workflow from"
-- Меньше путаницы, проще поддержка, меньше багов 
-
----
-
-## План исправления бага с многострочным JSON в shared-vars/action.yml
-
-1. **Проблема**
-   - Многострочный JSON пишется в $GITHUB_OUTPUT через cat << EOF, что ломает GitHub Actions (ожидается key=value одной строкой).
-
-2. **Решение**
-   - Сформировать JSON как однострочную строку (minified, без переносов).
-   - Использовать echo для записи в $GITHUB_OUTPUT:
-     ```bash
-     echo "service_configs=$(echo '<JSON>' | jq -c .)" >> $GITHUB_OUTPUT
-     ```
-   - Если jq не доступен, собрать строку вручную или через printf.
-
-3. **Шаги по фиксу**
-   1. В файле `.github/actions/shared-vars/action.yml`:
-      - Заменить блок с cat << EOF на echo с однострочным JSON.
-      - Пример:
-        ```bash
-        echo "service_configs={\"small\":{...},\"medium\":{...},\"large\":{...}}" >> $GITHUB_OUTPUT
-        ```
-      - Либо использовать jq для минификации, если action запускается в окружении с jq.
-   2. Проверить, что все outputs (project_id, region, service_configs) пишутся одной строкой на output.
-   3. Убедиться, что downstream workflow корректно парсит JSON через fromJson.
-
-4. **Smoke-тест**
-   - Запустить workflow с новым action.
-   - Проверить, что шаг "Get shared vars" проходит без ошибок.
-   - Проверить, что деплой всех tier'ов работает (small/medium/large).
-
-5. **Документировать**
-   - Добавить в комментарии к action.yml причину, почему нельзя использовать cat << EOF для outputs.
+### Возможные причины пустого image_tag
+- Шаг build-image не выполнился или завершился с ошибкой.
+- Ошибка в синтаксисе outputs (например, неправильный id шага или неправильное имя output).
+- Ошибка в логике if для запуска build-image.
 
 ---
