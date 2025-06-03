@@ -107,46 +107,65 @@ jobs:
           echo "Tier3 URL: $URL"
       - name: Create Pub/Sub Topics
         run: |
-          gcloud pubsub topics create pubsub-tier1 || true
-          gcloud pubsub topics create pubsub-tier2 || true
-          gcloud pubsub topics create pubsub-tier3 || true
-          gcloud pubsub topics create pubsub-dead || true
+          for topic in pubsub-tier1 pubsub-tier2 pubsub-tier3 pubsub-dead; do
+            if ! gcloud pubsub topics describe $topic >/dev/null 2>&1; then
+              gcloud pubsub topics create $topic
+            else
+              echo "Topic $topic already exists"
+            fi
+          done
       - name: Create Tier1 Pub/Sub Subscription
         if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier1-only' }}
         run: |
           echo "TIER1_URL=$TIER1_URL"
-          gcloud pubsub subscriptions create pubsub-tier1-push \
-            --topic=pubsub-tier1 \
-            --push-endpoint="$TIER1_URL${{ env.PUSH_ENDPOINT }}" \
-            --ack-deadline=300 \
-            --dead-letter-topic=pubsub-tier2 \
-            --max-delivery-attempts=5 || true
+          if ! gcloud pubsub subscriptions describe pubsub-tier1-push >/dev/null 2>&1; then
+            gcloud pubsub subscriptions create pubsub-tier1-push \
+              --topic=pubsub-tier1 \
+              --push-endpoint="$TIER1_URL${{ env.PUSH_ENDPOINT }}" \
+              --ack-deadline=300 \
+              --dead-letter-topic=pubsub-tier2 \
+              --max-delivery-attempts=5
+          else
+            echo "Subscription pubsub-tier1-push already exists"
+          fi
       - name: Create Tier2 Pub/Sub Subscription
         if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier2-only' }}
         run: |
           echo "TIER2_URL=$TIER2_URL"
-          gcloud pubsub subscriptions create pubsub-tier2-push \
-            --topic=pubsub-tier2 \
-            --push-endpoint="$TIER2_URL${{ env.PUSH_ENDPOINT }}" \
-            --ack-deadline=600 \
-            --dead-letter-topic=pubsub-tier3 \
-            --max-delivery-attempts=5 || true
+          if ! gcloud pubsub subscriptions describe pubsub-tier2-push >/dev/null 2>&1; then
+            gcloud pubsub subscriptions create pubsub-tier2-push \
+              --topic=pubsub-tier2 \
+              --push-endpoint="$TIER2_URL${{ env.PUSH_ENDPOINT }}" \
+              --ack-deadline=600 \
+              --dead-letter-topic=pubsub-tier3 \
+              --max-delivery-attempts=5
+          else
+            echo "Subscription pubsub-tier2-push already exists"
+          fi
       - name: Create Tier3 Pub/Sub Subscription
         if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier3-only' }}
         run: |
           echo "TIER3_URL=$TIER3_URL"
-          gcloud pubsub subscriptions create pubsub-tier3-push \
-            --topic=pubsub-tier3 \
-            --push-endpoint="$TIER3_URL${{ env.PUSH_ENDPOINT }}" \
-            --ack-deadline=1000 \
-            --dead-letter-topic=pubsub-dead \
-            --max-delivery-attempts=5 || true
+          if ! gcloud pubsub subscriptions describe pubsub-tier3-push >/dev/null 2>&1; then
+            gcloud pubsub subscriptions create pubsub-tier3-push \
+              --topic=pubsub-tier3 \
+              --push-endpoint="$TIER3_URL${{ env.PUSH_ENDPOINT }}" \
+              --ack-deadline=600 \
+              --dead-letter-topic=pubsub-dead \
+              --max-delivery-attempts=5
+          else
+            echo "Subscription pubsub-tier3-push already exists"
+          fi
       - name: Create Dead-letter Pub/Sub Subscription
         run: |
-          gcloud pubsub subscriptions create pubsub-dead-pull \
-            --topic=pubsub-dead \
-            --ack-deadline=600 \
-            --message-retention-duration=7d || true
+          if ! gcloud pubsub subscriptions describe pubsub-dead-pull >/dev/null 2>&1; then
+            gcloud pubsub subscriptions create pubsub-dead-pull \
+              --topic=pubsub-dead \
+              --ack-deadline=600 \
+              --message-retention-duration=7d
+          else
+            echo "Subscription pubsub-dead-pull already exists"
+          fi
       - name: Log Pub/Sub Setup
         run: |
           echo "Pub/Sub topics and subscriptions created."
