@@ -51,18 +51,20 @@
 - Для переменных окружения — смотри `.github/config/shared.env`
 - Для мониторинга dead-letter — смотри секцию Monitoring в `README.md`
 
-Если фиксим деплой флоу — сначала определяем, какой tier/workflow/ресурс/триггер/секрет/переменная окружения нужен, потом ищем нужный файл по навигационному промпту выше. 
+Если фиксим деплой флоу — сначала определяем, какой tier/workflow/ресурс/триггер/секрет/переменная окружения нужен, потом ищем нужный файл по навигационному промпту выше.
 
 ---
 
 ## План обновления деплой workflow (динамический выбор ветки через "Use workflow from")
 
 1. **Удалить input `branch` из workflow_dispatch**
+
    - В файле `.github/workflows/deploy-tiered-infrastructure.yml` (и других, если есть):
      - Убрать секцию inputs: branch
      - Оставить только нужные inputs (например, deploy_mode)
 
 2. **Обновить шаги checkout**
+
    - Везде, где используется actions/checkout, явно указать:
      ```yaml
      - uses: actions/checkout@v3
@@ -72,18 +74,22 @@
    - Это гарантирует, что код и workflow берутся из выбранной в UI ветки
 
 3. **Удалить все упоминания/использование inputs.branch**
+
    - Везде, где было `${{ github.event.inputs.branch }}` — заменить на `${{ github.ref }}`
    - Проверить, чтобы не было рассинхрона между workflow-файлом и кодом
 
 4. **Обновить документацию**
+
    - В `.github/workflows/README.md` и других доках:
      - Убрать описание ручного выбора ветки через input
      - Добавить пояснение: "Ветка для деплоя выбирается через стандартный GitHub UI (Use workflow from)"
 
 5. **Проверить все workflow, где был input branch**
+
    - Повторить шаги 1-4 для всех workflow, где был input branch
 
 6. **Проверить, что deploy_mode и другие inputs работают как раньше**
+
    - Оставить только реально нужные inputs (например, deploy_mode)
    - Проверить, что dropdown для deploy_mode работает корректно
 
@@ -94,21 +100,24 @@
 ---
 
 **Результат:**
+
 - Нет дублирования выбора ветки
 - Всегда деплоится именно тот код, который выбран в "Use workflow from"
-- Меньше путаницы, проще поддержка, меньше багов 
+- Меньше путаницы, проще поддержка, меньше багов
 
 ---
 
 ## Ошибка при запуске Deploy Small Tier (shared-vars/action.yml)
 
 ### Симптомы
+
 - Job "Deploy Small Tier (1GB/1CPU)" падает на шаге "Get shared vars"
 - Логи:
   - Error: Unable to process file command 'output' successfully.
-  - Error: Invalid format '  "small": ***'
+  - Error: Invalid format ' "small": \*\*\*'
 
 ### Причина
+
 - В кастомном action .github/actions/shared-vars/action.yml используется конструкция:
   ```bash
   cat << 'EOF' >> $GITHUB_OUTPUT
@@ -120,6 +129,7 @@
 - В данном случае весь JSON service_configs пишется как одна большая строка, но с переносами строк, что ломает парсер outputs.
 
 ### Итог
+
 - Ошибка не в YAML workflow, а в bash-скрипте кастомного action: нельзя писать многострочные значения в $GITHUB_OUTPUT через cat << EOF.
 - Нужно сериализовать JSON в одну строку (без переносов) и писать одной строкой: echo "service_configs=<json>" >> $GITHUB_OUTPUT
 
@@ -128,12 +138,14 @@
 ## Ошибка: gcloud run deploy --image: expected one argument
 
 ### Симптомы
+
 - На шаге деплоя (Deploy Small Tier) падает с ошибкой:
   - ERROR: (gcloud.run.deploy) argument --image: expected one argument
   - Usage: gcloud run deploy ... --image IMAGE ...
 - Exit code 2
 
 ### Причина
+
 - Переменная ${{ needs.build-image.outputs.image_tag }} пуста или невалидна (скорее всего, не была выставлена на предыдущем шаге или не проброшена как output).
 - В результате команда:
   ```bash
@@ -149,6 +161,7 @@
 - gcloud требует обязательный аргумент для --image, иначе падает с этой ошибкой.
 
 ### Как диагностировать
+
 - Проверить, что шаг build-image реально выставляет output image_tag и что он не пустой.
 - Проверить, что в deploy-small-tier (и других tier) используется именно этот output.
 - В логах build-image найти строку echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT — убедиться, что $IMAGE_TAG не пустой.
@@ -158,6 +171,7 @@
   ```
 
 ### Возможные причины пустого image_tag
+
 - Шаг build-image не выполнился или завершился с ошибкой.
 - Ошибка в синтаксисе outputs (например, неправильный id шага или неправильное имя output).
 - Ошибка в логике if для запуска build-image.
@@ -167,12 +181,14 @@
 ## Подробный план диагностики и фикса проблемы с пустым image_tag
 
 ### Симптомы
+
 - На шаге деплоя (Deploy Small Tier) падает с ошибкой:
   - ERROR: (gcloud.run.deploy) argument --image: expected one argument
   - Usage: gcloud run deploy ... --image IMAGE ...
 - Exit code 2
 
 ### Причина
+
 - Переменная ${{ needs.build-image.outputs.image_tag }} пуста или невалидна (скорее всего, не была выставлена на предыдущем шаге или не проброшена как output).
 - В результате команда:
   ```bash
@@ -188,6 +204,7 @@
 - gcloud требует обязательный аргумент для --image, иначе падает с этой ошибкой.
 
 ### Как диагностировать
+
 - Проверить, что шаг build-image реально выставляет output image_tag и что он не пустой.
 - Проверить, что в deploy-small-tier (и других tier) используется именно этот output.
 - В логах build-image найти строку echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT — убедиться, что $IMAGE_TAG не пустой.
@@ -197,6 +214,7 @@
   ```
 
 ### Возможные причины пустого image_tag
+
 - Шаг build-image не выполнился или завершился с ошибкой.
 - Ошибка в синтаксисе outputs (например, неправильный id шага или неправильное имя output).
 - Ошибка в логике if для запуска build-image.
@@ -206,6 +224,7 @@
 ## Ошибка: Missing download info for actions/upload-artifact@v3
 
 ### Симптомы
+
 - Workflow падает сразу после шага "Prepare all required actions"
 - В логах:
   ```
@@ -213,6 +232,7 @@
   ```
 
 ### Причина
+
 - GitHub Actions не может найти/загрузить action `actions/upload-artifact@v3`.
 - Обычно это:
   - опечатка в названии action или версии
@@ -221,6 +241,7 @@
   - workflow запускается в приватном runner'е без доступа к marketplace
 
 ### Как пофиксить
+
 - Проверь, что используешь актуальное имя и версию:
   ```yaml
   uses: actions/upload-artifact@v3
@@ -234,6 +255,7 @@
 - Альтернатива: временно откатиться на v2 (`actions/upload-artifact@v2`)
 
 ### TL;DR
+
 - GitHub не может скачать upload-artifact@v3. Проверь синтаксис, доступ к actions, попробуй v2 или конкретный commit.
 
 ---
@@ -241,6 +263,7 @@
 # Новый план деплоя: последовательный Cloud Run без артефактов
 
 ## TL;DR
+
 - Деплой теперь как в cloud-run-deploy.yml: каждый tier деплоится последовательно, без передачи артефактов между job'ами.
 - Все переменные (image_tag и т.д.) доступны в рамках одного job через environment или через outputs между steps.
 - Нет upload/download-artifact, нет проблем с marketplace actions.
@@ -251,35 +274,41 @@
 ## Подробный план
 
 ### 1. Build & Push Docker Image (build-image)
+
 - Собираем docker-образ и пушим в GCR.
 - Сохраняем image_tag как output step'а (echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT).
 - Не используем артефакты, только outputs между steps/job'ами.
 
 ### 2. Deploy Tier 1 (Small)
+
 - Ждём завершения build-image.
 - Берём image_tag из outputs build-image (через needs.build-image.outputs.image_tag).
 - Деплоим сервис в Cloud Run с нужными ресурсами.
 - Проверяем деплой, логируем URL.
 
 ### 3. Deploy Tier 2 (Medium)
+
 - Ждём завершения tier1.
 - Берём тот же image_tag.
 - Деплоим второй сервис (medium tier) с другими лимитами.
 - Проверяем деплой, логируем URL.
 
 ### 4. Deploy Tier 3 (Large)
+
 - Ждём завершения tier2.
 - Берём тот же image_tag.
 - Деплоим третий сервис (large tier) с максимальными лимитами.
 - Проверяем деплой, логируем URL.
 
 ### 5. Setup Pub/Sub (если нужно)
+
 - После деплоя всех tier'ов настраиваем Pub/Sub топики и подписки.
 - Пробрасываем нужные URL сервисов через outputs между steps.
 
 ---
 
 ## Почему так лучше
+
 - Нет зависимости от marketplace actions (артефакты, upload-artifact).
 - Всё работает на любом runner'е, даже если marketplace недоступен.
 - Простая диагностика: если image_tag не пробрасывается — баг в outputs, а не во внешних actions.
@@ -288,6 +317,7 @@
 ---
 
 ## Диагностика и отладка
+
 - Если деплой падает с ошибкой "--image: expected one argument" — проверь, что image_tag реально выставлен и проброшен через outputs.
 - Для дебага всегда добавляй echo IMAGE_TAG перед деплоем.
 - Если какой-то tier не деплоится — смотри логи предыдущего tier/job.
@@ -345,6 +375,7 @@ jobs:
 ---
 
 ## Рекомендации
+
 - Не усложняй: outputs между jobs — надёжно, если не передаёшь секреты.
 - Для секретных данных используй environment или secrets.
 - Для сложных сценариев (rollback, canary) — добавляй отдельные jobs/steps.
@@ -353,6 +384,7 @@ jobs:
 ---
 
 ## Итог
+
 - Схема максимально простая, надёжная, повторяет cloud-run-deploy.yml, но с несколькими сервисами.
 - Нет артефактов, нет upload-artifact, нет внешних зависимостей.
 - Всё работает out-of-the-box на любом runner'е.
@@ -362,12 +394,14 @@ jobs:
 ## Сетап Pub/Sub очередей для tiered Cloud Run
 
 ### Архитектура
+
 - **pubsub-tier1**: основная очередь, пушит сообщения в Cloud Run сервис tier1
 - **pubsub-tier2**: очередь для эскалации, пушит сообщения в Cloud Run сервис tier2
 - **pubsub-tier3**: очередь для эскалации, пушит сообщения в Cloud Run сервис tier3
 - **pubsub-dead**: dead-letter очередь, для ручной обработки фатальных ошибок
 
 ### Логика работы
+
 1. Все новые задачи попадают в pubsub-tier1 (push endpoint → tier1)
 2. Если tier1 не справился (max delivery attempts), сообщение эскалируется в pubsub-tier2 (push endpoint → tier2)
 3. Если tier2 не справился, сообщение эскалируется в pubsub-tier3 (push endpoint → tier3)
@@ -376,6 +410,7 @@ jobs:
 ### Как создать очереди и подписки
 
 #### 1. Создать топики
+
 ```bash
 gcloud pubsub topics create pubsub-tier1
 # dead-letter для tier1
@@ -387,6 +422,7 @@ gcloud pubsub topics create pubsub-dead
 ```
 
 #### 2. Создать push подписки
+
 ```bash
 # Tier1 push
  gcloud pubsub subscriptions create pubsub-tier1-push \
@@ -420,6 +456,7 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 ```
 
 #### 3. Как это интегрируется с Cloud Run
+
 - Каждый сервис (tier1, tier2, tier3) слушает свой push endpoint `/api/cloud-run/run-scenario`
 - Pub/Sub сам пушит сообщения в нужный сервис
 - Эскалация между очередями автоматическая через dead-letter-topic
@@ -429,6 +466,7 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
   ```
 
 ### Рекомендации
+
 - Всегда логируй push endpoint и URL сервисов после деплоя
 - Для теста можно вручную публиковать сообщения в pubsub-tier1:
   ```bash
@@ -437,6 +475,7 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 - Для мониторинга dead_queue — настроить алерты или периодически проверять вручную
 
 ### Диагностика
+
 - Если сообщения не эскалируются — проверь dead-letter-topic и max-delivery-attempts
 - Если сервис не получает сообщения — проверь правильность push endpoint и IAM permissions
 - Если dead_queue быстро растёт — смотри логи tier3 и причину фейлов
@@ -444,7 +483,41 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 ---
 
 ## Итог
+
 - 3 push Pub/Sub очереди (tier1, tier2, tier3) + 1 dead-letter pull очередь
 - Эскалация задач между очередями через dead-letter-topic
 - Всё пушится напрямую в Cloud Run сервисы, без ручного проброса URL
 - dead_queue для ручной обработки фатальных ошибок
+
+---
+
+## Ошибка: denied: Unauthenticated request при docker push в GCR
+
+### Симптомы
+
+- На шаге docker push (или gcloud run deploy) появляется ошибка:
+  ```
+  denied: Unauthenticated request. Unauthenticated requests do not have permission "artifactregistry.repositories.uploadArtifacts" ...
+  ```
+- Push в GCR/GAR не работает, деплой падает
+
+### Причина
+
+- В workflow не добавлен шаг аутентификации в Google Cloud через `google-github-actions/auth@v2`
+- Без этого docker push не авторизован, даже если setup-gcloud уже был
+- В cloud-run-deploy.yml этот шаг есть, а в deploy-tiered-infrastructure.yml — нет
+
+### Как пофиксить
+
+- Добавь шаг аутентификации в каждый job, где нужен доступ к GCP (build-image, deploy-tier1, deploy-tier2, deploy-tier3, setup-pubsub):
+  ```yaml
+  - id: 'auth'
+    uses: 'google-github-actions/auth@v2'
+    with:
+      credentials_json: '${{ secrets.GCP_SA_KEY }}'
+  ```
+- Этот шаг должен идти до setup-gcloud и до docker push
+
+### TL;DR
+
+- Без auth@v2 docker push всегда будет denied. Всегда делай аутентификацию, как в cloud-run-deploy.yml
