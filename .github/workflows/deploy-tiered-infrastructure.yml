@@ -22,7 +22,7 @@ env:
 
 jobs:
   build-and-deploy:
-    name: Build and Deploy All Tiers
+    name: Build, Deploy, and Setup Pub/Sub
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -105,50 +105,44 @@ jobs:
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
           echo "TIER3_URL=$URL" >> $GITHUB_ENV
           echo "Tier3 URL: $URL"
-
-  setup-pubsub:
-    name: Setup Pub/Sub Queues
-    runs-on: ubuntu-latest
-    needs: build-and-deploy
-    steps:
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
       - name: Create Pub/Sub Topics
         run: |
           gcloud pubsub topics create pubsub-tier1 || true
           gcloud pubsub topics create pubsub-tier2 || true
           gcloud pubsub topics create pubsub-tier3 || true
           gcloud pubsub topics create pubsub-dead || true
-      - name: Create Pub/Sub Subscriptions
+      - name: Create Tier1 Pub/Sub Subscription
+        if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier1-only' }}
         run: |
-          # Tier1 push
+          echo "TIER1_URL=$TIER1_URL"
           gcloud pubsub subscriptions create pubsub-tier1-push \
             --topic=pubsub-tier1 \
             --push-endpoint="$TIER1_URL${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=300 \
             --dead-letter-topic=pubsub-tier2 \
             --max-delivery-attempts=5 || true
-          # Tier2 push
+      - name: Create Tier2 Pub/Sub Subscription
+        if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier2-only' }}
+        run: |
+          echo "TIER2_URL=$TIER2_URL"
           gcloud pubsub subscriptions create pubsub-tier2-push \
             --topic=pubsub-tier2 \
             --push-endpoint="$TIER2_URL${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=600 \
             --dead-letter-topic=pubsub-tier3 \
             --max-delivery-attempts=5 || true
-          # Tier3 push
+      - name: Create Tier3 Pub/Sub Subscription
+        if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier3-only' }}
+        run: |
+          echo "TIER3_URL=$TIER3_URL"
           gcloud pubsub subscriptions create pubsub-tier3-push \
             --topic=pubsub-tier3 \
             --push-endpoint="$TIER3_URL${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=1000 \
             --dead-letter-topic=pubsub-dead \
             --max-delivery-attempts=5 || true
-          # Dead-letter (pull)
+      - name: Create Dead-letter Pub/Sub Subscription
+        run: |
           gcloud pubsub subscriptions create pubsub-dead-pull \
             --topic=pubsub-dead \
             --ack-deadline=600 \
