@@ -13,7 +13,7 @@ export const pushPubSubTest = async (
 ): IResponse<PushPubSubTestResponse> => {
     const {accountId, scenarioId, sourceId} = params;
     try {
-        const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS;
+        const topic = PubSubTopic.INSTAGRAM_VIDEO_EVENTS_TIER1;
         log('[pubsub] Using topic:', topic);
 
         const {publishMessageToPubSub} = await import('../../../utils/pubsub-client');
@@ -88,7 +88,7 @@ export const publishBulkRunScenarioMessagesByIds = async (
 
         log(
             '[pubsub-client] Publishing bulk messages to topic:',
-            PubSubTopic.INSTAGRAM_VIDEO_EVENTS,
+            PubSubTopic.INSTAGRAM_VIDEO_EVENTS_TIER1,
         );
         log('[pubsub-client] Project ID:', projectId);
 
@@ -128,7 +128,7 @@ export const publishBulkRunScenarioMessagesByIds = async (
         const pubsubClient = new PubSub(pubsubOptions);
 
         // Configure batch publisher with appropriate settings
-        const batchPublisher = pubsubClient.topic(PubSubTopic.INSTAGRAM_VIDEO_EVENTS, {
+        const batchPublisher = pubsubClient.topic(PubSubTopic.INSTAGRAM_VIDEO_EVENTS_TIER1, {
             batching: {
                 maxMessages: 100, // Adjust based on your needs
                 maxMilliseconds: 1000, // 1 second max wait time
