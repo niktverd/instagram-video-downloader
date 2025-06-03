@@ -21,11 +21,9 @@ env:
   PUSH_ENDPOINT: /api/cloud-run/run-scenario
 
 jobs:
-  build-image:
-    name: Build Docker Image
+  build-and-deploy:
+    name: Build and Deploy All Tiers
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.image.outputs.tag }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -40,37 +38,19 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
           install_components: 'beta'
       - name: Build and Push Image
-        id: image
+        id: build_image
         run: |
           IMAGE_TAG="gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_PREFIX }}:${GITHUB_SHA}"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           docker build -t $IMAGE_TAG .
           gcloud auth configure-docker
           docker push $IMAGE_TAG
-          echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-  deploy-tier1:
-    name: Deploy Tier 1 (Small)
-    runs-on: ubuntu-latest
-    needs: build-image
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-      - name: Deploy to Cloud Run (Tier 1)
-        id: deploy
+      - name: Deploy Tier 1 (Small)
+        if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier1-only' }}
+        id: deploy_tier1
         run: |
           SERVICE_NAME="${{ env.SERVICE_PREFIX }}-tier1"
-          IMAGE_TAG="${{ needs.build-image.outputs.image_tag }}"
+          IMAGE_TAG="$IMAGE_TAG"
           echo "Deploying $SERVICE_NAME with $IMAGE_TAG"
           gcloud run deploy $SERVICE_NAME \
             --image $IMAGE_TAG \
@@ -81,33 +61,14 @@ jobs:
             --max-instances 100 \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
-          echo "url=$URL" >> $GITHUB_OUTPUT
-      - name: Log Service URL
-        run: "echo 'Tier1 URL: ${{ steps.deploy.outputs.url }}'"
-
-  deploy-tier2:
-    name: Deploy Tier 2 (Medium)
-    runs-on: ubuntu-latest
-    needs: deploy-tier1
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-      - name: Deploy to Cloud Run (Tier 2)
-        id: deploy
+          echo "TIER1_URL=$URL" >> $GITHUB_ENV
+          echo "Tier1 URL: $URL"
+      - name: Deploy Tier 2 (Medium)
+        if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier2-only' }}
+        id: deploy_tier2
         run: |
           SERVICE_NAME="${{ env.SERVICE_PREFIX }}-tier2"
-          IMAGE_TAG="${{ needs.build-image.outputs.image_tag }}"
+          IMAGE_TAG="$IMAGE_TAG"
           echo "Deploying $SERVICE_NAME with $IMAGE_TAG"
           gcloud run deploy $SERVICE_NAME \
             --image $IMAGE_TAG \
@@ -118,33 +79,14 @@ jobs:
             --max-instances 10 \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
-          echo "url=$URL" >> $GITHUB_OUTPUT
-      - name: Log Service URL
-        run: "echo 'Tier2 URL: ${{ steps.deploy.outputs.url }}'"
-
-  deploy-tier3:
-    name: Deploy Tier 3 (Large)
-    runs-on: ubuntu-latest
-    needs: deploy-tier2
-    outputs:
-      url: ${{ steps.deploy.outputs.url }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.ref }}
-      - id: 'auth'
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-      - name: Deploy to Cloud Run (Tier 3)
-        id: deploy
+          echo "TIER2_URL=$URL" >> $GITHUB_ENV
+          echo "Tier2 URL: $URL"
+      - name: Deploy Tier 3 (Large)
+        if: ${{ github.event.inputs.deploy_mode == 'all' || github.event.inputs.deploy_mode == 'tier3-only' }}
+        id: deploy_tier3
         run: |
           SERVICE_NAME="${{ env.SERVICE_PREFIX }}-tier3"
-          IMAGE_TAG="${{ needs.build-image.outputs.image_tag }}"
+          IMAGE_TAG="$IMAGE_TAG"
           echo "Deploying $SERVICE_NAME with $IMAGE_TAG"
           gcloud run deploy $SERVICE_NAME \
             --image $IMAGE_TAG \
@@ -155,14 +97,13 @@ jobs:
             --max-instances 2 \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
-          echo "url=$URL" >> $GITHUB_OUTPUT
-      - name: Log Service URL
-        run: "echo 'Tier3 URL: ${{ steps.deploy.outputs.url }}'"
+          echo "TIER3_URL=$URL" >> $GITHUB_ENV
+          echo "Tier3 URL: $URL"
 
   setup-pubsub:
     name: Setup Pub/Sub Queues
     runs-on: ubuntu-latest
-    needs: [deploy-tier1, deploy-tier2, deploy-tier3]
+    needs: build-and-deploy
     steps:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -183,21 +124,21 @@ jobs:
           # Tier1 push
           gcloud pubsub subscriptions create pubsub-tier1-push \
             --topic=pubsub-tier1 \
-            --push-endpoint="${{ needs.deploy-tier1.outputs.url }}/${{ env.PUSH_ENDPOINT }}" \
+            --push-endpoint="$TIER1_URL${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=300 \
             --dead-letter-topic=pubsub-tier2 \
             --max-delivery-attempts=3 || true
           # Tier2 push
           gcloud pubsub subscriptions create pubsub-tier2-push \
             --topic=pubsub-tier2 \
-            --push-endpoint="${{ needs.deploy-tier2.outputs.url }}/${{ env.PUSH_ENDPOINT }}" \
+            --push-endpoint="$TIER2_URL${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=600 \
             --dead-letter-topic=pubsub-tier3 \
             --max-delivery-attempts=3 || true
           # Tier3 push
           gcloud pubsub subscriptions create pubsub-tier3-push \
             --topic=pubsub-tier3 \
-            --push-endpoint="${{ needs.deploy-tier3.outputs.url }}/${{ env.PUSH_ENDPOINT }}" \
+            --push-endpoint="$TIER3_URL${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=1000 \
             --dead-letter-topic=pubsub-dead \
             --max-delivery-attempts=3 || true
