@@ -163,3 +163,77 @@
 - Ошибка в логике if для запуска build-image.
 
 ---
+
+## Подробный план диагностики и фикса проблемы с пустым image_tag
+
+### Симптомы
+- На шаге деплоя (Deploy Small Tier) падает с ошибкой:
+  - ERROR: (gcloud.run.deploy) argument --image: expected one argument
+  - Usage: gcloud run deploy ... --image IMAGE ...
+- Exit code 2
+
+### Причина
+- Переменная ${{ needs.build-image.outputs.image_tag }} пуста или невалидна (скорее всего, не была выставлена на предыдущем шаге или не проброшена как output).
+- В результате команда:
+  ```bash
+  gcloud run deploy $SERVICE_NAME \
+    --image ${{ needs.build-image.outputs.image_tag }} \
+    ...
+  ```
+  превращается в:
+  ```bash
+  gcloud run deploy instagram-downloader-small --image  ...
+  ```
+  (без значения для --image)
+- gcloud требует обязательный аргумент для --image, иначе падает с этой ошибкой.
+
+### Как диагностировать
+- Проверить, что шаг build-image реально выставляет output image_tag и что он не пустой.
+- Проверить, что в deploy-small-tier (и других tier) используется именно этот output.
+- В логах build-image найти строку echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT — убедиться, что $IMAGE_TAG не пустой.
+- В логах deploy-small-tier добавить debug echo перед деплоем:
+  ```bash
+  echo "IMAGE_TAG=${{ needs.build-image.outputs.image_tag }}"
+  ```
+
+### Возможные причины пустого image_tag
+- Шаг build-image не выполнился или завершился с ошибкой.
+- Ошибка в синтаксисе outputs (например, неправильный id шага или неправильное имя output).
+- Ошибка в логике if для запуска build-image.
+
+---
+
+## Ошибка: Missing download info for actions/upload-artifact@v3
+
+### Симптомы
+- Workflow падает сразу после шага "Prepare all required actions"
+- В логах:
+  ```
+  ##[error]Missing download info for actions/upload-artifact@v3
+  ```
+
+### Причина
+- GitHub Actions не может найти/загрузить action `actions/upload-artifact@v3`.
+- Обычно это:
+  - опечатка в названии action или версии
+  - временные проблемы на стороне GitHub
+  - action не опубликован/удалён/недоступен для runner'а
+  - workflow запускается в приватном runner'е без доступа к marketplace
+
+### Как пофиксить
+- Проверь, что используешь актуальное имя и версию:
+  ```yaml
+  uses: actions/upload-artifact@v3
+  ```
+- Если runner self-hosted — убедись, что у него есть доступ к marketplace actions.
+- Иногда помогает заменить на конкретный commit:
+  ```yaml
+  uses: actions/upload-artifact@v3@8e4b7f2b6e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2
+  ```
+- Если проблема массовая — проверь https://www.githubstatus.com/
+- Альтернатива: временно откатиться на v2 (`actions/upload-artifact@v2`)
+
+### TL;DR
+- GitHub не может скачать upload-artifact@v3. Проверь синтаксис, доступ к actions, попробуй v2 или конкретный commit.
+
+---
