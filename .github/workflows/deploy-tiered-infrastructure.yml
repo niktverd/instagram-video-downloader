@@ -133,21 +133,21 @@ jobs:
             --push-endpoint="${{ env.CLOUD_RUN_URL }}${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=300 \
             --dead-letter-topic=pubsub-tier2 \
-            --max-delivery-attempts=3 || true
+            --max-delivery-attempts=5 || true
           # Tier2 push
           gcloud pubsub subscriptions create pubsub-tier2-push \
             --topic=pubsub-tier2 \
             --push-endpoint="${{ env.CLOUD_RUN_URL }}${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=600 \
             --dead-letter-topic=pubsub-tier3 \
-            --max-delivery-attempts=3 || true
+            --max-delivery-attempts=5 || true
           # Tier3 push
           gcloud pubsub subscriptions create pubsub-tier3-push \
             --topic=pubsub-tier3 \
             --push-endpoint="${{ env.CLOUD_RUN_URL }}${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=1000 \
             --dead-letter-topic=pubsub-dead \
-            --max-delivery-attempts=3 || true
+            --max-delivery-attempts=5 || true
           # Dead-letter (pull)
           gcloud pubsub subscriptions create pubsub-dead-pull \
             --topic=pubsub-dead \
