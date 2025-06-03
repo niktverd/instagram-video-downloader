@@ -588,15 +588,3 @@ gcloud run deploy $SERVICE_NAME \
 
 **TL;DR:**
 - Всегда пробрасывай секреты и env через --update-secrets и --set-env-vars для каждого Cloud Run деплоя, как в cloud-run-deploy.yml.
-
-
-How much quota you will require  : 
-Project Number: 
-Project ID: 
-Billing Account ID: 
-Full Office HQ address:
- Use case (why do you are adding the request or how you will use the services after the request is completed): 
-Budget: (Estimated monthly budget for the request): 
-Current monthly spent on GCP : 
-Alternate Contact information:
-Final Decision maker ( Along with you if you have any)

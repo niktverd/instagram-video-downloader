@@ -130,21 +130,21 @@ jobs:
           # Tier1 push
           gcloud pubsub subscriptions create pubsub-tier1-push \
             --topic=pubsub-tier1 \
-            --push-endpoint="$TIER1_URL${{ env.PUSH_ENDPOINT }}" \
+            --push-endpoint="${{ env.CLOUD_RUN_URL }}${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=300 \
             --dead-letter-topic=pubsub-tier2 \
             --max-delivery-attempts=3 || true
           # Tier2 push
           gcloud pubsub subscriptions create pubsub-tier2-push \
             --topic=pubsub-tier2 \
-            --push-endpoint="$TIER2_URL${{ env.PUSH_ENDPOINT }}" \
+            --push-endpoint="${{ env.CLOUD_RUN_URL }}${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=600 \
             --dead-letter-topic=pubsub-tier3 \
             --max-delivery-attempts=3 || true
           # Tier3 push
           gcloud pubsub subscriptions create pubsub-tier3-push \
             --topic=pubsub-tier3 \
-            --push-endpoint="$TIER3_URL${{ env.PUSH_ENDPOINT }}" \
+            --push-endpoint="${{ env.CLOUD_RUN_URL }}${{ env.PUSH_ENDPOINT }}" \
             --ack-deadline=1000 \
             --dead-letter-topic=pubsub-dead \
             --max-delivery-attempts=3 || true
