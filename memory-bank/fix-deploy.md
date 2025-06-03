@@ -237,3 +237,214 @@
 - GitHub не может скачать upload-artifact@v3. Проверь синтаксис, доступ к actions, попробуй v2 или конкретный commit.
 
 ---
+
+# Новый план деплоя: последовательный Cloud Run без артефактов
+
+## TL;DR
+- Деплой теперь как в cloud-run-deploy.yml: каждый tier деплоится последовательно, без передачи артефактов между job'ами.
+- Все переменные (image_tag и т.д.) доступны в рамках одного job через environment или через outputs между steps.
+- Нет upload/download-artifact, нет проблем с marketplace actions.
+- Логика: build → deploy tier1 → deploy tier2 → deploy tier3 (каждый ждёт предыдущий).
+
+---
+
+## Подробный план
+
+### 1. Build & Push Docker Image (build-image)
+- Собираем docker-образ и пушим в GCR.
+- Сохраняем image_tag как output step'а (echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT).
+- Не используем артефакты, только outputs между steps/job'ами.
+
+### 2. Deploy Tier 1 (Small)
+- Ждём завершения build-image.
+- Берём image_tag из outputs build-image (через needs.build-image.outputs.image_tag).
+- Деплоим сервис в Cloud Run с нужными ресурсами.
+- Проверяем деплой, логируем URL.
+
+### 3. Deploy Tier 2 (Medium)
+- Ждём завершения tier1.
+- Берём тот же image_tag.
+- Деплоим второй сервис (medium tier) с другими лимитами.
+- Проверяем деплой, логируем URL.
+
+### 4. Deploy Tier 3 (Large)
+- Ждём завершения tier2.
+- Берём тот же image_tag.
+- Деплоим третий сервис (large tier) с максимальными лимитами.
+- Проверяем деплой, логируем URL.
+
+### 5. Setup Pub/Sub (если нужно)
+- После деплоя всех tier'ов настраиваем Pub/Sub топики и подписки.
+- Пробрасываем нужные URL сервисов через outputs между steps.
+
+---
+
+## Почему так лучше
+- Нет зависимости от marketplace actions (артефакты, upload-artifact).
+- Всё работает на любом runner'е, даже если marketplace недоступен.
+- Простая диагностика: если image_tag не пробрасывается — баг в outputs, а не во внешних actions.
+- Логика полностью повторяет cloud-run-deploy.yml, только с несколькими сервисами.
+
+---
+
+## Диагностика и отладка
+- Если деплой падает с ошибкой "--image: expected one argument" — проверь, что image_tag реально выставлен и проброшен через outputs.
+- Для дебага всегда добавляй echo IMAGE_TAG перед деплоем.
+- Если какой-то tier не деплоится — смотри логи предыдущего tier/job.
+- Для сложных сценариев можно добавить ручной input для выбора, какие tier'ы деплоить.
+
+---
+
+## Примерная структура workflow (псевдокод)
+
+```yaml
+jobs:
+  build-image:
+    ...
+    outputs:
+      image_tag: ${{ steps.image.outputs.tag }}
+    steps:
+      ...
+      - id: image
+        run: |
+          IMAGE_TAG=...
+          ...
+          echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy-tier1:
+    needs: build-image
+    ...
+    steps:
+      ...
+      - run: |
+          IMAGE_TAG="${{ needs.build-image.outputs.image_tag }}"
+          ...
+          gcloud run deploy ... --image $IMAGE_TAG ...
+
+  deploy-tier2:
+    needs: deploy-tier1
+    ...
+    steps:
+      ...
+      - run: |
+          IMAGE_TAG="${{ needs.build-image.outputs.image_tag }}"
+          ...
+          gcloud run deploy ... --image $IMAGE_TAG ...
+
+  deploy-tier3:
+    needs: deploy-tier2
+    ...
+    steps:
+      ...
+      - run: |
+          IMAGE_TAG="${{ needs.build-image.outputs.image_tag }}"
+          ...
+          gcloud run deploy ... --image $IMAGE_TAG ...
+```
+
+---
+
+## Рекомендации
+- Не усложняй: outputs между jobs — надёжно, если не передаёшь секреты.
+- Для секретных данных используй environment или secrets.
+- Для сложных сценариев (rollback, canary) — добавляй отдельные jobs/steps.
+- Всегда логируй ключевые переменные (image_tag, service_url) для дебага.
+
+---
+
+## Итог
+- Схема максимально простая, надёжная, повторяет cloud-run-deploy.yml, но с несколькими сервисами.
+- Нет артефактов, нет upload-artifact, нет внешних зависимостей.
+- Всё работает out-of-the-box на любом runner'е.
+
+---
+
+## Сетап Pub/Sub очередей для tiered Cloud Run
+
+### Архитектура
+- **pubsub-tier1**: основная очередь, пушит сообщения в Cloud Run сервис tier1
+- **pubsub-tier2**: очередь для эскалации, пушит сообщения в Cloud Run сервис tier2
+- **pubsub-tier3**: очередь для эскалации, пушит сообщения в Cloud Run сервис tier3
+- **pubsub-dead**: dead-letter очередь, для ручной обработки фатальных ошибок
+
+### Логика работы
+1. Все новые задачи попадают в pubsub-tier1 (push endpoint → tier1)
+2. Если tier1 не справился (max delivery attempts), сообщение эскалируется в pubsub-tier2 (push endpoint → tier2)
+3. Если tier2 не справился, сообщение эскалируется в pubsub-tier3 (push endpoint → tier3)
+4. Если tier3 не справился, сообщение уходит в pubsub-dead (pull subscription, ручная обработка)
+
+### Как создать очереди и подписки
+
+#### 1. Создать топики
+```bash
+gcloud pubsub topics create pubsub-tier1
+# dead-letter для tier1
+ gcloud pubsub topics create pubsub-tier2
+# dead-letter для tier2
+gcloud pubsub topics create pubsub-tier3
+# dead-letter для tier3
+gcloud pubsub topics create pubsub-dead
+```
+
+#### 2. Создать push подписки
+```bash
+# Tier1 push
+ gcloud pubsub subscriptions create pubsub-tier1-push \
+  --topic=pubsub-tier1 \
+  --push-endpoint="https://<tier1-service-url>/api/cloud-run/run-scenario" \
+  --ack-deadline=300 \
+  --dead-letter-topic=pubsub-tier2 \
+  --max-delivery-attempts=3
+
+# Tier2 push
+ gcloud pubsub subscriptions create pubsub-tier2-push \
+  --topic=pubsub-tier2 \
+  --push-endpoint="https://<tier2-service-url>/api/cloud-run/run-scenario" \
+  --ack-deadline=600 \
+  --dead-letter-topic=pubsub-tier3 \
+  --max-delivery-attempts=3
+
+# Tier3 push
+ gcloud pubsub subscriptions create pubsub-tier3-push \
+  --topic=pubsub-tier3 \
+  --push-endpoint="https://<tier3-service-url>/api/cloud-run/run-scenario" \
+  --ack-deadline=1000 \
+  --dead-letter-topic=pubsub-dead \
+  --max-delivery-attempts=3
+
+# Dead-letter (pull)
+gcloud pubsub subscriptions create pubsub-dead-pull \
+  --topic=pubsub-dead \
+  --ack-deadline=600 \
+  --message-retention-duration=7d
+```
+
+#### 3. Как это интегрируется с Cloud Run
+- Каждый сервис (tier1, tier2, tier3) слушает свой push endpoint `/api/cloud-run/run-scenario`
+- Pub/Sub сам пушит сообщения в нужный сервис
+- Эскалация между очередями автоматическая через dead-letter-topic
+- Для ручной обработки dead_queue используем pull:
+  ```bash
+  gcloud pubsub subscriptions pull pubsub-dead-pull --auto-ack
+  ```
+
+### Рекомендации
+- Всегда логируй push endpoint и URL сервисов после деплоя
+- Для теста можно вручную публиковать сообщения в pubsub-tier1:
+  ```bash
+  gcloud pubsub topics publish pubsub-tier1 --message '{"foo": "bar"}'
+  ```
+- Для мониторинга dead_queue — настроить алерты или периодически проверять вручную
+
+### Диагностика
+- Если сообщения не эскалируются — проверь dead-letter-topic и max-delivery-attempts
+- Если сервис не получает сообщения — проверь правильность push endpoint и IAM permissions
+- Если dead_queue быстро растёт — смотри логи tier3 и причину фейлов
+
+---
+
+## Итог
+- 3 push Pub/Sub очереди (tier1, tier2, tier3) + 1 dead-letter pull очередь
+- Эскалация задач между очередями через dead-letter-topic
+- Всё пушится напрямую в Cloud Run сервисы, без ручного проброса URL
+- dead_queue для ручной обработки фатальных ошибок
