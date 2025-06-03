@@ -111,14 +111,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-deploy
     steps:
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
       - name: Create Pub/Sub Topics
         run: |
           gcloud pubsub topics create pubsub-tier1 || true

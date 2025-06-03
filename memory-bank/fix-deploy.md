@@ -525,6 +525,7 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 ## Почему в cloud-run-deploy.yml нет проблемы с output 'image_tag' (секреты)
 
 ### Как устроено:
+
 - В cloud-run-deploy.yml нет передачи image_tag между jobs через outputs вообще — всё делается в рамках одного job (deploy).
 - PROJECT_ID и SERVICE_NAME пробрасываются через env, но не используются как output между jobs.
 - Docker image тег формируется прямо в step'ах деплоя:
@@ -537,11 +538,13 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 - Нет ни одного output, который GitHub мог бы посчитать секретом и зарезать.
 
 ### Почему это работает всегда
+
 - GitHub режет outputs между jobs, если думает, что там секрет (например, если в output есть ${{ secrets.* }}).
 - В cloud-run-deploy.yml нет передачи outputs между jobs, поэтому ничего не режется.
 - Всё, что нужно для деплоя, формируется и используется внутри одного job.
 
 ### Выводы для multi-tier деплоя
+
 - Если не хочешь использовать артефакты — делай build и deploy в одном job (или step chain), чтобы не было передачи outputs между jobs.
 - Если нужен именно multi-job workflow — не формируй image_tag с использованием secrets, либо используй артефакты.
 - Самый надёжный способ: build+deploy в одном job, как в cloud-run-deploy.yml.
@@ -551,6 +554,7 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 ## Как пробрасывать секреты и переменные окружения в Cloud Run (по примеру cloud-run-deploy.yml)
 
 ### Как реализовано в cloud-run-deploy.yml
+
 - Для передачи секретов используется флаг:
   ```
   --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest
@@ -563,11 +567,14 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 - Эти флаги обязательно указывать при каждом деплое (и для новых сервисов, и для update).
 
 ### Почему это важно
+
 - Без этих флагов контейнер не получит нужные переменные и секреты, и скорее всего не стартует (или будет падать с ошибкой).
 - Cloud Run не "наследует" переменные окружения и секреты от предыдущих ревизий, если их не указать явно при деплое.
 
 ### Пример для multi-tier деплоя
+
 В каждом gcloud run deploy (tier1, tier2, tier3) должно быть:
+
 ```bash
 gcloud run deploy $SERVICE_NAME \
   --image $IMAGE_TAG \
@@ -582,9 +589,11 @@ gcloud run deploy $SERVICE_NAME \
 ```
 
 ### Рекомендации
+
 - TOPIC_NAME и другие переменные должны быть определены в env или через $GITHUB_ENV.
 - Если секреты называются иначе — подставь свои имена.
 - Без этих флагов контейнер не увидит нужные переменные и может не стартовать (ошибка PORT, падение по env, и т.д.).
 
 **TL;DR:**
+
 - Всегда пробрасывай секреты и env через --update-secrets и --set-env-vars для каждого Cloud Run деплоя, как в cloud-run-deploy.yml.
