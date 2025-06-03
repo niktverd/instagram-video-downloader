@@ -545,3 +545,58 @@ gcloud pubsub subscriptions create pubsub-dead-pull \
 - Если не хочешь использовать артефакты — делай build и deploy в одном job (или step chain), чтобы не было передачи outputs между jobs.
 - Если нужен именно multi-job workflow — не формируй image_tag с использованием secrets, либо используй артефакты.
 - Самый надёжный способ: build+deploy в одном job, как в cloud-run-deploy.yml.
+
+---
+
+## Как пробрасывать секреты и переменные окружения в Cloud Run (по примеру cloud-run-deploy.yml)
+
+### Как реализовано в cloud-run-deploy.yml
+- Для передачи секретов используется флаг:
+  ```
+  --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest
+  ```
+  Это связывает переменные окружения внутри контейнера с секретами из Secret Manager.
+- Для передачи обычных переменных окружения используется флаг:
+  ```
+  --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true
+  ```
+- Эти флаги обязательно указывать при каждом деплое (и для новых сервисов, и для update).
+
+### Почему это важно
+- Без этих флагов контейнер не получит нужные переменные и секреты, и скорее всего не стартует (или будет падать с ошибкой).
+- Cloud Run не "наследует" переменные окружения и секреты от предыдущих ревизий, если их не указать явно при деплое.
+
+### Пример для multi-tier деплоя
+В каждом gcloud run deploy (tier1, tier2, tier3) должно быть:
+```bash
+gcloud run deploy $SERVICE_NAME \
+  --image $IMAGE_TAG \
+  --region $REGION \
+  --platform managed \
+  --memory ... \
+  --cpu ... \
+  --max-instances ... \
+  --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest \
+  --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
+  --allow-unauthenticated
+```
+
+### Рекомендации
+- TOPIC_NAME и другие переменные должны быть определены в env или через $GITHUB_ENV.
+- Если секреты называются иначе — подставь свои имена.
+- Без этих флагов контейнер не увидит нужные переменные и может не стартовать (ошибка PORT, падение по env, и т.д.).
+
+**TL;DR:**
+- Всегда пробрасывай секреты и env через --update-secrets и --set-env-vars для каждого Cloud Run деплоя, как в cloud-run-deploy.yml.
+
+
+How much quota you will require  : 
+Project Number: 
+Project ID: 
+Billing Account ID: 
+Full Office HQ address:
+ Use case (why do you are adding the request or how you will use the services after the request is completed): 
+Budget: (Estimated monthly budget for the request): 
+Current monthly spent on GCP : 
+Alternate Contact information:
+Final Decision maker ( Along with you if you have any)

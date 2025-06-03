@@ -58,7 +58,9 @@ jobs:
             --platform managed \
             --memory 1Gi \
             --cpu 1 \
-            --max-instances 10 \
+            --max-instances 1 \
+            --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest,MAIN_BACKEND_ENDPOINT=MAIN_BACKEND_ENDPOINT:latest \
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
           echo "TIER1_URL=$URL" >> $GITHUB_ENV
@@ -76,7 +78,9 @@ jobs:
             --platform managed \
             --memory 2Gi \
             --cpu 1 \
-            --max-instances 5 \
+            --max-instances 1 \
+            --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest,MAIN_BACKEND_ENDPOINT=MAIN_BACKEND_ENDPOINT:latest \
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
           echo "TIER2_URL=$URL" >> $GITHUB_ENV
@@ -94,7 +98,9 @@ jobs:
             --platform managed \
             --memory 4Gi \
             --cpu 2 \
-            --max-instances 2 \
+            --max-instances 1 \
+            --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest,MAIN_BACKEND_ENDPOINT=MAIN_BACKEND_ENDPOINT:latest \
+            --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
             --allow-unauthenticated
           URL=$(gcloud run services describe $SERVICE_NAME --region ${{ env.REGION }} --format 'value(status.url)')
           echo "TIER3_URL=$URL" >> $GITHUB_ENV
