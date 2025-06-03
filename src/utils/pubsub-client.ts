@@ -90,7 +90,7 @@ export const requestRunScenario = async (
         requestedAt: new Date().toISOString(),
     });
 
-    return publishMessageToPubSub(PubSubTopic.INSTAGRAM_VIDEO_EVENTS, message, attributes);
+    return publishMessageToPubSub(PubSubTopic.INSTAGRAM_VIDEO_EVENTS_TIER1, message, attributes);
 };
 
 // eslint-disable-next-line valid-jsdoc
@@ -112,7 +112,7 @@ export const publishBulkRunScenarioMessages = async (
 
         log(
             '[pubsub-client] Publishing bulk messages to topic:',
-            PubSubTopic.INSTAGRAM_VIDEO_EVENTS,
+            PubSubTopic.INSTAGRAM_VIDEO_EVENTS_TIER1,
         );
         log('[pubsub-client] Project ID:', projectId);
 
@@ -152,7 +152,7 @@ export const publishBulkRunScenarioMessages = async (
         const pubsubClient = new PubSub(pubsubOptions);
 
         // Configure batch publisher with appropriate settings
-        const batchPublisher = pubsubClient.topic(PubSubTopic.INSTAGRAM_VIDEO_EVENTS, {
+        const batchPublisher = pubsubClient.topic(PubSubTopic.INSTAGRAM_VIDEO_EVENTS_TIER1, {
             batching: {
                 maxMessages: 100, // Adjust based on your needs
                 maxMilliseconds: 1000, // 1 second max wait time

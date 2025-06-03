@@ -7,6 +7,10 @@
  */
 export enum PubSubTopic {
     INSTAGRAM_VIDEO_EVENTS = 'instagram-video-events',
+    INSTAGRAM_VIDEO_EVENTS_TIER1 = 'pubsub-tier1',
+    INSTAGRAM_VIDEO_EVENTS_TIER2 = 'pubsub-tier2',
+    INSTAGRAM_VIDEO_EVENTS_TIER3 = 'pubsub-tier3',
+    INSTAGRAM_VIDEO_EVENTS_DEAD = 'pubsub-dead',
 }
 
 /**
