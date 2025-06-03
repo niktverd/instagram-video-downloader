@@ -2,16 +2,16 @@ exports.up = async function (knex) {
     await knex.schema.createTable('cloudRunScenarioExecutions', function (table) {
         table.increments('id').primary();
         table.string('messageId').notNullable();
-        table.string('accountId').notNullable();
-        table.string('scenarioId').notNullable();
-        table.string('sourceId').notNullable();
+        table.string('accountId').nullable().defaultTo(null);
+        table.string('scenarioId').nullable().defaultTo(null);
+        table.string('sourceId').nullable().defaultTo(null);
         table
             .enu('status', ['in-progress', 'success', 'fail', 'cancelled', 'timeout'])
             .notNullable()
             .defaultTo('in-progress');
-        table.string('reqId').notNullable();
-        table.integer('attempt').notNullable();
-        table.string('queueName').notNullable();
+        table.string('reqId').nullable().defaultTo(null);
+        table.integer('attempt').nullable().defaultTo(null);
+        table.string('queueName').nullable().defaultTo(null);
         table.string('traceId').nullable().defaultTo(null);
         table.text('errorDetails').nullable().defaultTo(null);
         table.string('artifactPath').nullable().defaultTo(null);

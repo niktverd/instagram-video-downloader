@@ -198,6 +198,8 @@ export const runScenarioHandler: ApiFunctionPrototype<
             (accountScenario: IScenario) => accountScenario.slug === scenario.slug,
         ),
     );
+    logLocal('isScenarioInAccount', isScenarioInAccount);
+    logLocal('account.availableScenarios', account.availableScenarios);
     if (!isScenarioInAccount) {
         const errorDetails = `Scenario with id ${scenarioId} not in account with id ${accountId}`;
         await fetchPatch({
