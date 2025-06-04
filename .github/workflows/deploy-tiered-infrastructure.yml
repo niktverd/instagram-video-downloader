@@ -122,9 +122,13 @@ jobs:
             gcloud pubsub subscriptions create pubsub-tier1-push \
               --topic=pubsub-tier1 \
               --push-endpoint="$TIER1_URL${{ env.PUSH_ENDPOINT }}" \
-              --ack-deadline=300 \
+              --ack-deadline=600 \
+              --expiration-period=never \
+              --message-retention-duration=1h \
               --dead-letter-topic=pubsub-tier2 \
-              --max-delivery-attempts=5
+              --max-delivery-attempts=5 \
+              --min-retry-delay=540s \
+              --max-retry-delay=600s
           else
             echo "Subscription pubsub-tier1-push already exists"
           fi
@@ -137,8 +141,12 @@ jobs:
               --topic=pubsub-tier2 \
               --push-endpoint="$TIER2_URL${{ env.PUSH_ENDPOINT }}" \
               --ack-deadline=600 \
+              --expiration-period=never \
+              --message-retention-duration=1h \
               --dead-letter-topic=pubsub-tier3 \
-              --max-delivery-attempts=5
+              --max-delivery-attempts=5 \
+              --min-retry-delay=540s \
+              --max-retry-delay=600s
           else
             echo "Subscription pubsub-tier2-push already exists"
           fi
@@ -151,8 +159,12 @@ jobs:
               --topic=pubsub-tier3 \
               --push-endpoint="$TIER3_URL${{ env.PUSH_ENDPOINT }}" \
               --ack-deadline=600 \
+              --expiration-period=never \
+              --message-retention-duration=1h \
               --dead-letter-topic=pubsub-dead \
-              --max-delivery-attempts=5
+              --max-delivery-attempts=5 \
+              --min-retry-delay=540s \
+              --max-retry-delay=600s
           else
             echo "Subscription pubsub-tier3-push already exists"
           fi
@@ -161,8 +173,10 @@ jobs:
           if ! gcloud pubsub subscriptions describe pubsub-dead-pull >/dev/null 2>&1; then
             gcloud pubsub subscriptions create pubsub-dead-pull \
               --topic=pubsub-dead \
-              --ack-deadline=600 \
-              --message-retention-duration=7d
+              --ack-deadline=30 \
+              --expiration-period=never \
+              --message-retention-duration=7d \
+              --max-delivery-attempts=5
           else
             echo "Subscription pubsub-dead-pull already exists"
           fi
