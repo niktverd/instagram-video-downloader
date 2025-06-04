@@ -82,7 +82,12 @@ export const wrapper = <RequestArgs, ResponseArgs>(
             }
         } catch (error) {
             if (error instanceof ThrownError) {
-                logError('Error in wrapper:', String(error));
+                logError('Error in wrapper:', String(error), {
+                    reqPath: req.path,
+                    reqMethod: req.method,
+                    reqQuery: req.query,
+                    reqBody: req.body,
+                });
                 res.status(error.code).json({error: error.message});
             } else {
                 logError('Error in wrapper:', String(error));
