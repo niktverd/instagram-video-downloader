@@ -81,16 +81,15 @@ export const wrapper = <RequestArgs, ResponseArgs>(
                 throw validationError;
             }
         } catch (error) {
+            logError('Error in wrapper (ThrownError):', String(error), {
+                reqPath: req.path,
+                reqMethod: req.method,
+                reqQuery: req.query,
+                reqBody: req.body,
+            });
             if (error instanceof ThrownError) {
-                logError('Error in wrapper:', String(error), {
-                    reqPath: req.path,
-                    reqMethod: req.method,
-                    reqQuery: req.query,
-                    reqBody: req.body,
-                });
                 res.status(error.code).json({error: error.message});
             } else {
-                logError('Error in wrapper:', String(error));
                 res.status(500).json({error: 'Internal server error: ' + String(error)});
             }
         }

@@ -70,7 +70,8 @@ const messageWebhookV3: ApiFunctionPrototype<
     MessageWebhookV3Params,
     MessageWebhookV3Response
 > = async (params, db) => {
-    const {senderId, recipientId, attachment} = getAttachment(params.body);
+    log('messageWebhookV3', 'params', params);
+    const {senderId, recipientId, attachment} = getAttachment(params);
     const {type, payload} = attachment;
     log({senderId, type, payload});
 

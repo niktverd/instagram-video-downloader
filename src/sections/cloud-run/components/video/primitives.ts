@@ -28,7 +28,7 @@ const ffmpegCommon = (
 
     if (ENABLE_STDERR) {
         ffmpegCommand.on('stderr', (stderrLine) => {
-            logError(2, 'FFmpeg stderr:', stderrLine);
+            logError('FFmpeg stderr:', stderrLine);
         });
     }
 
@@ -46,7 +46,7 @@ const ffmpegCommon = (
 
     ffmpegCommand
         .on('error', (err) => {
-            logError(1, reason || 'Ошибка при обработке видео:', err);
+            logError(reason, 'Ошибка при обработке видео:', err);
             reject(reason);
         })
         .on('end', () => resolve(outputPath));

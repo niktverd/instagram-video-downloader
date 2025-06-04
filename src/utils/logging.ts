@@ -46,13 +46,13 @@ export const log = (...messages: unknown[]) => {
     } catch {}
     const isDevelopment = process.env.APP_ENV === 'development';
     const groupLabels = getGroupLabels();
-    console.group(...groupLabels);
     if (isDevelopment) {
+        console.group(...groupLabels);
         console.log(reqId, ...messages);
+        console.groupEnd();
     } else {
-        console.log(JSON.stringify([`reqId_${reqId}`, ...messages]));
+        console.log(JSON.stringify([`reqId_${reqId}`, ...messages, ...groupLabels]));
     }
-    console.groupEnd();
 };
 
 export const logError = (...messages: unknown[]) => {
@@ -62,13 +62,13 @@ export const logError = (...messages: unknown[]) => {
     } catch {}
     const isDevelopment = process.env.APP_ENV === 'development';
     const groupLabels = getGroupLabels();
-    console.group(chalk.bgRed('ERROR'));
-    console.group(...groupLabels);
     if (isDevelopment) {
+        console.group(chalk.bgRed('ERROR'));
+        console.group(...groupLabels);
         console.error(reqId, ...messages);
+        console.groupEnd();
+        console.groupEnd();
     } else {
-        console.error(JSON.stringify([`reqId_${reqId}`, ...messages]));
+        console.error(JSON.stringify([`reqId_${reqId}`, ...messages, ...groupLabels]));
     }
-    console.groupEnd();
-    console.groupEnd();
 };
