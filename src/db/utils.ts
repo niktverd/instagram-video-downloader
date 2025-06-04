@@ -2,7 +2,7 @@ import * as path from 'path';
 
 import {Request, Response} from 'express';
 import {Knex, knex} from 'knex';
-import {Model} from 'objection';
+import {Model, TransactionOrKnex} from 'objection';
 import {z} from 'zod';
 
 import {ApiFunctionPrototype} from '#src/types/common';
@@ -13,11 +13,24 @@ import {logError} from '#utils';
 const environment = process.env.APP_ENV || 'development';
 export const dbConfig = require(path.join(__dirname, '../../knexfile'))[environment];
 
+const fakeDb = new Proxy(
+    {},
+    {
+        get() {
+            throw new Error('DB not available in cloud-run');
+        },
+    },
+);
+
 export const getDb = () => {
+    if (process.env.APP_ENV === 'cloud-run') {
+        return fakeDb as TransactionOrKnex;
+    }
     const db: Knex = knex(dbConfig);
     Model.knex(db);
     return db;
 };
+
 export const db = getDb();
 
 // REST HTTP method type
