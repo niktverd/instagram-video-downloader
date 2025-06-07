@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 import {randomUUID} from 'crypto';
 import {rmSync, writeFileSync} from 'fs';
 
@@ -15,7 +16,7 @@ import {IScenario} from '#src/types/scenario';
 import {ISource} from '#src/types/source';
 import {ThrownError} from '#src/utils/error';
 import {fetchGet, fetchPatch, fetchPost} from '#src/utils/fetchHelpers';
-import {ICloudRunScenarioExecution} from '#types';
+import {GetCloudRunScenarioExecutionResponse, ICloudRunScenarioExecution} from '#types';
 import {FetchRoutes, getWorkingDirectoryForVideo, log, uploadFileToServer} from '#utils';
 
 // eslint-disable-next-line valid-jsdoc
@@ -113,6 +114,51 @@ export const runScenarioHandler: ApiFunctionPrototype<
                 result: undefined,
                 code: 200,
             };
+        }
+
+        const isCloudRunScenarioExecutionInProgress =
+            await fetchGet<GetCloudRunScenarioExecutionResponse>({
+                route: FetchRoutes.getAllCloudRunScenarioExecution,
+                query: {
+                    accountId,
+                    scenarioId,
+                    sourceId,
+                    status: CloudRunScenarioExecutionStatusEnum.InProgress,
+                },
+            });
+
+        logLocal('isCloudRunScenarioExecutionInProgress', isCloudRunScenarioExecutionInProgress);
+
+        for (const execution of isCloudRunScenarioExecutionInProgress.executions) {
+            if (
+                cloudRunScenarioExecution?.id &&
+                execution.id !== cloudRunScenarioExecution.id &&
+                cloudRunScenarioExecution &&
+                cloudRunScenarioExecution.startedAt &&
+                execution.startedAt &&
+                new Date(execution.startedAt).getTime() > new Date().getTime() - 20 * 60 * 1000
+            ) {
+                await fetchPatch({
+                    route: FetchRoutes.updateCloudRunScenarioExecutionStatus,
+                    body: {
+                        id: cloudRunScenarioExecution.id,
+                        status: CloudRunScenarioExecutionStatusEnum.Cancelled,
+                        cancelled: true,
+                        finishedAt: new Date().toISOString(),
+                        duration:
+                            new Date().getTime() -
+                            new Date(cloudRunScenarioExecution.startedAt).getTime(),
+                        errorDetails:
+                            'another execution in progress ' +
+                            JSON.stringify(isCloudRunScenarioExecutionInProgress),
+                    },
+                });
+
+                return {
+                    result: undefined,
+                    code: 200,
+                };
+            }
         }
 
         const scenario = await fetchGet<IScenario>({
