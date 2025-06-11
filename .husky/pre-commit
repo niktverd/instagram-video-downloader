@@ -1,4 +1,5 @@
 # Run knip check on the entire project
+npm run lint
 npm run knip:check || (echo "❌ Knip detected new issues. Please fix them before committing." && exit 1)
 npm run test:api || (echo "❌ Test api failed. Please fix them before committing." && exit 1)
 

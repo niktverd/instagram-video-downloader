@@ -34,12 +34,13 @@
 | :----- | :----------- | :------- |
 | podman | package.json | error    |
 
-## Unused exports (9)
+## Unused exports (10)
 
 | Name            | Location                                                              | Severity |
 | :-------------- | :-------------------------------------------------------------------- | :------- |
 | getSvg          | src/sections/cloud-run/components/reels-creator/create-video.ts:22:17 | error    |
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
+| logStreamsInfo  | src/sections/cloud-run/components/video/ffprobe.helpers.ts:78:23      | error    |
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
 | default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | default         | src/models/InstagramLocation.ts:24:8                                  | error    |
