@@ -210,3 +210,35 @@ forbidden: [
 ```
 
 dependency-cruiser helps maintain a clean architecture and prevents dependency issues before they grow into larger problems.
+
+# VideoPipeline: Множественные входы и concat
+
+## Основные изменения
+
+- Теперь VideoPipeline работает с массивом входных файлов: `inputs: string[]`.
+- Конкатенация (concat) возможна только к master-пайплайну (по умолчанию любой созданный VideoPipeline — master).
+- Все фильтры (makeItRed, rotate и т.д.) и concat можно вызывать цепочкой.
+- Метод run поддерживает как один, так и несколько входов.
+
+## Пример использования
+
+```ts
+import {VideoPipeline} from 'src/sections/cloud-run/components/video/primitives-optimized';
+
+const p1 = new VideoPipeline();
+await p1.init('video1.mp4');
+const p2 = new VideoPipeline();
+await p2.init('video2.mp4');
+
+// Конкатенация и фильтры
+p1.concat(p2).makeItRed().rotate(90);
+await p1.run('output.mp4');
+```
+
+- Если вызвать concat на не-мастер пайплайне — будет выброшена ошибка.
+- После concat можно применять любые фильтры к итоговому видео.
+- run создаёт итоговый файл с учётом всех входов и фильтров.
+
+## Тесты
+
+См. `src/tests/optimized-primitives-demo.test.ts` для примеров тестов на concat, фильтры и работу с несколькими входами.

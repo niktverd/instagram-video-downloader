@@ -3,14 +3,13 @@ import path from 'path';
 
 import {getDownloadURL, ref, uploadBytes} from 'firebase/storage';
 
+import {checkHasAudio, getVideoDuration} from '../video/ffprobe.helpers';
 import {
     addSilentAudioStream,
-    checkHasAudio,
     concatVideoFromList,
     coverWithGreen,
     createVideoOfFrame,
     extractFrames,
-    getVideoDuration,
     normalizeVideo,
     saveFileList,
     splitVideo,
