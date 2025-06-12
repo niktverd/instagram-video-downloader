@@ -26,13 +26,20 @@ const generateRandomString = (length: number): string => {
  * @returns Новый массив complexFilters с переименованными labels
  */
 function relabelPipelineStreams(pipeline: VideoPipeline, inputIndex: number): ComplexFilter[] {
-    const inputVideo = `[${inputIndex}:v]`;
-    const inputAudio = `[${inputIndex}:a]`;
-    const origVideo = '[0:v]';
-    const origAudio = '[0:a]';
-    const relabel = (label: string) => {
-        if (label === origVideo) return inputVideo;
-        if (label === origAudio) return inputAudio;
+    // Регулярки для поиска [N:v] и [N:a]
+    const videoRegex = /^\[(\d+):v\]$/;
+    const audioRegex = /^\[(\d+):a\]$/;
+    const relabel = (label: string): string => {
+        const videoMatch = label.match(videoRegex);
+        if (videoMatch) {
+            const idx = parseInt(videoMatch[1], 10);
+            return `[${inputIndex + idx}:v]`;
+        }
+        const audioMatch = label.match(audioRegex);
+        if (audioMatch) {
+            const idx = parseInt(audioMatch[1], 10);
+            return `[${inputIndex + idx}:a]`;
+        }
         return label;
     };
     return pipeline.complexFilters.map((f) => ({
@@ -62,6 +69,7 @@ export class VideoPipeline {
     isMaster: boolean;
     hasAudio: boolean | undefined;
     duration: number | undefined;
+    compoundDuration: number | undefined;
 
     constructor({width, height, isMaster}: VideoPipelineConstructor) {
         this.prefix = generateRandomString(2);
@@ -72,6 +80,7 @@ export class VideoPipeline {
         this.targetHeight = height;
         this.targetWidth = width;
         this.inputs = [];
+        this.compoundDuration = undefined;
     }
 
     async init(input: string): Promise<VideoPipeline> {
@@ -91,6 +100,7 @@ export class VideoPipeline {
 
         const {width, height} = await getVideoResolution(input);
         this.duration = await getVideoDuration(input);
+        this.compoundDuration = this.duration;
 
         this.width = width;
         this.height = height;
@@ -99,6 +109,8 @@ export class VideoPipeline {
 
     async run(output: string): Promise<string> {
         log('run started');
+        log('run inputs', this.inputs);
+        log('run complexFilters', this.complexFilters);
         return new Promise((resolve, reject) => {
             if (!this.inputs || this.inputs.length === 0) {
                 reject(new Error('Input files are not set'));
@@ -304,6 +316,12 @@ export class VideoPipeline {
     }
 
     concat(p: VideoPipeline): VideoPipeline {
+        // compoundDuration: сумма длительностей
+        if (typeof this.compoundDuration === 'number' && typeof p.compoundDuration === 'number') {
+            this.compoundDuration += p.compoundDuration;
+        } else {
+            this.compoundDuration = undefined;
+        }
         return this.wrap(() => {
             if (!this.isMaster) {
                 throw new Error('Concat can only be called on a master VideoPipeline');
@@ -410,6 +428,190 @@ export class VideoPipeline {
                 firstAudioFilter,
             });
             return [scaleFilter, padFilter, setsarFilter, firstAudioFilter];
+        });
+    }
+
+    // eslint-disable-next-line valid-jsdoc
+    /**
+     * Наложение другого VideoPipeline поверх текущего
+     * @param overlayPipeline - VideoPipeline для наложения
+     * @param options - параметры наложения
+     */
+    overlayWith(
+        overlayPipeline: VideoPipeline,
+        options: {
+            startTime: number;
+            duration: number;
+            chromakey?: boolean;
+            padding?: number;
+            audioMode?: 'mix' | 'replace';
+        },
+    ): VideoPipeline {
+        if (!this.isMaster) {
+            throw new Error('overlayWith can only be called on a master VideoPipeline');
+        }
+        const {startTime = 0, duration, padding, audioMode = 'mix', chromakey = '00ff00'} = options;
+        if (typeof startTime !== 'number' || startTime < 0) {
+            throw new Error('overlayWith: startTime must be >= 0');
+        }
+        if (typeof duration !== 'number' || duration <= 0) {
+            throw new Error('overlayWith: duration must be > 0');
+        }
+        if (typeof padding !== 'undefined' && padding < 0) {
+            throw new Error('overlayWith: padding must be >= 0');
+        }
+
+        log('overlayWith started', {startTime, duration, padding, audioMode, chromakey});
+
+        return this.wrap(() => {
+            const filtersToAdd: ComplexFilter[] = [];
+
+            // Add overlay pipeline input(s)
+            const overlayInputIdx = this.inputs.length;
+            this.inputs.push(...overlayPipeline.inputs);
+
+            // Relabel overlay pipeline streams to avoid conflicts
+            const relabeledOverlayFilters = relabelPipelineStreams(
+                overlayPipeline,
+                overlayInputIdx,
+            );
+            filtersToAdd.push(...relabeledOverlayFilters);
+
+            const baseVideoStream = this.currentVideoStream;
+            const baseAudioStream = this.currentAudioStream;
+
+            // Overlay video stream label (after relabel)
+            // Overlay audio stream label (after relabel)
+            const overlayVideoStream = overlayPipeline.currentVideoStream;
+            const overlayAudioStream = overlayPipeline.currentAudioStream;
+
+            // setpts for video timing sync (shift overlay to startTime)
+            const setptsStream = this.getNewVideoStream();
+            filtersToAdd.push({
+                filter: 'setpts',
+                inputs: overlayVideoStream,
+                outputs: setptsStream,
+                options: {expr: `PTS-STARTPTS+${startTime}/TB`},
+            });
+
+            // Chromakey if needed
+            if (chromakey) {
+                // const chromakeyStream = this.getNewVideoStream();
+                filtersToAdd.push({
+                    filter: 'colorkey',
+                    inputs: this.currentVideoStream,
+                    outputs: this.getNewVideoStream(),
+                    options: {
+                        color: '0x00FF00',
+                        similarity: 0.1,
+                        blend: 0.1,
+                    },
+                });
+            }
+
+            // Padding if needed
+            if (padding) {
+                filtersToAdd.push({
+                    filter: 'pad',
+                    inputs: this.currentVideoStream,
+                    outputs: this.getNewVideoStream(),
+                    options: {
+                        width: `iw+${padding * 2}`,
+                        height: `ih+${padding * 2}`,
+                        x: padding,
+                        y: padding,
+                        color: 'black@0',
+                    },
+                });
+            }
+
+            // Crop overlay to duration
+            filtersToAdd.push({
+                filter: 'trim',
+                inputs: this.currentVideoStream,
+                outputs: this.getNewVideoStream(),
+                options: {start: 0, end: duration},
+            });
+
+            // Overlay filter with enable for time range
+            filtersToAdd.push({
+                filter: 'overlay',
+                inputs: [baseVideoStream, this.currentVideoStream],
+                outputs: this.getNewVideoStream(),
+                options: {
+                    x: '(W-w)/2',
+                    y: '(H-h)/2',
+                    enable: `between(t,${startTime},${startTime + duration})`,
+                },
+            });
+
+            // adelay overlay audio to startTime (ms)
+            filtersToAdd.push({
+                filter: 'adelay',
+                inputs: overlayAudioStream,
+                outputs: this.getNewAudioStream(),
+                options: {delays: `${Math.floor(startTime * 1000)}`},
+            });
+
+            // trim overlay audio to duration
+            const atrimAudioStreamInput = this.currentAudioStream;
+            const atrimStream = this.getNewAudioStream();
+            filtersToAdd.push({
+                filter: 'atrim',
+                inputs: atrimAudioStreamInput,
+                outputs: atrimStream,
+                options: {start: 0, end: duration},
+            });
+
+            if (audioMode === 'mix') {
+                filtersToAdd.push({
+                    filter: 'amix',
+                    inputs: [baseAudioStream, this.currentAudioStream],
+                    outputs: this.getNewAudioStream(),
+                    options: {
+                        inputs: 2,
+                        duration: 'longest',
+                        // TODO: add volume control here in future
+                    },
+                });
+            } else if (audioMode === 'replace') {
+                const baseAudioMasked = this.getNewAudioStream();
+                const overlayAudioMasked = this.getNewAudioStream();
+                filtersToAdd.push(
+                    {
+                        filter: 'volume',
+                        inputs: baseAudioStream,
+                        outputs: baseAudioMasked,
+                        options: {
+                            enable: `not(between(t,${startTime},${startTime + duration}))`,
+                            volume: 1,
+                        },
+                    },
+                    {
+                        filter: 'volume',
+                        inputs: atrimStream,
+                        outputs: overlayAudioMasked,
+                        options: {
+                            enable: `between(t,${startTime},${startTime + duration})`,
+                            volume: 1,
+                        },
+                    },
+                    {
+                        filter: 'amix',
+                        inputs: [baseAudioMasked, overlayAudioMasked],
+                        outputs: this.getNewAudioStream(),
+                        options: {
+                            inputs: 2,
+                            duration: 'longest',
+                        },
+                    },
+                );
+            }
+
+            // Comments for future: volume control can be added to amix or volume filters above
+
+            log('overlayWith finished', {filtersToAdd});
+            return filtersToAdd;
         });
     }
 

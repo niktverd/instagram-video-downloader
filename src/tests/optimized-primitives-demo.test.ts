@@ -218,6 +218,152 @@ const testConcatWithFilterAndSilentPipeline = async (filePaths: string[]) => {
     log('testConcatWithFilterAndSilentPipeline completed, output exists:', output);
 };
 
+// === overlayWith tests ===
+const overlayOutputFile = path.join(basePath, 'optimized-demo-overlay-output.mp4');
+const overlayChromaOutputFile = path.join(basePath, 'optimized-demo-overlay-chroma-output.mp4');
+const overlayPadOutputFile = path.join(basePath, 'optimized-demo-overlay-pad-output.mp4');
+const overlayAudioMixOutputFile = path.join(basePath, 'optimized-demo-overlay-audiomix-output.mp4');
+const overlayAudioReplaceOutputFile = path.join(
+    basePath,
+    'optimized-demo-overlay-audioreplace-output.mp4',
+);
+const overlayNoAudioOutputFile = path.join(basePath, 'optimized-demo-overlay-noaudio-output.mp4');
+
+const testOverlayWithBasic = async () => {
+    log('testOverlayWithBasic started');
+    if (existsSync(overlayOutputFile)) unlinkSync(overlayOutputFile);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 1, duration: 2});
+    await master.run(overlayOutputFile);
+    if (!existsSync(overlayOutputFile)) throw new Error('Overlay output not created');
+    log('testOverlayWithBasic done');
+};
+
+const testOverlayWithChromakey = async () => {
+    log('testOverlayWithChromakey started');
+    if (existsSync(overlayChromaOutputFile)) unlinkSync(overlayChromaOutputFile);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 0.5, duration: 2, chromakey: true});
+    await master.run(overlayChromaOutputFile);
+    if (!existsSync(overlayChromaOutputFile))
+        throw new Error('Overlay chromakey output not created');
+    log('testOverlayWithChromakey done');
+};
+
+const testOverlayWithPadding = async () => {
+    log('testOverlayWithPadding started');
+    if (existsSync(overlayPadOutputFile)) unlinkSync(overlayPadOutputFile);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 0, duration: 2, padding: 40});
+    await master.run(overlayPadOutputFile);
+    if (!existsSync(overlayPadOutputFile)) throw new Error('Overlay pad output not created');
+    log('testOverlayWithPadding done');
+};
+
+const testOverlayWithAudioMix = async () => {
+    log('testOverlayWithAudioMix started');
+    if (existsSync(overlayAudioMixOutputFile)) unlinkSync(overlayAudioMixOutputFile);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 0, duration: 2, audioMode: 'mix'});
+    await master.run(overlayAudioMixOutputFile);
+    if (!existsSync(overlayAudioMixOutputFile))
+        throw new Error('Overlay audio mix output not created');
+    log('testOverlayWithAudioMix done');
+};
+
+const testOverlayWithAudioReplace = async () => {
+    log('testOverlayWithAudioReplace started');
+    if (existsSync(overlayAudioReplaceOutputFile)) unlinkSync(overlayAudioReplaceOutputFile);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 0, duration: 2, audioMode: 'replace'});
+    await master.run(overlayAudioReplaceOutputFile);
+    if (!existsSync(overlayAudioReplaceOutputFile))
+        throw new Error('Overlay audio replace output not created');
+    log('testOverlayWithAudioReplace done');
+};
+
+const testOverlayWithNoAudio = async () => {
+    log('testOverlayWithNoAudio started');
+    if (existsSync(overlayNoAudioOutputFile)) unlinkSync(overlayNoAudioOutputFile);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 0, duration: 2});
+    await master.run(overlayNoAudioOutputFile);
+    if (!existsSync(overlayNoAudioOutputFile))
+        throw new Error('Overlay no audio output not created');
+    log('testOverlayWithNoAudio done');
+};
+
+const testOverlayWithChaining = async () => {
+    log('testOverlayWithChaining started');
+    const output = path.join(basePath, 'optimized-demo-overlay-chaining-output.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    master.overlayWith(overlayPipe, {startTime: 0, duration: 2});
+    master.rotate(10);
+    master.makeItRed();
+    await master.run(output);
+    if (!existsSync(output)) throw new Error('Overlay chaining output not created');
+    log('testOverlayWithChaining done');
+};
+
+const testOverlayWithInvalidParams = async () => {
+    log('testOverlayWithInvalidParams started');
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    let errorCaught = false;
+    try {
+        master.overlayWith(overlayPipe, {startTime: -1, duration: 2});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error:', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for invalid startTime');
+    log('testOverlayWithInvalidParams done');
+};
+
+const runOverlayWithTests = async () => {
+    await testOverlayWithBasic();
+    await testOverlayWithChromakey();
+    await testOverlayWithPadding();
+    await testOverlayWithAudioMix();
+    await testOverlayWithAudioReplace();
+    await testOverlayWithNoAudio();
+    await testOverlayWithChaining();
+    await testOverlayWithInvalidParams();
+    log('runOverlayWithTests finished');
+};
+
 const runOptimizedDemoTests = async () => {
     const runTests = true;
     if (!runTests) {
@@ -260,6 +406,11 @@ const runOptimizedDemoTests = async () => {
     const runConcatWithFilterAndSilentTests = false;
     if (runConcatWithFilterAndSilentTests) {
         await testConcatWithFilterAndSilentPipeline(concatFiles);
+    }
+    // Новый тест: overlayWith
+    const runOverlayWith = true;
+    if (runOverlayWith) {
+        await runOverlayWithTests();
     }
     log('runOptimizedDemoTests finished');
 };
