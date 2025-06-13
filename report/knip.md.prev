@@ -53,7 +53,7 @@
 
 | Name                   | Location                                                              | Severity |
 | :--------------------- | :-------------------------------------------------------------------- | :------- |
-| ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:59:18 | error    |
+| ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:60:18 | error    |
 
 ## Unused exported enum members (8)
 

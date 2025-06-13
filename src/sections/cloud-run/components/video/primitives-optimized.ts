@@ -1,4 +1,5 @@
 import {log} from 'console';
+import * as crypto from 'crypto';
 
 import ffmpeg from 'fluent-ffmpeg';
 
@@ -62,6 +63,8 @@ export interface ColorCorrectionOptions {
     saturation?: number; // 0.0 ... 3.0 (default 1)
     gamma?: number; // 0.1 ... 3.0 (default 1)
 }
+
+type VideoMetadata = Record<string, string>;
 
 export class VideoPipeline {
     prefix: string;
@@ -179,6 +182,12 @@ export class VideoPipeline {
                     console.error('FFmpeg stderr:', stderrLine);
                 });
             }
+
+            const metadataToApply = this.generateVideoMetadata();
+            Object.entries(metadataToApply).forEach(([key, value]) => {
+                command.outputOptions('-metadata', `${key}=${value}`);
+            });
+
             command
                 .on('end', () => {
                     console.log(`VideoPipeline.run completed successfully`);
@@ -864,5 +873,47 @@ export class VideoPipeline {
         const filters = fn();
         this.complexFilters.push(...filters);
         return this;
+    }
+
+    // eslint-disable-next-line valid-jsdoc
+    /**
+     * Генерирует уникальные метаданные для видеофайла на основе состояния пайплайна
+     * Использует входные файлы, длительность, compoundDuration и случайность
+     */
+    private generateVideoMetadata(): VideoMetadata {
+        log('generateVideoMetadata started');
+        const timestamp = Date.now();
+        const input = this.inputs && this.inputs.length > 0 ? this.inputs.join(',') : '';
+        const randomHash = crypto
+            .createHash('sha256')
+            .update(`${timestamp}-${input}-${Math.random()}`)
+            .digest('hex');
+
+        const genres = ['Action', 'Drama', 'Comedy', 'Documentary', 'Music'];
+        const languages = ['eng', 'fra', 'deu', 'spa', 'ita'];
+        const encoders = ['x264', 'ffmpeg', 'HandBrake', 'Adobe', 'DaVinci'];
+
+        // Добавляем контекст пайплайна в метаданные
+        const pipelineContext = [
+            `inputs:${input}`,
+            `duration:${this.duration ?? 'unknown'}`,
+            `compoundDuration:${this.compoundDuration ?? 'unknown'}`,
+        ].join(';');
+
+        return {
+            title: `UniqueVideo_${randomHash.substring(0, 8)}`,
+            artist: `Artist_${randomHash.substring(8, 16)}`,
+            album: `Album_${randomHash.substring(16, 24)}`,
+            date: new Date(timestamp + 1000).toISOString(),
+            genre: genres[Math.floor(Math.random() * genres.length)],
+            copyright: `Copyright_${randomHash.substring(24, 32)}`,
+            encoder: encoders[Math.floor(Math.random() * encoders.length)],
+            language: languages[Math.floor(Math.random() * languages.length)],
+            comment: `Processed_${randomHash.substring(32, 40)};${pipelineContext}`,
+            creation_time: new Date(timestamp + 2000).toISOString(),
+            description: `Description_${randomHash.substring(40, 48)}`,
+            publisher: `Publisher_${randomHash.substring(48, 56)}`,
+            composer: `Composer_${randomHash.substring(56, 64)}`,
+        };
     }
 }

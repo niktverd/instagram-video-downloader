@@ -702,6 +702,7 @@ type GenerateMetadataArgs = {
     iteration?: number;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const generateVideoMetadata = ({
     input = '',
     iteration = 0,
@@ -740,6 +741,7 @@ type ApplyMetadataArgs = {
     outputOverride?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const applyMetadata = async ({
     input,
     metadata,
