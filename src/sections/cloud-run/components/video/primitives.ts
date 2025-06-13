@@ -164,6 +164,7 @@ type AddSilentAudioStreamArgs = {
     // hasAudio?: boolean;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const addSilentAudioStream = async ({input}: AddSilentAudioStreamArgs): Promise<string> => {
     const hasAudio = await checkHasAudio(input);
     const duration = await getVideoDuration(input);
@@ -199,6 +200,7 @@ export const saveFileList = (listPash: string, ...args: string[]) => {
     writeFileSync(listPash, fileList, 'utf-8');
 };
 
+// already at optimized-primitives-demo.test.ts
 export const concatVideoFromList = (list: string, output: string) => {
     return new Promise((resolve, reject) => {
         const ffmpegCommand = ffmpeg()
@@ -212,6 +214,7 @@ export const concatVideoFromList = (list: string, output: string) => {
     });
 };
 
+// already at optimized-primitives-demo.test.ts
 export const normalizeVideo = (input: string): Promise<string> => {
     const outputPath = prepareOutputFileName(input, {suffix: '_normilized', extention: '.mp4'});
 
@@ -242,6 +245,7 @@ type CoverWithGreenArgs = {
     padding?: number;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const coverWithGreen = async ({
     input,
     green,
@@ -344,6 +348,7 @@ type TrimVideoArgs = {
     outputOverride?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const trimVideo = async ({input, maxDuration}: TrimVideoArgs): Promise<string> => {
     const duration = await getVideoDuration(input);
 
@@ -529,6 +534,7 @@ export const isolateRedObjects = async ({
     });
 };
 
+// already at optimized-primitives-demo.test.ts
 export const makeItRed = async ({
     input,
     pathSuffix = '',
@@ -570,6 +576,7 @@ type RotateScaleVideoArgs = {
     pathSuffix?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const rotateVideo = async ({
     input,
     angle,

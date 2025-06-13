@@ -110,6 +110,7 @@ export class VideoPipeline {
     async run(output: string): Promise<string> {
         log('run started');
         log('run inputs', this.inputs);
+        log('run output', output);
         log('run complexFilters', this.complexFilters);
         return new Promise((resolve, reject) => {
             if (!this.inputs || this.inputs.length === 0) {
@@ -611,6 +612,87 @@ export class VideoPipeline {
             // Comments for future: volume control can be added to amix or volume filters above
 
             log('overlayWith finished', {filtersToAdd});
+            return filtersToAdd;
+        });
+    }
+
+    /**
+     * Trims the video and audio streams to the specified start and end times.
+     *
+     * @param start Start time in seconds (must be >= 0)
+     * @param end End time in seconds (must be > start)
+     * @returns VideoPipeline instance for chaining
+     */
+    trimVideo(start: number, end: number): VideoPipeline {
+        if (typeof start !== 'number' || start < 0) {
+            throw new Error('trimVideo: start must be a number >= 0');
+        }
+        if (typeof end !== 'number' || end <= start) {
+            throw new Error('trimVideo: end must be a number > start');
+        }
+
+        return this.wrap(() => {
+            const filtersToAdd: ComplexFilter[] = [];
+
+            // Update compound duration calculation
+            if (this.compoundDuration !== undefined) {
+                this.compoundDuration = Math.min(this.compoundDuration, end - start);
+            }
+
+            // 1. Apply trim filter to video stream
+            const videoInput = this.currentVideoStream;
+            const videoTrimmed = this.getNewVideoStream();
+            filtersToAdd.push({
+                filter: 'trim',
+                inputs: videoInput,
+                outputs: videoTrimmed,
+                options: {
+                    start,
+                    end,
+                },
+            });
+
+            // 2. Reset video timestamps with setpts
+            const videoPtsReset = this.getNewVideoStream();
+            filtersToAdd.push({
+                filter: 'setpts',
+                inputs: videoTrimmed,
+                outputs: videoPtsReset,
+                options: {
+                    expr: 'PTS-STARTPTS',
+                },
+            });
+
+            // 3. Apply atrim filter to audio stream if audio exists
+            if (this.hasAudio) {
+                const audioInput = this.currentAudioStream;
+                const audioTrimmed = this.getNewAudioStream();
+                filtersToAdd.push({
+                    filter: 'atrim',
+                    inputs: audioInput,
+                    outputs: audioTrimmed,
+                    options: {
+                        start,
+                        end,
+                    },
+                });
+
+                // 4. Reset audio timestamps with asetpts
+                const audioPtsReset = this.getNewAudioStream();
+                filtersToAdd.push({
+                    filter: 'asetpts',
+                    inputs: audioTrimmed,
+                    outputs: audioPtsReset,
+                    options: {
+                        expr: 'PTS-STARTPTS',
+                    },
+                });
+            }
+
+            if (process.env.ENABLE_PROGRESS === 'true') {
+                log('trimVideo finished', {filtersToAdd});
+            }
+
             return filtersToAdd;
         });
     }

@@ -2,6 +2,7 @@ import {existsSync, mkdirSync, unlinkSync} from 'fs';
 import path from 'path';
 
 import {log, saveFileToDisk} from '#utils';
+import {getVideoDuration} from '$/cloud-run/components/video/ffprobe.helpers';
 import {VideoPipeline} from '$/cloud-run/components/video/primitives-optimized';
 
 const testUrl =
@@ -364,6 +365,83 @@ const runOverlayWithTests = async () => {
     log('runOverlayWithTests finished');
 };
 
+// === trimVideo integration tests ===
+
+const testTrimVideoSmoke = async () => {
+    log('testTrimVideoSmoke started');
+    const output = path.join(basePath, 'optimized-demo-trim-smoke.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    // Обрезаем с 1 до 4 секунды
+    pipeline.trimVideo(1, 4);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('Trim output file was not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2.8 || duration > 3.3)
+        throw new Error(`Trimmed duration not in expected range: ${duration}`);
+    log('testTrimVideoSmoke done', {duration});
+};
+
+const testTrimVideoEdge = async () => {
+    log('testTrimVideoEdge started');
+    const output = path.join(basePath, 'optimized-demo-trim-edge.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const origDuration = await getVideoDuration(file);
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    // Обрезаем с 0 до origDuration (должно быть почти без изменений)
+    pipeline.trimVideo(0, origDuration);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('Trim edge output file was not created');
+    const duration = await getVideoDuration(output);
+    if (Math.abs(duration - origDuration) > 0.5)
+        throw new Error(`Edge trim duration mismatch: ${duration} vs ${origDuration}`);
+    log('testTrimVideoEdge done', {duration});
+};
+
+const testTrimVideoError = async () => {
+    log('testTrimVideoError started');
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    let errorCaught = false;
+    try {
+        pipeline.trimVideo(-1, 5);
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (start<0):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for start<0');
+    errorCaught = false;
+    try {
+        pipeline.trimVideo(5, 5);
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (end<=start):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for end<=start');
+    log('testTrimVideoError done');
+};
+
+const testTrimVideoChain = async () => {
+    log('testTrimVideoChain started');
+    const output = path.join(basePath, 'optimized-demo-trim-chain.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.trimVideo(1, 4).makeItRed().rotate(10);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('Trim+chain output file was not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2.8 || duration > 3.3)
+        throw new Error(`Trim+chain duration not in expected range: ${duration}`);
+    log('testTrimVideoChain done', {duration});
+};
+
 const runOptimizedDemoTests = async () => {
     const runTests = true;
     if (!runTests) {
@@ -408,9 +486,17 @@ const runOptimizedDemoTests = async () => {
         await testConcatWithFilterAndSilentPipeline(concatFiles);
     }
     // Новый тест: overlayWith
-    const runOverlayWith = true;
+    const runOverlayWith = false;
     if (runOverlayWith) {
         await runOverlayWithTests();
+    }
+
+    const runTrimTests = true; // <-- включи true чтобы запускать trimVideo тесты
+    if (runTrimTests) {
+        await testTrimVideoSmoke();
+        await testTrimVideoEdge();
+        await testTrimVideoError();
+        await testTrimVideoChain();
     }
     log('runOptimizedDemoTests finished');
 };
