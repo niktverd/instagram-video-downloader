@@ -573,6 +573,172 @@ const runColorCorrectTests = async () => {
     log('runColorCorrectTests finished');
 };
 
+const testChangeSpeedBasic = async () => {
+    log('testChangeSpeedBasic started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-basic.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.changeSpeed(1.5);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed basic output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 6.5 || duration > 7.5)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testChangeSpeedBasic done', {duration});
+};
+
+const testChangeSpeedEdge05 = async () => {
+    log('testChangeSpeedEdge05 started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-edge-05.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.changeSpeed(0.5);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed edge 0.5 output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 20.5 || duration > 21.5)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testChangeSpeedEdge05 done', {duration});
+};
+
+const testChangeSpeedEdge20 = async () => {
+    log('testChangeSpeedEdge20 started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-edge-20.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.changeSpeed(2.0);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed edge 2.0 output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 0.5 || duration > 5.5)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testChangeSpeedEdge20 done', {duration});
+};
+
+const testChangeSpeedNoChange = async () => {
+    log('testChangeSpeedNoChange started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-nochange.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const origDuration = await getVideoDuration(file);
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.changeSpeed(1.0);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed nochange output not created');
+    const duration = await getVideoDuration(output);
+    if (Math.abs(duration - origDuration) > 0.5)
+        throw new Error(`NoChange: duration mismatch: ${duration} vs ${origDuration}`);
+    log('testChangeSpeedNoChange done', {duration, origDuration});
+};
+
+const testChangeSpeedErrors = async () => {
+    log('testChangeSpeedErrors started');
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    const invalids = [-1, 0.1, 3.0, 10.0, 'foo', null, undefined];
+    for (const val of invalids) {
+        let errorCaught = false;
+        try {
+            // @ts-expect-error: testing invalid input
+            pipeline.changeSpeed(val);
+        } catch (e) {
+            errorCaught = true;
+            log('Caught expected error for', val, ':', (e as Error).message);
+        }
+        if (!errorCaught) throw new Error(`Expected error for changeSpeed(${val})`);
+    }
+    log('testChangeSpeedErrors done');
+};
+
+const testChangeSpeedDurationTracking = async () => {
+    log('testChangeSpeedDurationTracking started');
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    const orig = pipeline.compoundDuration;
+    pipeline.changeSpeed(2.0);
+    const expected = orig ? orig / 2.0 : undefined;
+    if (
+        pipeline.compoundDuration === undefined ||
+        Math.abs(pipeline.compoundDuration - (expected || 0)) > 0.1
+    ) {
+        throw new Error(
+            `compoundDuration not updated correctly: ${pipeline.compoundDuration} vs ${expected}`,
+        );
+    }
+    log('testChangeSpeedDurationTracking done', {orig, updated: pipeline.compoundDuration});
+};
+
+const testChangeSpeedChaining = async () => {
+    log('testChangeSpeedChaining started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-chaining.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.changeSpeed(1.5).rotate(10).colorCorrect({brightness: 0.2});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed chaining output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 1.2 || duration > 7.5)
+        throw new Error(`Chaining: duration not in expected range: ${duration}`);
+    log('testChangeSpeedChaining done', {duration});
+};
+
+const testChangeSpeedConcat = async () => {
+    log('testChangeSpeedConcat started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-concat.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const files = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const pipelines = await Promise.all(
+        files.map(async (file) => {
+            const p = new VideoPipeline({width: 720, height: 1280});
+            await p.init(file);
+            p.changeSpeed(1.5);
+            return p;
+        }),
+    );
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(files[0]);
+    for (let i = 1; i < pipelines.length; i++) {
+        master.concat(pipelines[i]);
+    }
+    await master.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed concat output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2.0 || duration > 20.0)
+        throw new Error(`Concat: duration not in expected range: ${duration}`);
+    log('testChangeSpeedConcat done', {duration});
+};
+
+const testChangeSpeedOverlay = async () => {
+    log('testChangeSpeedOverlay started');
+    const output = path.join(basePath, 'optimized-demo-changespeed-overlay.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const [base, overlay] = await prepareMultipleVideos(['blackNYellow', 'silent']);
+    const master = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await master.init(base);
+    master.changeSpeed(1.5);
+    const overlayPipe = new VideoPipeline({width: 720, height: 1280});
+    await overlayPipe.init(overlay);
+    overlayPipe.changeSpeed(2.0);
+    master.overlayWith(overlayPipe, {startTime: 0, duration: 2});
+    await master.run(output);
+    if (!existsSync(output)) throw new Error('ChangeSpeed overlay output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 0.5 || duration > 7.5)
+        throw new Error(`Overlay: duration not in expected range: ${duration}`);
+    log('testChangeSpeedOverlay done', {duration});
+};
+
 const runOptimizedDemoTests = async () => {
     const runTests = true;
     if (!runTests) {
@@ -622,7 +788,7 @@ const runOptimizedDemoTests = async () => {
         await runOverlayWithTests();
     }
 
-    const runTrimTests = true; // <-- включи true чтобы запускать trimVideo тесты
+    const runTrimTests = false; // <-- включи true чтобы запускать trimVideo тесты
     if (runTrimTests) {
         await testTrimVideoSmoke();
         await testTrimVideoEdge();
@@ -630,9 +796,22 @@ const runOptimizedDemoTests = async () => {
         await testTrimVideoChain();
     }
 
-    const runColorCorrectTestsFlag = true;
+    const runColorCorrectTestsFlag = false;
     if (runColorCorrectTestsFlag) {
         await runColorCorrectTests();
+    }
+
+    const runChangeSpeedTests = true;
+    if (runChangeSpeedTests) {
+        await testChangeSpeedBasic();
+        await testChangeSpeedEdge05();
+        await testChangeSpeedEdge20();
+        await testChangeSpeedNoChange();
+        await testChangeSpeedErrors();
+        await testChangeSpeedDurationTracking();
+        await testChangeSpeedChaining();
+        await testChangeSpeedConcat();
+        await testChangeSpeedOverlay();
     }
 
     log('runOptimizedDemoTests finished');

@@ -60,6 +60,30 @@ simpleEffect(): VideoPipeline {
 }
 ```
 
+### Изменение скорости (changeSpeed)
+
+```typescript
+changeSpeed(speed: number): VideoPipeline {
+    if (typeof speed !== 'number' || speed < 0.5 || speed > 2.0) throw new Error('invalid');
+    if (speed === 1.0) return this.wrap(() => []);
+    return this.wrap(() => {
+        const videoFilter: ComplexFilter = {
+            filter: 'setpts',
+            inputs: this.currentVideoStream,
+            outputs: this.getNewVideoStream(),
+            options: {expr: `${1 / speed}*PTS`},
+        };
+        const audioFilter: ComplexFilter = {
+            filter: 'atempo',
+            inputs: this.currentAudioStream,
+            outputs: this.getNewAudioStream(),
+            options: {tempo: speed},
+        };
+        return [videoFilter, audioFilter];
+    });
+}
+```
+
 ### Цепочка эффектов (по примеру makeItRed с двумя фильтрами)
 
 ```typescript
@@ -133,6 +157,37 @@ complexEffect(): VideoPipeline {
         };
 
         return [splitFilter, process1Filter, process2Filter, combineFilter];
+    });
+}
+```
+
+### colorCorrect() - цветокоррекция
+
+- Применяет eq фильтр с параметрами brightness, contrast, saturation, gamma
+
+### changeSpeed() - изменение скорости
+
+- Применяет setpts к видео и atempo к аудио
+- Поддерживает диапазон 0.5–2.0, 1.0 — no-op
+- Обновляет compoundDuration
+- Валидирует параметры и выбрасывает ошибки при некорректных значениях
+
+### makeItRed() - простая цепочка
+
+```typescript
+simpleEffect(): VideoPipeline {
+    return this.wrap(() => {
+        const inputLabel = this.currentVideoStream;
+        const outputLabel = this.getNewVideoStream();
+
+        const filter: ComplexFilter = {
+            filter: 'effect_name',
+            inputs: inputLabel,
+            outputs: outputLabel,
+            options: { /* параметры */ }
+        };
+
+        return [filter];
     });
 }
 ```

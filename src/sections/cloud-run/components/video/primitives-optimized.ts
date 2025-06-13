@@ -750,6 +750,50 @@ export class VideoPipeline {
         });
     }
 
+    /**
+     * Изменяет скорость воспроизведения видео и аудио.
+     *
+     * @param speed Коэффициент скорости (0.5 - 2.0, 1.0 — без изменений)
+     * @returns this (для чейнинга)
+     * @throws Error если speed не число или вне диапазона 0.5...2.0
+     *
+     * Примечание: поддержка сохранения высоты тона (maintainPitch) может быть добавлена в будущем через asetrate+aresample.
+     */
+    changeSpeed(speed: number): VideoPipeline {
+        log('changeSpeed started');
+        if (typeof speed !== 'number' || Number.isNaN(speed)) {
+            throw new Error('changeSpeed: speed должен быть числом');
+        }
+        if (speed === 1.0) {
+            return this.wrap(() => []);
+        }
+        if (speed < 0.5 || speed > 2.0) {
+            throw new Error('changeSpeed: speed должен быть в диапазоне 0.5 ... 2.0');
+        }
+        if (typeof this.compoundDuration === 'number') {
+            this.compoundDuration = this.compoundDuration / speed;
+        }
+        return this.wrap(() => {
+            const inputVideo = this.currentVideoStream;
+            const outputVideo = this.getNewVideoStream();
+            const videoFilter: ComplexFilter = {
+                filter: 'setpts',
+                inputs: inputVideo,
+                outputs: outputVideo,
+                options: {expr: `${1 / speed}*PTS`},
+            };
+            const audioInput = this.currentAudioStream;
+            const audioOutput = this.getNewAudioStream();
+            const audioFilter: ComplexFilter = {
+                filter: 'atempo',
+                inputs: audioInput,
+                outputs: audioOutput,
+                options: {tempo: speed},
+            };
+            return [videoFilter, audioFilter];
+        });
+    }
+
     private getNewAudioStream(): string {
         this.currentStreamIndex++;
         const streamLabel = `[a_${this.prefix}_${this.currentStreamIndex}]`;
