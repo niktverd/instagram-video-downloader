@@ -55,6 +55,14 @@ type VideoPipelineConstructor = {
     isMaster?: boolean;
 };
 
+// Интерфейс для colorCorrect
+export interface ColorCorrectionOptions {
+    brightness?: number; // -1.0 ... 1.0 (default 0)
+    contrast?: number; // 0.0 ... 3.0 (default 1)
+    saturation?: number; // 0.0 ... 3.0 (default 1)
+    gamma?: number; // 0.1 ... 3.0 (default 1)
+}
+
 export class VideoPipeline {
     prefix: string;
     inputs: string[] = [];
@@ -694,6 +702,51 @@ export class VideoPipeline {
             }
 
             return filtersToAdd;
+        });
+    }
+
+    /**
+     * Применяет цветокоррекцию к видеопотоку (brightness, contrast, saturation, gamma)
+     * @param options параметры цветокоррекции
+     * @returns this (для чейнинга)
+     * @throws Error если параметры вне диапазона или не числа
+     */
+    colorCorrect(options?: ColorCorrectionOptions): VideoPipeline {
+        log('colorCorrect started');
+        const {brightness = 0, contrast = 1, saturation = 1, gamma = 1} = options || {};
+        // Валидация диапазонов и типов
+        if (typeof brightness !== 'number' || brightness < -1.0 || brightness > 1.0) {
+            throw new Error('colorCorrect: brightness должен быть числом от -1.0 до 1.0');
+        }
+        if (typeof contrast !== 'number' || contrast < 0.0 || contrast > 3.0) {
+            throw new Error('colorCorrect: contrast должен быть числом от 0.0 до 3.0');
+        }
+        if (typeof saturation !== 'number' || saturation < 0.0 || saturation > 3.0) {
+            throw new Error('colorCorrect: saturation должен быть числом от 0.0 до 3.0');
+        }
+        if (typeof gamma !== 'number' || gamma < 0.1 || gamma > 3.0) {
+            throw new Error('colorCorrect: gamma должен быть числом от 0.1 до 3.0');
+        }
+        // Если все параметры по умолчанию — не добавляем фильтр
+        if (brightness === 0 && contrast === 1 && saturation === 1 && gamma === 1) {
+            return this;
+        }
+        return this.wrap(() => {
+            const inputLabel = this.currentVideoStream;
+            const outputLabel = this.getNewVideoStream();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const eqOptions: Record<string, any> = {};
+            if (brightness !== 0) eqOptions.brightness = brightness;
+            if (contrast !== 1) eqOptions.contrast = contrast;
+            if (saturation !== 1) eqOptions.saturation = saturation;
+            if (gamma !== 1) eqOptions.gamma = gamma;
+            const filter: ComplexFilter = {
+                filter: 'eq',
+                inputs: inputLabel,
+                outputs: outputLabel,
+                options: eqOptions,
+            };
+            return [filter];
         });
     }
 

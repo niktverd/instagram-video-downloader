@@ -243,3 +243,44 @@ effectWithAudio(): VideoPipeline {
 - `ENABLE_START=true` - логирование команд FFmpeg
 - `ENABLE_PROGRESS=true` - прогресс выполнения
 - `ENABLE_STDERR=true` - stderr от FFmpeg
+
+## Рекомендации по интеграционному тестированию эффектов
+
+- Каждый эффект должен иметь интеграционный тест, который:
+  - Использует реальный видеофайл (prepareVideo/prepareMultipleVideos).
+  - Применяет эффект(ы) через VideoPipeline и run().
+  - Проверяет результат: файл создан, длительность соответствует ожиданиям (getVideoDuration), ошибки выбрасываются корректно.
+  - Для каждого теста использовать уникальный output-файл (например, `trim-smoke.mp4`, `trim-edge.mp4`).
+  - Покрывать edge-cases, error-cases, чейнинг эффектов.
+
+### Пример интеграционного теста
+
+```ts
+const output = path.join(basePath, 'trim-smoke.mp4');
+if (existsSync(output)) unlinkSync(output);
+const file = await prepareVideo();
+const pipeline = new VideoPipeline({width: 720, height: 1280});
+await pipeline.init(file);
+pipeline.trimVideo(1, 4);
+await pipeline.run(output);
+if (!existsSync(output)) throw new Error('Output file was not created');
+const duration = await getVideoDuration(output);
+if (duration < 2.8 || duration > 3.3)
+  throw new Error(`Duration not in expected range: ${duration}`);
+```
+
+### Пример проверки ошибки
+
+```ts
+let errorCaught = false;
+try {
+  pipeline.trimVideo(-1, 5);
+} catch (e) {
+  errorCaught = true;
+}
+if (!errorCaught) throw new Error('Expected error for start<0');
+```
+
+- Все эффекты должны поддерживать чейнинг (возвращать this), и это должно быть покрыто интеграционными тестами.
+- В эффектах всегда выбрасывать осмысленные ошибки при некорректных параметрах (и покрывать это тестами).
+- В тестах и эффектах использовать логирование ключевых этапов (start, finish, параметры), чтобы упростить отладку пайплайна.

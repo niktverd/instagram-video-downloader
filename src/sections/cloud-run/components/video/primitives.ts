@@ -459,6 +459,7 @@ type ApplyVideoColorCorrectionArgs = {
     pathSuffix?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const applyVideoColorCorrection = async ({
     input,
     brightness = 0,
@@ -663,6 +664,7 @@ type ChangeVideoSpeedArgs = {
     outputOverride?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const changeVideoSpeed = async ({
     input,
     speed,

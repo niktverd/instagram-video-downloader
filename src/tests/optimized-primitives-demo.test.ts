@@ -442,6 +442,137 @@ const testTrimVideoChain = async () => {
     log('testTrimVideoChain done', {duration});
 };
 
+// === colorCorrect integration tests ===
+const testColorCorrectSmoke = async () => {
+    log('testColorCorrectSmoke started');
+    const output = path.join(basePath, 'optimized-demo-colorcorrect-smoke.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.colorCorrect({brightness: 0.2});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ColorCorrect smoke output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testColorCorrectSmoke done', {duration});
+};
+
+const testColorCorrectAllParams = async () => {
+    log('testColorCorrectAllParams started');
+    const output = path.join(basePath, 'optimized-demo-colorcorrect-allparams.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.colorCorrect({brightness: 0.5, contrast: 2, saturation: 2, gamma: 2});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ColorCorrect allparams output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testColorCorrectAllParams done', {duration});
+};
+
+const testColorCorrectEdgeCases = async () => {
+    log('testColorCorrectEdgeCases started');
+    const output = path.join(basePath, 'optimized-demo-colorcorrect-edge.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.colorCorrect({brightness: -1, contrast: 0, saturation: 0, gamma: 0.1});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ColorCorrect edge output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testColorCorrectEdgeCases done', {duration});
+};
+
+const testColorCorrectErrorCases = async () => {
+    log('testColorCorrectErrorCases started');
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    let errorCaught = false;
+    try {
+        pipeline.colorCorrect({brightness: -2});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (brightness)', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for brightness < -1');
+    errorCaught = false;
+    try {
+        pipeline.colorCorrect({contrast: 4});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (contrast)', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for contrast > 3');
+    errorCaught = false;
+    try {
+        pipeline.colorCorrect({saturation: -1});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (saturation)', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for saturation < 0');
+    errorCaught = false;
+    try {
+        pipeline.colorCorrect({gamma: 0});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (gamma)', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for gamma < 0.1');
+    log('testColorCorrectErrorCases done');
+};
+
+const testColorCorrectChaining = async () => {
+    log('testColorCorrectChaining started');
+    const output = path.join(basePath, 'optimized-demo-colorcorrect-chain.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.colorCorrect({brightness: 0.3}).makeItRed().rotate(10);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ColorCorrect chain output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testColorCorrectChaining done', {duration});
+};
+
+const testColorCorrectDefaultValues = async () => {
+    log('testColorCorrectDefaultValues started');
+    const output = path.join(basePath, 'optimized-demo-colorcorrect-default.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.colorCorrect(); // все значения по умолчанию
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('ColorCorrect default output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testColorCorrectDefaultValues done', {duration});
+};
+
+const runColorCorrectTests = async () => {
+    await testColorCorrectSmoke();
+    await testColorCorrectAllParams();
+    await testColorCorrectEdgeCases();
+    await testColorCorrectErrorCases();
+    await testColorCorrectChaining();
+    await testColorCorrectDefaultValues();
+    log('runColorCorrectTests finished');
+};
+
 const runOptimizedDemoTests = async () => {
     const runTests = true;
     if (!runTests) {
@@ -498,6 +629,12 @@ const runOptimizedDemoTests = async () => {
         await testTrimVideoError();
         await testTrimVideoChain();
     }
+
+    const runColorCorrectTestsFlag = true;
+    if (runColorCorrectTestsFlag) {
+        await runColorCorrectTests();
+    }
+
     log('runOptimizedDemoTests finished');
 };
 

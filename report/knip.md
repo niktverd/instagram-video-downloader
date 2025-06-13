@@ -49,6 +49,12 @@
 | default         | src/models/User.ts:59:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
+## Unused exported types (1)
+
+| Name                   | Location                                                              | Severity |
+| :--------------------- | :-------------------------------------------------------------------- | :------- |
+| ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:59:18 | error    |
+
 ## Unused exported enum members (8)
 
 | Name                         | Location                    | Severity |
