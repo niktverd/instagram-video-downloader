@@ -97,6 +97,27 @@ const testConcatPipeline = async (filePaths: string[]) => {
     }
     log('testConcatPipeline completed, output exists:', concatOutputFile);
 };
+const testConcatThemselvesPipelineTests = async (filePath: string) => {
+    log('testConcatPipeline started');
+    if (existsSync(concatOutputFile)) {
+        unlinkSync(concatOutputFile);
+    }
+    // Создаём пайплайны для каждого файла
+    const pipeline = new VideoPipeline({width: 720, height: 1280, isMaster: true});
+    await pipeline.init(filePath);
+
+    for (let i = 1; i < 3; i++) {
+        pipeline.concat(pipeline);
+        break;
+    }
+
+    await pipeline.run(concatOutputFile);
+
+    if (!existsSync(concatOutputFile)) {
+        throw new Error('Concat output file was not created');
+    }
+    log('testConcatPipeline completed, output exists:', concatOutputFile);
+};
 
 const testConcatWithFilterPipeline = async (filePaths: string[]) => {
     log('testConcatWithFilterPipeline started');
@@ -740,7 +761,7 @@ const testChangeSpeedOverlay = async () => {
 };
 
 const runOptimizedDemoTests = async () => {
-    const runTests = true;
+    const runTests = false;
     if (!runTests) {
         return;
     }
@@ -762,6 +783,10 @@ const runOptimizedDemoTests = async () => {
     const runConcatPipelineTests = false;
     if (runConcatPipelineTests) {
         await testConcatPipeline(concatFiles);
+    }
+    const runConcatThemselvesPipelineTests = true;
+    if (runConcatThemselvesPipelineTests) {
+        await testConcatThemselvesPipelineTests(concatFiles[0]);
     }
 
     const runConcatWithFilterTests = false;

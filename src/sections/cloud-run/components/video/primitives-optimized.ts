@@ -459,7 +459,7 @@ export class VideoPipeline {
         if (!this.isMaster) {
             throw new Error('overlayWith can only be called on a master VideoPipeline');
         }
-        const {startTime = 0, duration, padding, audioMode = 'mix', chromakey = '00ff00'} = options;
+        const {startTime = 0, duration, padding, audioMode = 'mix', chromakey = false} = options;
         if (typeof startTime !== 'number' || startTime < 0) {
             throw new Error('overlayWith: startTime must be >= 0');
         }
@@ -791,6 +791,58 @@ export class VideoPipeline {
                 options: {tempo: speed},
             };
             return [videoFilter, audioFilter];
+        });
+    }
+
+    /**
+     * Повторяет текущий поток N раз подряд через split/asplit + concat (без повторного запуска пайплайна)
+     * @param n Количество повторов (n >= 2)
+     * @returns this (для чейнинга)
+     */
+    repeatSelf(n: number): VideoPipeline {
+        if (!this.isMaster)
+            throw new Error('repeatSelf can only be called on a master VideoPipeline');
+
+        if (typeof n !== 'number' || n < 2 || !Number.isInteger(n))
+            throw new Error('repeatSelf: n must be integer >= 2');
+
+        return this.wrap(() => {
+            const filters: ComplexFilter[] = [];
+            // split video
+            const videoInput = this.currentVideoStream;
+            const videoOutputs: string[] = [];
+            for (let i = 0; i < n; i++) videoOutputs.push(this.getNewVideoStream());
+            filters.push({
+                filter: 'split',
+                inputs: videoInput,
+                outputs: videoOutputs,
+                options: {outputs: n},
+            });
+            // asplit audio
+            const audioInput = this.currentAudioStream;
+            const audioOutputs: string[] = [];
+            for (let i = 0; i < n; i++) audioOutputs.push(this.getNewAudioStream());
+            filters.push({
+                filter: 'asplit',
+                inputs: audioInput,
+                outputs: audioOutputs,
+                options: {outputs: n},
+            });
+            // concat
+            const concatVideoLabel = this.getNewVideoStream();
+            const concatAudioLabel = this.getNewAudioStream();
+            // порядок: [v1,a1,v2,a2,...]
+            const concatInputs: string[] = [];
+            for (let i = 0; i < n; i++) {
+                concatInputs.push(videoOutputs[i], audioOutputs[i]);
+            }
+            filters.push({
+                filter: 'concat',
+                inputs: concatInputs,
+                outputs: [concatVideoLabel, concatAudioLabel],
+                options: {n: n, v: 1, a: 1},
+            });
+            return filters;
         });
     }
 
