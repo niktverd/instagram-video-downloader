@@ -760,8 +760,262 @@ const testChangeSpeedOverlay = async () => {
     log('testChangeSpeedOverlay done', {duration});
 };
 
+const runChangeSpeedTests = async () => {
+    await testChangeSpeedBasic();
+    await testChangeSpeedEdge05();
+    await testChangeSpeedEdge20();
+    await testChangeSpeedNoChange();
+    await testChangeSpeedErrors();
+    await testChangeSpeedDurationTracking();
+    await testChangeSpeedChaining();
+    await testChangeSpeedConcat();
+    await testChangeSpeedOverlay();
+};
+
+// === boxBlur integration tests ===
+const testBoxBlurSmoke = async () => {
+    log('testBoxBlurSmoke started');
+    const output = path.join(basePath, 'optimized-demo-boxblur-smoke.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.boxBlur({boxWidth: 3, boxHeight: 3, iterations: 2});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('BoxBlur smoke output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testBoxBlurSmoke done', {duration});
+};
+
+const testBoxBlurDefaultParams = async () => {
+    log('testBoxBlurDefaultParams started');
+    const output = path.join(basePath, 'optimized-demo-boxblur-default.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.boxBlur(); // все значения по умолчанию
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('BoxBlur default output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testBoxBlurDefaultParams done', {duration});
+};
+
+const testBoxBlurEdgeCases = async () => {
+    log('testBoxBlurEdgeCases started');
+    const output = path.join(basePath, 'optimized-demo-boxblur-edge.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.boxBlur({boxWidth: 1, boxHeight: 1, iterations: 1});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('BoxBlur edge output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testBoxBlurEdgeCases done', {duration});
+};
+
+const testBoxBlurErrorCases = async () => {
+    log('testBoxBlurErrorCases started');
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+
+    // Test invalid boxWidth
+    let errorCaught = false;
+    try {
+        pipeline.boxBlur({boxWidth: 0});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (boxWidth=0):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for boxWidth=0');
+
+    // Test invalid boxHeight
+    errorCaught = false;
+    try {
+        pipeline.boxBlur({boxHeight: -1});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (boxHeight=-1):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for boxHeight=-1');
+
+    // Test invalid iterations
+    errorCaught = false;
+    try {
+        pipeline.boxBlur({iterations: 0});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (iterations=0):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for iterations=0');
+
+    // Test non-integer values
+    errorCaught = false;
+    try {
+        pipeline.boxBlur({boxWidth: 2.5});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (boxWidth=2.5):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for boxWidth=2.5');
+
+    log('testBoxBlurErrorCases done');
+};
+
+const testBoxBlurChaining = async () => {
+    log('testBoxBlurChaining started');
+    const output = path.join(basePath, 'optimized-demo-boxblur-chaining.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.boxBlur({boxWidth: 2, boxHeight: 2}).makeItRed().rotate(10);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('BoxBlur chaining output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testBoxBlurChaining done', {duration});
+};
+
+// === hueAdjust integration tests ===
+const testHueAdjustSmoke = async () => {
+    log('testHueAdjustSmoke started');
+    const output = path.join(basePath, 'optimized-demo-hueadjust-smoke.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.hueAdjust({hue: 90, saturation: 1.5});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('HueAdjust smoke output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testHueAdjustSmoke done', {duration});
+};
+
+const testHueAdjustDefaultParams = async () => {
+    log('testHueAdjustDefaultParams started');
+    const output = path.join(basePath, 'optimized-demo-hueadjust-default.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.hueAdjust(); // все значения по умолчанию - должно быть no-op
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('HueAdjust default output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testHueAdjustDefaultParams done', {duration});
+};
+
+const testHueAdjustEdgeCases = async () => {
+    log('testHueAdjustEdgeCases started');
+    const output = path.join(basePath, 'optimized-demo-hueadjust-edge.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.hueAdjust({hue: -180, saturation: 0});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('HueAdjust edge output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testHueAdjustEdgeCases done', {duration});
+};
+
+const testHueAdjustErrorCases = async () => {
+    log('testHueAdjustErrorCases started');
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+
+    // Test invalid saturation
+    let errorCaught = false;
+    try {
+        pipeline.hueAdjust({saturation: -1});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (saturation=-1):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for saturation=-1');
+
+    // Test NaN hue
+    errorCaught = false;
+    try {
+        pipeline.hueAdjust({hue: NaN});
+    } catch (e) {
+        errorCaught = true;
+        log('Caught expected error (hue=NaN):', (e as Error).message);
+    }
+    if (!errorCaught) throw new Error('Expected error for hue=NaN');
+
+    log('testHueAdjustErrorCases done');
+};
+
+const testHueAdjustChaining = async () => {
+    log('testHueAdjustChaining started');
+    const output = path.join(basePath, 'optimized-demo-hueadjust-chaining.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.hueAdjust({hue: 45, saturation: 2}).colorCorrect({brightness: 0.2}).rotate(5);
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('HueAdjust chaining output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testHueAdjustChaining done', {duration});
+};
+
+// === Combined tests ===
+const testBoxBlurHueAdjustChaining = async () => {
+    log('testBoxBlurHueAdjustChaining started');
+    const output = path.join(basePath, 'optimized-demo-boxblur-hueadjust-chaining.mp4');
+    if (existsSync(output)) unlinkSync(output);
+    const file = await prepareVideo();
+    const pipeline = new VideoPipeline({width: 720, height: 1280});
+    await pipeline.init(file);
+    pipeline.boxBlur({boxWidth: 3, boxHeight: 3}).hueAdjust({hue: 120, saturation: 1.5});
+    await pipeline.run(output);
+    if (!existsSync(output)) throw new Error('BoxBlur+HueAdjust chaining output not created');
+    const duration = await getVideoDuration(output);
+    if (duration < 2 || duration > 20)
+        throw new Error(`Duration not in expected range: ${duration}`);
+    log('testBoxBlurHueAdjustChaining done', {duration});
+};
+
+const runBoxBlurHueAdjustTests = async () => {
+    await testBoxBlurSmoke();
+    await testBoxBlurDefaultParams();
+    await testBoxBlurEdgeCases();
+    await testBoxBlurErrorCases();
+    await testBoxBlurChaining();
+
+    await testHueAdjustSmoke();
+    await testHueAdjustDefaultParams();
+    await testHueAdjustEdgeCases();
+    await testHueAdjustErrorCases();
+    await testHueAdjustChaining();
+
+    await testBoxBlurHueAdjustChaining();
+    log('runBoxBlurHueAdjustTests finished');
+};
+
 const runOptimizedDemoTests = async () => {
-    const runTests = false;
+    const runTests = true;
     if (!runTests) {
         return;
     }
@@ -826,17 +1080,14 @@ const runOptimizedDemoTests = async () => {
         await runColorCorrectTests();
     }
 
-    const runChangeSpeedTests = true;
-    if (runChangeSpeedTests) {
-        await testChangeSpeedBasic();
-        await testChangeSpeedEdge05();
-        await testChangeSpeedEdge20();
-        await testChangeSpeedNoChange();
-        await testChangeSpeedErrors();
-        await testChangeSpeedDurationTracking();
-        await testChangeSpeedChaining();
-        await testChangeSpeedConcat();
-        await testChangeSpeedOverlay();
+    const runChangeSpeedTestsFlag = false;
+    if (runChangeSpeedTestsFlag) {
+        await runChangeSpeedTests();
+    }
+
+    const runBoxBlurHueAdjustTestsFlag = true;
+    if (runBoxBlurHueAdjustTestsFlag) {
+        await runBoxBlurHueAdjustTests();
     }
 
     log('runOptimizedDemoTests finished');

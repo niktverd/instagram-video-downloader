@@ -49,11 +49,13 @@
 | default         | src/models/User.ts:59:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
-## Unused exported types (1)
+## Unused exported types (3)
 
 | Name                   | Location                                                              | Severity |
 | :--------------------- | :-------------------------------------------------------------------- | :------- |
 | ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:60:18 | error    |
+| HueAdjustOptions       | src/sections/cloud-run/components/video/primitives-optimized.ts:75:18 | error    |
+| BoxBlurOptions         | src/sections/cloud-run/components/video/primitives-optimized.ts:68:18 | error    |
 
 ## Unused exported enum members (8)
 

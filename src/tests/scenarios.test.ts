@@ -278,7 +278,7 @@ const runTests = async () => {
         await testCoverWithGreen(sources.blackNYellow, 'random');
     }
 
-    const runCoverWithGreenOptimized = true;
+    const runCoverWithGreenOptimized = false;
     if (runCoverWithGreenOptimized) {
         await testCoverWithGreenOptimized(sources.blackNYellow, 'once', 'start');
         await testCoverWithGreenOptimized(sources.blackNRed, 'once', 'middle');

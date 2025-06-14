@@ -64,6 +64,19 @@ export interface ColorCorrectionOptions {
     gamma?: number; // 0.1 ... 3.0 (default 1)
 }
 
+// Интерфейс для boxBlur
+export interface BoxBlurOptions {
+    boxWidth?: number; // Width of the box blur (default: 2, must be >= 1)
+    boxHeight?: number; // Height of the box blur (default: 2, must be >= 1)
+    iterations?: number; // Number of iterations (default: 1, must be >= 1)
+}
+
+// Интерфейс для hueAdjust
+export interface HueAdjustOptions {
+    hue?: number; // Hue adjustment in degrees (default: 0)
+    saturation?: number; // Saturation multiplier (default: 1, must be >= 0)
+}
+
 type VideoMetadata = Record<string, string>;
 
 export class VideoPipeline {
@@ -852,6 +865,88 @@ export class VideoPipeline {
                 options: {n: n, v: 1, a: 1},
             });
             return filters;
+        });
+    }
+
+    /**
+     * Применяет эффект размытия boxblur к видеопотоку
+     * @param options параметры размытия (boxWidth, boxHeight, iterations)
+     * @returns this (для чейнинга)
+     * @throws Error если параметры некорректны
+     */
+    boxBlur(options?: BoxBlurOptions): VideoPipeline {
+        log('boxBlur started');
+        const {boxWidth = 2, boxHeight = 2, iterations = 1} = options || {};
+
+        // Валидация параметров
+        if (typeof boxWidth !== 'number' || !Number.isInteger(boxWidth) || boxWidth < 1) {
+            throw new Error('boxBlur: boxWidth должен быть целым числом >= 1');
+        }
+        if (typeof boxHeight !== 'number' || !Number.isInteger(boxHeight) || boxHeight < 1) {
+            throw new Error('boxBlur: boxHeight должен быть целым числом >= 1');
+        }
+        if (typeof iterations !== 'number' || !Number.isInteger(iterations) || iterations < 1) {
+            throw new Error('boxBlur: iterations должен быть целым числом >= 1');
+        }
+
+        return this.wrap(() => {
+            const inputLabel = this.currentVideoStream;
+            const outputLabel = this.getNewVideoStream();
+
+            const filter: ComplexFilter = {
+                filter: 'boxblur',
+                inputs: inputLabel,
+                outputs: outputLabel,
+                options: {
+                    luma_radius: boxWidth,
+                    luma_power: iterations,
+                    chroma_radius: boxHeight,
+                    chroma_power: iterations,
+                },
+            };
+
+            return [filter];
+        });
+    }
+
+    /**
+     * Применяет коррекцию оттенка и насыщенности к видеопотоку
+     * @param options параметры коррекции (hue, saturation)
+     * @returns this (для чейнинга)
+     * @throws Error если параметры некорректны
+     */
+    hueAdjust(options?: HueAdjustOptions): VideoPipeline {
+        log('hueAdjust started');
+        const {hue = 0, saturation = 1} = options || {};
+
+        // Валидация параметров
+        if (typeof hue !== 'number' || Number.isNaN(hue)) {
+            throw new Error('hueAdjust: hue должен быть числом');
+        }
+        if (typeof saturation !== 'number' || Number.isNaN(saturation) || saturation < 0) {
+            throw new Error('hueAdjust: saturation должен быть числом >= 0');
+        }
+
+        // Если параметры по умолчанию — не добавляем фильтр
+        if (hue === 0 && saturation === 1) {
+            return this;
+        }
+
+        return this.wrap(() => {
+            const inputLabel = this.currentVideoStream;
+            const outputLabel = this.getNewVideoStream();
+
+            const filter: ComplexFilter = {
+                filter: 'hue',
+                inputs: inputLabel,
+                outputs: outputLabel,
+                options: {
+                    h: hue,
+                    s: saturation,
+                },
+            };
+
+            return [filter];
         });
     }
 
