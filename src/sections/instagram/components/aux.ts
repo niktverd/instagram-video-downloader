@@ -18,7 +18,7 @@ import {
     UiGetUserContentResponse,
 } from '#src/types/instagramInsights';
 import {ThrownError} from '#src/utils/error';
-import {log} from '#utils';
+import {log, logError} from '#utils';
 import {getAccounts} from '$/shared';
 
 export const getInstagramInsights = async (
@@ -129,7 +129,7 @@ export const getVideoOwnerByVideoId = async ({
     accessToken,
 }: GetVideoOwnerByVideoIdArgs) => {
     const accountName = '';
-    console.log({reelVideoId});
+    log({reelVideoId});
     try {
         const accountNameResponse = await fetch(
             `https://graph.instagram.com/v22.0/${reelVideoId}?fields=owner&access_token=${accessToken}`,
@@ -144,11 +144,11 @@ export const getVideoOwnerByVideoId = async ({
             },
         );
 
-        console.log({accountNameResponse, accountName});
+        log({accountNameResponse, accountName});
         const accountNameResponseJson = await accountNameResponse.json();
-        console.log({accountNameResponseJson, accountName});
+        log({accountNameResponseJson, accountName});
     } catch (error) {
-        console.error(error);
+        logError(error);
     }
 
     return accountName;
@@ -165,7 +165,7 @@ export const getInstagramAccountInsights = async (
 export const getAllCommentsForPosts = async ({
     accessToken,
 }: GetAllCommentsForPostsParams): IResponse<GetAllCommentsForPostsResponse> => {
-    console.log({accessToken});
+    log({accessToken});
     if (!accessToken) {
         throw new ThrownError('Access token is required', 400);
     }
@@ -177,13 +177,13 @@ export const getAllCommentsForPosts = async ({
             headers: {'Content-Type': 'application/json'},
         },
     );
-    // console.log({userResponse});
+    // log({userResponse});
     if (!userResponse.ok) {
         const errorData = await userResponse.json();
         throw new ThrownError(`Instagram API error: ${JSON.stringify(errorData)}`, 400);
     }
     const userData = await userResponse.json();
-    // console.log({userData});
+    // log({userData});
     const igUserId = userData.id;
     const mediaResponse = await fetch(
         `https://graph.instagram.com/v21.0/${igUserId}/media?fields=id,caption,video_url&access_token=${accessToken}`,
@@ -192,13 +192,13 @@ export const getAllCommentsForPosts = async ({
             headers: {'Content-Type': 'application/json'},
         },
     );
-    // console.log({mediaResponse});
+    // log({mediaResponse});
     if (!mediaResponse.ok) {
         const errorData = await mediaResponse.json();
         throw new ThrownError(`Instagram API error: ${JSON.stringify(errorData)}`, 400);
     }
     const mediaData = await mediaResponse.json();
-    // console.log({mediaData});
+    // log({mediaData});
     const media = mediaData.data || [];
     const commentsByMedia = await Promise.all(
         media.map(async (item: any) => {
@@ -210,12 +210,12 @@ export const getAllCommentsForPosts = async ({
                         headers: {'Content-Type': 'application/json'},
                     },
                 );
-                // console.log({commentsResponse});
+                // log({commentsResponse});
                 if (!commentsResponse.ok) {
                     return {media_id: item.id, comments: [], error: 'Failed to fetch comments'};
                 }
                 const commentsData = await commentsResponse.json();
-                console.log({itemId: item.id, item, commentsData: JSON.stringify(commentsData)});
+                log({itemId: item.id, item, commentsData: JSON.stringify(commentsData)});
                 return {media_id: item.id, comments: commentsData.data || []};
             } catch (err) {
                 return {media_id: item.id, comments: [], error: String(err)};
@@ -469,7 +469,7 @@ export const getInstagramUserContentFirebase = async (
                         }
                     }
                 } catch (error) {
-                    console.log(`Error fetching insights for media ${item.id}:`, error);
+                    log(`Error fetching insights for media ${item.id}:`, error);
                 }
                 // If we get here, there was an error or the media type wasn't supported
                 return item;

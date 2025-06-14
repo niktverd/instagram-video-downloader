@@ -2,7 +2,7 @@ import {Request, Response} from 'express';
 
 import {getLongLivedToken} from '../utils';
 
-import {log} from '#utils';
+import {log, logError} from '#utils';
 
 const REDIRECT_URI =
     'https://instagram-video-downloader-e0875c65c071.herokuapp.com/callback-instagram';
@@ -74,7 +74,7 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
             }).toString(),
         });
         log(response);
-        console.log(response);
+
         const responseJson = await response.json();
         log(responseJson);
         const {access_token: accessToken, user_id: userId} = responseJson;
@@ -95,8 +95,7 @@ export const callbackInstagramLogin = async (req: Request, res: Response) => {
             state: ${state}
         `);
     } catch (err) {
-        log({err});
-        console.log(err);
+        logError({err});
         res.send(JSON.stringify(err));
     }
 };

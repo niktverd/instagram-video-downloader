@@ -5,7 +5,8 @@ import {addBannerInTheEndUnique} from './AddBannerInTheEndUnique';
 // import {coverWithImage} from './CoverWithImage';
 // import {prepareLongVideoWithShortInjections} from './LognVideoWithShortInjections';
 // import {shortify} from './Shortify';
-import {coverWithGreenScenario} from './CoverWithGreen';
+// import {coverWithGreenScenario} from './CoverWithGreen';
+import {coverWithGreenScenarioOptimized} from './CoverWithGreenOptimized';
 import {shortifyUnique} from './ShortifyUnique';
 import {ScenarioFunction} from './types';
 
@@ -48,7 +49,7 @@ export const ScenarioMap: Record<ScenarioType, {scenario: ScenarioFunction; sche
             schema: scenarioShortifyUniqueSchema,
         },
         [ScenarioType.ScenarioCoverWithGreenUnique]: {
-            scenario: coverWithGreenScenario,
+            scenario: coverWithGreenScenarioOptimized,
             schema: scenarioCoverWithGreenUniqueSchema,
         },
     };

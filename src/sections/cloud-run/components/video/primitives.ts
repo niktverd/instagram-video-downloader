@@ -4,6 +4,8 @@ import {dirname, join} from 'path';
 
 import ffmpeg, {FfmpegCommand} from 'fluent-ffmpeg';
 
+import {checkHasAudio, getVideoDuration, getVideoResolution} from './ffprobe.helpers';
+
 import {ThrownError} from '#src/utils/error';
 import {log, logError} from '#utils';
 
@@ -67,71 +69,6 @@ export const prepareOutputFileName = (
     }
 
     throw new ThrownError('Not sufficient data provided', 400);
-};
-
-export const getVideoDuration = (inputPath: string): Promise<number> => {
-    return new Promise((resolve, reject) => {
-        ffmpeg.ffprobe(inputPath, (err, data) => {
-            if (err && !data?.format.duration) {
-                reject(err);
-                return;
-            }
-            resolve(data.format.duration as number);
-        });
-    });
-};
-
-export const getVideoResolution = (input: string): Promise<{width: number; height: number}> => {
-    return new Promise((resolve, reject) => {
-        ffmpeg.ffprobe(input, (err, metadata) => {
-            if (err) {
-                reject(err);
-            } else {
-                const {width, height} =
-                    metadata.streams.find((stream) => stream.codec_type === 'video') || {};
-                if (width && height) {
-                    resolve({width, height});
-                } else {
-                    reject(new Error('Could not determine video resolution'));
-                }
-            }
-        });
-    });
-};
-
-export const logStreamsInfo = async (inputPath: string) => {
-    return new Promise((resolve, reject) => {
-        ffmpeg.ffprobe(inputPath, (err, dataLocal) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            log('Streams of ', inputPath);
-            dataLocal.streams.forEach((stream) => {
-                log(stream);
-            });
-            log('\n\n');
-
-            resolve(true);
-        });
-    });
-};
-
-export const checkHasAudio = (input: string) => {
-    return new Promise<boolean>((resolve, reject) => {
-        ffmpeg.ffprobe(input, (err, dataLocal) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-            resolve(
-                dataLocal.streams.some((stream) => {
-                    //  log({stream});
-                    return stream.codec_type === 'audio';
-                }),
-            );
-        });
-    });
 };
 
 type SplitVideoArgs = {
@@ -227,6 +164,7 @@ type AddSilentAudioStreamArgs = {
     // hasAudio?: boolean;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const addSilentAudioStream = async ({input}: AddSilentAudioStreamArgs): Promise<string> => {
     const hasAudio = await checkHasAudio(input);
     const duration = await getVideoDuration(input);
@@ -262,6 +200,7 @@ export const saveFileList = (listPash: string, ...args: string[]) => {
     writeFileSync(listPash, fileList, 'utf-8');
 };
 
+// already at optimized-primitives-demo.test.ts
 export const concatVideoFromList = (list: string, output: string) => {
     return new Promise((resolve, reject) => {
         const ffmpegCommand = ffmpeg()
@@ -275,6 +214,7 @@ export const concatVideoFromList = (list: string, output: string) => {
     });
 };
 
+// already at optimized-primitives-demo.test.ts
 export const normalizeVideo = (input: string): Promise<string> => {
     const outputPath = prepareOutputFileName(input, {suffix: '_normilized', extention: '.mp4'});
 
@@ -305,6 +245,7 @@ type CoverWithGreenArgs = {
     padding?: number;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const coverWithGreen = async ({
     input,
     green,
@@ -407,6 +348,7 @@ type TrimVideoArgs = {
     outputOverride?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const trimVideo = async ({input, maxDuration}: TrimVideoArgs): Promise<string> => {
     const duration = await getVideoDuration(input);
 
@@ -517,6 +459,7 @@ type ApplyVideoColorCorrectionArgs = {
     pathSuffix?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const applyVideoColorCorrection = async ({
     input,
     brightness = 0,
@@ -592,6 +535,7 @@ export const isolateRedObjects = async ({
     });
 };
 
+// already at optimized-primitives-demo.test.ts
 export const makeItRed = async ({
     input,
     pathSuffix = '',
@@ -633,6 +577,7 @@ type RotateScaleVideoArgs = {
     pathSuffix?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const rotateVideo = async ({
     input,
     angle,
@@ -719,6 +664,7 @@ type ChangeVideoSpeedArgs = {
     outputOverride?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const changeVideoSpeed = async ({
     input,
     speed,
@@ -756,6 +702,7 @@ type GenerateMetadataArgs = {
     iteration?: number;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const generateVideoMetadata = ({
     input = '',
     iteration = 0,
@@ -794,6 +741,7 @@ type ApplyMetadataArgs = {
     outputOverride?: string;
 };
 
+// already at optimized-primitives-demo.test.ts
 export const applyMetadata = async ({
     input,
     metadata,
@@ -819,49 +767,6 @@ export const applyMetadata = async ({
         ffmpegCommand.output(outputPath);
 
         ffmpegCommon(ffmpegCommand, resolve, reject, outputPath, 'applyMetadata').run();
-    });
-};
-
-// eslint-disable-next-line valid-jsdoc
-/**
- * Reads metadata from a video file
- */
-export const readMetadata = (input: string): Promise<Record<string, string>> => {
-    return new Promise((resolve, reject) => {
-        ffmpeg.ffprobe(input, (err, metadata) => {
-            if (err) {
-                reject(err);
-                return;
-            }
-
-            // Extract metadata from format tags
-            const formatMetadata: Record<string, string> = {};
-            if (metadata.format.tags) {
-                Object.entries(metadata.format.tags).forEach(([key, value]) => {
-                    formatMetadata[key] = String(value);
-                });
-            }
-
-            // Also check for metadata in streams (particularly the first video and audio streams)
-            const streamMetadata: Record<string, string> = {};
-            metadata.streams.forEach((stream) => {
-                if (stream.tags) {
-                    Object.entries(stream.tags).forEach(([key, value]) => {
-                        // Prefix stream metadata with stream type to avoid collisions
-                        const streamType = stream.codec_type || 'unknown';
-                        streamMetadata[`${streamType}_${key}`] = String(value);
-                    });
-                }
-            });
-
-            // Combine format and stream metadata, with format metadata taking precedence
-            const result: Record<string, string> = {
-                ...streamMetadata,
-                ...formatMetadata,
-            };
-
-            resolve(result);
-        });
     });
 };
 

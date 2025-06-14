@@ -9,6 +9,8 @@ import {
 } from '../video/primitives';
 import {randomBetween} from '../video/utils';
 
+import {log} from '#utils';
+
 const updateBrightness = async (filePath: string) => {
     return applyVideoColorCorrection({input: filePath, brightness: randomBetween(-0.3, 0.3)});
 };
@@ -71,7 +73,7 @@ export const addRandomEffects = async ({input, countOfEffects = 1, text}: AddRan
 
     for (let i = 0; i < countOfEffects; i++) {
         output = await suffled[i](output);
-        console.log('\n\n', output);
+        log('\n\n', output);
     }
 
     const disableText = true;
