@@ -7,6 +7,8 @@ import {shuffle} from 'lodash';
 import {checkHasAudio, getVideoDuration, getVideoResolution} from './ffprobe.helpers';
 import {randomBetween} from './utils';
 
+import {logError} from '#utils';
+
 interface ComplexFilter {
     filter: string;
     inputs: string | string[];
@@ -183,18 +185,18 @@ export class VideoPipeline {
             // Условия для логирования событий
             if (process.env.ENABLE_START === 'true') {
                 command.on('start', (cmdLine: string) => {
-                    console.log(`FFmpeg process started: ${cmdLine}`);
+                    log(`FFmpeg process started: ${cmdLine}`);
                 });
             }
             if (process.env.ENABLE_PROGRESS === 'true') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 command.on('progress', (progress: any) => {
-                    console.log(`VideoPipeline.run progress: ${progress.percent}%`);
+                    log(`VideoPipeline.run progress: ${progress.percent}%`);
                 });
             }
             if (process.env.ENABLE_STDERR === 'true') {
                 command.on('stderr', (stderrLine: string) => {
-                    console.error('FFmpeg stderr:', stderrLine);
+                    logError('FFmpeg stderr:', stderrLine);
                 });
             }
 
@@ -205,11 +207,11 @@ export class VideoPipeline {
 
             command
                 .on('end', () => {
-                    console.log(`VideoPipeline.run completed successfully`);
+                    log(`VideoPipeline.run completed successfully`);
                     resolve(output);
                 })
                 .on('error', (err: Error) => {
-                    console.error(`VideoPipeline.run failed:`, err);
+                    logError(`VideoPipeline.run failed:`, err);
                     reject(err);
                 })
                 .run();

@@ -59,7 +59,7 @@ jobs:
             --memory 1Gi \
             --cpu 1 \
             --max-instances 10 \
-            --timeout=1000 \
+            --timeout=200 \
             --concurrency=1 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest,MAIN_BACKEND_ENDPOINT=MAIN_BACKEND_ENDPOINT:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
@@ -81,7 +81,7 @@ jobs:
             --memory 2Gi \
             --cpu 1 \
             --max-instances 10 \
-            --timeout=1000 \
+            --timeout=300 \
             --concurrency=1 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest,MAIN_BACKEND_ENDPOINT=MAIN_BACKEND_ENDPOINT:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \
@@ -103,7 +103,7 @@ jobs:
             --memory 4Gi \
             --cpu 2 \
             --max-instances 5 \
-            --timeout=1000 \
+            --timeout=400 \
             --concurrency=1 \
             --update-secrets FIREBASE_CONFIG=FIREBASE_CONFIG:latest,FIREBASE_CONFIG_REELS_CREATOR=FIREBASE_CONFIG_REELS_CREATOR:latest,POSTGRES_CONFIG=POSTGRES_CONFIG:latest,MAIN_BACKEND_ENDPOINT=MAIN_BACKEND_ENDPOINT:latest \
             --set-env-vars APP_ENV=cloud-run,PUBSUB_TOPIC_NAME=$TOPIC_NAME,ENABLE_STDERR=false,ENABLE_PROGRESS=false,ENABLE_START=false,ENABLE_DOWNLOAD_VIDEO=false,ENABLE_RUN_SCENARIO_VIDEO=false,ENABLE_PUBSUB=true \

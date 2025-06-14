@@ -1,4 +1,5 @@
 import {FetchRoutes, Method, defaultHeaders} from './constants';
+import {log} from './logging';
 
 const API_ENDPOINT = process.env.MAIN_BACKEND_ENDPOINT;
 
@@ -22,7 +23,7 @@ const prepareFetchUrl = (
 
     const url = `${API_ENDPOINT}/api${route}?${searchParams} `;
     // eslint-disable-next-line no-console
-    console.log(url);
+    log(url);
 
     return url;
 };

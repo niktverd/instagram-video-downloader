@@ -1,5 +1,7 @@
 import ffmpeg from 'fluent-ffmpeg';
 
+import {log} from '#utils';
+
 /**
  * Получает разрешение (ширину и высоту) первого видеопотока файла.
  * @param input - Путь к видеофайлу
@@ -83,13 +85,13 @@ export async function logStreamsInfo(input: string): Promise<boolean> {
                 return;
             }
             // eslint-disable-next-line no-console
-            console.log('Streams of ', input);
+            log('Streams of ', input);
             dataLocal.streams.forEach((stream) => {
                 // eslint-disable-next-line no-console
-                console.log(stream);
+                log(stream);
             });
             // eslint-disable-next-line no-console
-            console.log('\n\n');
+            log('\n\n');
             resolve(true);
         });
     });
@@ -102,7 +104,7 @@ export async function logStreamsInfo(input: string): Promise<boolean> {
  * @throws Если ffprobe завершился с ошибкой
  * @example
  *   const meta = await readMetadata('video.mp4');
- *   console.log(meta.title, meta.artist);
+ *   log(meta.title, meta.artist);
  */
 export async function readMetadata(input: string): Promise<Record<string, string>> {
     return new Promise((resolve, reject) => {
