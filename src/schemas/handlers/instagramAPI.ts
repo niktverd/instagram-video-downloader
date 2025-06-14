@@ -16,9 +16,17 @@ export const GetAllCommentsForPostsParamsSchema = z
 export const GetAllCommentsForPostsResponseSchema = z.any();
 
 export const UiGetInsightsParamsSchema = z.object({
-    id: z.string(),
+    id: z.number(),
 });
-export const UiGetInsightsResponseSchema = z.any();
+export const UiGetInsightsResponseSchema = z.object({
+    data: z.array(
+        z.object({
+            name: z.string(),
+            period: z.string(),
+            values: z.array(z.object({value: z.number(), end_time: z.string()})),
+        }),
+    ),
+});
 
 export const UiGetInstagramMediaParamsSchema = z.object({
     id: z.string(),
