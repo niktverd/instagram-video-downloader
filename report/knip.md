@@ -34,19 +34,28 @@
 | :----- | :----------- | :------- |
 | podman | package.json | error    |
 
-## Unused exports (9)
+## Unused exports (10)
 
 | Name            | Location                                                              | Severity |
 | :-------------- | :-------------------------------------------------------------------- | :------- |
 | getSvg          | src/sections/cloud-run/components/reels-creator/create-video.ts:22:17 | error    |
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
+| logStreamsInfo  | src/sections/cloud-run/components/video/ffprobe.helpers.ts:80:23      | error    |
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
 | default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
 | default         | src/models/InstagramLocation.ts:24:8                                  | error    |
-| fetchDelete     | src/utils/fetchHelpers.ts:80:14                                       | error    |
+| fetchDelete     | src/utils/fetchHelpers.ts:81:14                                       | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
 | default         | src/models/User.ts:59:8                                               | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
+
+## Unused exported types (3)
+
+| Name                   | Location                                                              | Severity |
+| :--------------------- | :-------------------------------------------------------------------- | :------- |
+| ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:64:18 | error    |
+| HueAdjustOptions       | src/sections/cloud-run/components/video/primitives-optimized.ts:79:18 | error    |
+| BoxBlurOptions         | src/sections/cloud-run/components/video/primitives-optimized.ts:72:18 | error    |
 
 ## Unused exported enum members (8)
 

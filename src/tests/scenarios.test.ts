@@ -5,6 +5,7 @@ import {Timestamp} from 'firebase/firestore/lite';
 
 import {getWorkingDirectoryForVideo, log, saveFileToDisk} from '../utils';
 
+import {coverWithGreenScenarioOptimized} from '#src/sections/cloud-run/components/scenarios/CoverWithGreenOptimized';
 import {ScenarioName, ScenarioType} from '#src/types/enums';
 import {addBannerInTheEndUnique} from '$/cloud-run/components/scenarios/AddBannerInTheEndUnique';
 import {coverWithGreenScenario} from '$/cloud-run/components/scenarios/CoverWithGreen';
@@ -205,6 +206,50 @@ const testCoverWithGreen = async (
     });
 };
 
+const testCoverWithGreenOptimized = async (
+    filePath: string,
+    loopGreen: 'once' | 'loop' | 'random',
+    whereToPutGreen?: 'start' | 'middle' | 'end',
+) => {
+    const directoryName = `test-coverWithGreen-${loopGreen}${
+        whereToPutGreen ? `-${whereToPutGreen}` : ''
+    }`;
+
+    const basePath = getWorkingDirectoryForVideo(directoryName);
+    await coverWithGreenScenarioOptimized({
+        source: {
+            id: 123,
+            sources: {
+                instagramReel: {
+                    url: filePath,
+                    senderId: '123',
+                    owner: '123',
+                    title: 'test',
+                    originalHashtags: [],
+                },
+            },
+            firebaseUrl: sources.blackNYellow,
+            bodyJSONString: {},
+            attempt: 0,
+            lastUsed: createTimestamp().toString(),
+        },
+        scenario: {
+            id: 1,
+            slug: 'cover-with-green-unique',
+            type: ScenarioType.ScenarioCoverWithGreenUnique,
+            onlyOnce: false,
+            enabled: true,
+            texts: {},
+            options: {
+                greenVideoUrls: greenVideoUrls,
+                loopGreen,
+                whereToPutGreen: whereToPutGreen || 'start',
+            },
+        },
+        basePath,
+    });
+};
+
 const runTests = async () => {
     const runAddBannerInTheEndUnique = false;
     if (runAddBannerInTheEndUnique) {
@@ -231,6 +276,15 @@ const runTests = async () => {
         // Test loop and random modes
         await testCoverWithGreen(sources.blackNRed, 'loop');
         await testCoverWithGreen(sources.blackNYellow, 'random');
+    }
+
+    const runCoverWithGreenOptimized = true;
+    if (runCoverWithGreenOptimized) {
+        await testCoverWithGreenOptimized(sources.blackNYellow, 'once', 'start');
+        // await testCoverWithGreenOptimized(sources.blackNRed, 'once', 'middle');
+        // await testCoverWithGreenOptimized(sources.orange, 'once', 'end');
+        // await testCoverWithGreenOptimized(sources.blackNRed, 'loop');
+        // await testCoverWithGreenOptimized(sources.blackNYellow, 'random');
     }
 
     log('runTest finished');

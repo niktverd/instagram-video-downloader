@@ -1,6 +1,8 @@
 import {existsSync, mkdirSync} from 'fs';
 import path from 'path';
 
+import {readMetadata} from '../../src/sections/cloud-run/components/video/ffprobe.helpers';
+
 import {getRandomElementOfArray, log, saveFileToDisk} from '#utils';
 import {
     addTextToVideo,
@@ -11,7 +13,6 @@ import {
     generateVideoMetadata,
     hueAdjustVideo,
     isolateRedObjects,
-    readMetadata,
     rotateVideo,
 } from '$/cloud-run/components/video';
 
@@ -421,3 +422,6 @@ const runTests = async () => {
 };
 
 runTests();
+
+//  file /Users/niktverd/code/instagram-video-downloader/src/tests/tests-data/optimized-demo-output-2.mp4.
+// /Users/niktverd/code/instagram-video-downloader/src/tests/tests-data/optimized-demo-input.mp4

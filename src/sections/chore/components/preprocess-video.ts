@@ -14,7 +14,7 @@ import {
 import knex from 'knex';
 import {shuffle} from 'lodash';
 
-import {getVideoDuration} from '../../cloud-run/components/video/primitives';
+import {getVideoDuration} from '../../cloud-run/components/video';
 import {uploadYoutubeVideo} from '../../youtube/components/youtube';
 
 import {firestore} from '#config/firebase';
