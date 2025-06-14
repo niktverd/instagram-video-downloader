@@ -53,9 +53,9 @@
 
 | Name                   | Location                                                              | Severity |
 | :--------------------- | :-------------------------------------------------------------------- | :------- |
-| ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:60:18 | error    |
-| HueAdjustOptions       | src/sections/cloud-run/components/video/primitives-optimized.ts:75:18 | error    |
-| BoxBlurOptions         | src/sections/cloud-run/components/video/primitives-optimized.ts:68:18 | error    |
+| ColorCorrectionOptions | src/sections/cloud-run/components/video/primitives-optimized.ts:62:18 | error    |
+| HueAdjustOptions       | src/sections/cloud-run/components/video/primitives-optimized.ts:77:18 | error    |
+| BoxBlurOptions         | src/sections/cloud-run/components/video/primitives-optimized.ts:70:18 | error    |
 
 ## Unused exported enum members (8)
 

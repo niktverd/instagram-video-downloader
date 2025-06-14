@@ -1085,7 +1085,7 @@ const runOptimizedDemoTests = async () => {
         await runChangeSpeedTests();
     }
 
-    const runBoxBlurHueAdjustTestsFlag = true;
+    const runBoxBlurHueAdjustTestsFlag = false;
     if (runBoxBlurHueAdjustTestsFlag) {
         await runBoxBlurHueAdjustTests();
     }

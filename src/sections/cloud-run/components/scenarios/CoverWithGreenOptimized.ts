@@ -54,21 +54,22 @@ export const coverWithGreenScenarioOptimized: ScenarioFunction = async ({
 
         let startTime = 0;
 
+        const mainVideoDuration = mainVideo.getDuration();
+        const greenVideoDuration = greenVideo.getDuration();
+
+        if (mainVideoDuration * 0.9 < greenVideoDuration) {
+            greenVideo.changeSpeed(greenVideoDuration / (mainVideoDuration * 0.9));
+        }
+
         if (whereToPutGreen === 'start') {
             startTime = 0;
-        } else if (
-            whereToPutGreen === 'end' &&
-            mainVideo.compoundDuration &&
-            greenVideo.compoundDuration
-        ) {
-            startTime = Math.max(0, mainVideo.compoundDuration - greenVideo.compoundDuration);
-        } else if (
-            whereToPutGreen === 'middle' &&
-            mainVideo.compoundDuration &&
-            greenVideo.compoundDuration
-        ) {
-            startTime = Math.max(0, (mainVideo.compoundDuration - greenVideo.compoundDuration) / 2);
+        } else if (whereToPutGreen === 'end') {
+            startTime = Math.max(0, mainVideoDuration - greenVideoDuration);
+        } else if (whereToPutGreen === 'middle') {
+            startTime = Math.max(0, (mainVideoDuration - greenVideoDuration) / 2);
         }
+
+        mainVideo.applyRandomEffects(3);
 
         mainVideo.overlayWith(greenVideo, {
             startTime,
@@ -101,21 +102,25 @@ export const coverWithGreenScenarioOptimized: ScenarioFunction = async ({
             });
             await greenVideo.init(tempFilePath2);
 
+            const mainVideoDuration = mainVideo.getDuration();
+            const greenVideoDuration = greenVideo.getDuration();
+
             // Calculate how many times we need to loop this video
-            const loopCount = Math.ceil(mainVideo.compoundDuration! / greenVideo.compoundDuration!);
+            const loopCount = Math.ceil(mainVideoDuration / greenVideoDuration);
 
             greenVideo.repeatSelf(loopCount);
 
             mainVideo.overlayWith(greenVideo, {
                 startTime: 0,
-                duration: mainVideo.compoundDuration!,
+                duration: mainVideoDuration,
                 chromakey: true,
                 padding: 0,
                 audioMode: 'mix',
             });
         } else if (loopGreen === 'random') {
             // Keep adding random green videos until we cover the main video duration
-            while (totalGreenDuration < mainVideo.compoundDuration!) {
+            const mainVideoDuration = mainVideo.getDuration();
+            while (totalGreenDuration < mainVideoDuration) {
                 const greenVideoUrl = getRandomElementOfArray(greenVideoUrls);
                 const tempFilePathGreen = join(basePath, `green_${greenVideoIndex}.mp4`);
                 await saveFileToDisk(greenVideoUrl, tempFilePathGreen);
@@ -124,14 +129,15 @@ export const coverWithGreenScenarioOptimized: ScenarioFunction = async ({
                     height: 1280,
                 });
                 await greenVideo.init(tempFilePathGreen);
+                const greenVideoDuration = greenVideo.getDuration();
                 mainVideo.overlayWith(greenVideo, {
                     startTime: totalGreenDuration,
-                    duration: totalGreenDuration + greenVideo.compoundDuration!,
+                    duration: totalGreenDuration + greenVideoDuration,
                     chromakey: true,
                     padding: 0,
                     audioMode: 'mix',
                 });
-                totalGreenDuration += greenVideo.compoundDuration!;
+                totalGreenDuration += greenVideoDuration;
                 greenVideoIndex++;
             }
         }

@@ -39,3 +39,6 @@ reqId.log
 # Shared
 sharedTypes
 tasks
+
+src/tests/tests-data/*
+!src/tests/tests-data/Readme.md

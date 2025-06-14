@@ -2,8 +2,10 @@ import {log} from 'console';
 import * as crypto from 'crypto';
 
 import ffmpeg from 'fluent-ffmpeg';
+import {shuffle} from 'lodash';
 
 import {checkHasAudio, getVideoDuration, getVideoResolution} from './ffprobe.helpers';
+import {randomBetween} from './utils';
 
 interface ComplexFilter {
     filter: string;
@@ -212,6 +214,10 @@ export class VideoPipeline {
                 })
                 .run();
         });
+    }
+
+    getDuration(): number {
+        return this.compoundDuration ?? this.duration ?? 0;
     }
 
     makeItRed(): VideoPipeline {
@@ -950,6 +956,49 @@ export class VideoPipeline {
         });
     }
 
+    /**
+     * Применяет случайные эффекты к видеопотоку
+     * @param countOfEffects количество эффектов для применения (по умолчанию 1)
+     * @returns this (для чейнинга)
+     * @throws Error если countOfEffects не является положительным целым числом
+     */
+    applyRandomEffects(countOfEffects = 1): VideoPipeline {
+        // Валидация параметров
+        if (
+            typeof countOfEffects !== 'number' ||
+            !Number.isInteger(countOfEffects) ||
+            countOfEffects < 0
+        ) {
+            throw new Error(
+                'applyRandomEffects: countOfEffects должен быть положительным целым числом',
+            );
+        }
+
+        if (countOfEffects === 0) {
+            // Если 0 эффектов, все равно применяем скорость
+            this.changeSpeed(randomBetween(0.87, 1.15));
+            return this;
+        }
+
+        // Получаем случайный порядок эффектов
+        const shuffledEffects = shuffle(this.effectMethods);
+
+        // Применяем указанное количество эффектов (или все доступные, если запрошено больше)
+        const effectsToApply = Math.min(countOfEffects, shuffledEffects.length);
+
+        for (let i = 0; i < effectsToApply; i++) {
+            shuffledEffects[i].call(this);
+        }
+
+        log('applyRandomEffects finished', {effectsToApply});
+        log('this.complexFilters', this.complexFilters);
+
+        // Автоматически применяем изменение скорости
+        this.changeSpeed(randomBetween(0.87, 1.15));
+
+        return this;
+    }
+
     private getNewAudioStream(): string {
         this.currentStreamIndex++;
         const streamLabel = `[a_${this.prefix}_${this.currentStreamIndex}]`;
@@ -968,6 +1017,53 @@ export class VideoPipeline {
         const filters = fn();
         this.complexFilters.push(...filters);
         return this;
+    }
+
+    private applyRandomBrightness(): VideoPipeline {
+        return this.colorCorrect({brightness: randomBetween(-0.3, 0.3)});
+    }
+
+    private applyRandomContrast(): VideoPipeline {
+        return this.colorCorrect({contrast: randomBetween(0.7, 1.5)});
+    }
+
+    private applyRandomSaturation(): VideoPipeline {
+        return this.colorCorrect({saturation: randomBetween(0.5, 1.5)});
+    }
+
+    private applyRandomGamma(): VideoPipeline {
+        return this.colorCorrect({gamma: randomBetween(0.7, 1.3)});
+    }
+
+    private applyRandomRotation(): VideoPipeline {
+        return this.rotate(randomBetween(-10, 10));
+    }
+
+    private applyRandomHue(): VideoPipeline {
+        return this.hueAdjust({
+            hue: randomBetween(-10, 10),
+            saturation: randomBetween(0.5, 1.5),
+        });
+    }
+
+    private applyRandomBlur(): VideoPipeline {
+        return this.boxBlur({
+            iterations: Math.round(randomBetween(1, 2)),
+            boxHeight: Math.round(randomBetween(1, 2)),
+            boxWidth: Math.round(randomBetween(1, 2)),
+        });
+    }
+
+    private get effectMethods() {
+        return [
+            this.applyRandomBrightness,
+            this.applyRandomContrast,
+            this.applyRandomSaturation,
+            this.applyRandomGamma,
+            this.applyRandomRotation,
+            this.applyRandomHue,
+            this.applyRandomBlur,
+        ];
     }
 
     // eslint-disable-next-line valid-jsdoc
