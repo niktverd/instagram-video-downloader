@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+import {zodOptionalNumber} from './utils';
+
 export const GetInstagramAccountInsightsParamsSchema = z
     .object({
         accessToken: z.string(),
@@ -48,3 +50,15 @@ export const UiGetUserContentResponseSchema = z.any();
 
 export const MessageWebhookV3Schema = z.any();
 export const MessageWebhookV3ResponseSchema = z.any();
+
+export const UiGetInsightsInstagramScheduleParamsSchema = z.object({});
+export const UiGetInsightsInstagramScheduleResponseSchema = z.any();
+
+export const UiGetInsightsInstagramReportParamsSchema = z.object({
+    year: zodOptionalNumber(),
+    month: zodOptionalNumber(),
+});
+export const UiGetInsightsInstagramReportResponseSchema = z.record(
+    z.string(),
+    z.record(z.string(), z.record(z.string(), z.number())),
+);

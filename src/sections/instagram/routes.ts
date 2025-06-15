@@ -2,7 +2,8 @@ import {Router as expressRouter} from 'express';
 
 import {
     callbackInstagramLogin,
-    getInsightsInstagramSchedule,
+    getInsightsInstagramReportGet,
+    getInsightsInstagramScheduleGet,
     hubChallangeWebhook,
     instagramLogin,
     messageWebhookV3Post,
@@ -20,7 +21,8 @@ router.get('/publish', publishIntagramV4Post);
 router.get('/remove-published', removePublishedFromFirebase);
 router.get('/login', instagramLogin);
 router.get('/callback', callbackInstagramLogin);
-router.get('/get-insights-schedule', getInsightsInstagramSchedule);
+router.get('/get-insights-schedule', getInsightsInstagramScheduleGet);
+router.get('/get-insights-report', getInsightsInstagramReportGet);
 
 // POST routes
 router.post('/webhooks', messageWebhookV3Post);

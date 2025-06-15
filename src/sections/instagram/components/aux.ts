@@ -81,7 +81,7 @@ export const getInstagramInsights = async (
 
 export const getInstagramMedia = async (accessToken: string) => {
     const mediaResponse = await fetch(
-        `https://graph.instagram.com/v21.0/me/media?access_token=${accessToken}`,
+        `https://graph.instagram.com/v22.0/me/media?access_token=${accessToken}`,
         {
             method: 'GET',
             headers: {
@@ -101,7 +101,7 @@ export const getInstagramMedia = async (accessToken: string) => {
 export const getInstagramUserNameById = async (userId: string, accessToken: string) => {
     // email_contacts, phone_call_clicks, text_message_clicks, get_directions_clicks, website_clicks, profile_views
     const userData = await fetch(
-        `https://graph.instagram.com/v21.0/${userId}?access_token=${accessToken}`,
+        `https://graph.instagram.com/v22.0/${userId}?access_token=${accessToken}`,
         {
             method: 'GET',
             headers: {
@@ -186,7 +186,7 @@ export const getAllCommentsForPosts = async ({
     // log({userData});
     const igUserId = userData.id;
     const mediaResponse = await fetch(
-        `https://graph.instagram.com/v21.0/${igUserId}/media?fields=id,caption,video_url&access_token=${accessToken}`,
+        `https://graph.instagram.com/v22.0/${igUserId}/media?fields=id,caption,video_url&access_token=${accessToken}`,
         {
             method: 'GET',
             headers: {'Content-Type': 'application/json'},
@@ -204,7 +204,7 @@ export const getAllCommentsForPosts = async ({
         media.map(async (item: any) => {
             try {
                 const commentsResponse = await fetch(
-                    `https://graph.instagram.com/v21.0/${item.id}/comments?fields=id,text&access_token=${accessToken}`,
+                    `https://graph.instagram.com/v22.0/${item.id}/comments?fields=id,text&access_token=${accessToken}`,
                     {
                         method: 'GET',
                         headers: {'Content-Type': 'application/json'},
@@ -386,7 +386,8 @@ export const getInstagramUserContentFirebase = async (
                             // 'follows',
                             // 'profile_visits',
                             // 'profile_activity',
-                            // 'clips_replays_count',
+                            // 'clips_replays_count',,
+                            // 'ig_reels_aggregated_all_plays_count',,
                             // 'thread_replies',
                             // 'reposts',
                             // 'quotes',

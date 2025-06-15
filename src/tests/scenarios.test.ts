@@ -281,10 +281,10 @@ const runTests = async () => {
     const runCoverWithGreenOptimized = true;
     if (runCoverWithGreenOptimized) {
         await testCoverWithGreenOptimized(sources.blackNYellow, 'once', 'start');
-        // await testCoverWithGreenOptimized(sources.blackNRed, 'once', 'middle');
-        // await testCoverWithGreenOptimized(sources.orange, 'once', 'end');
-        // await testCoverWithGreenOptimized(sources.blackNRed, 'loop');
-        // await testCoverWithGreenOptimized(sources.blackNYellow, 'random');
+        await testCoverWithGreenOptimized(sources.blackNRed, 'once', 'middle');
+        await testCoverWithGreenOptimized(sources.orange, 'once', 'end');
+        await testCoverWithGreenOptimized(sources.blackNRed, 'loop');
+        await testCoverWithGreenOptimized(sources.blackNYellow, 'random');
     }
 
     log('runTest finished');

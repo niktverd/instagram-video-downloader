@@ -1,5 +1,7 @@
 import {Router as expressRouter} from 'express';
 
+import {getInsightsInstagramReportGet} from '../instagram/controllers';
+
 import {
     createAccountPost,
     createCloudRunScenarioExecutionPost,
@@ -130,5 +132,7 @@ router.delete('/delete-prepared-video', deletePreparedVideoDelete);
 router.post('/create-cloud-run-scenario-execution', createCloudRunScenarioExecutionPost);
 router.get('/get-cloud-run-scenario-execution', getAllCloudRunScenarioExecutionGet);
 router.patch('/update-cloud-run-scenario-execution', updateCloudRunScenarioExecutionStatusPatch);
+
+router.get('/get-insights-report', getInsightsInstagramReportGet);
 
 export default router;
