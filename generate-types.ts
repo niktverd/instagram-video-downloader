@@ -108,7 +108,7 @@ function copyDirWithProcessing(srcDir: string, destDir: string) {
 // MAIN COPY LOGIC
 const sharedTypesDir = path.resolve(__dirname, 'sharedTypes');
 const srcTypesDir = path.resolve(__dirname, 'src/types');
-const srcSchemasDir = path.resolve(__dirname, 'src/schemas');
+const srcSchemasDir = path.resolve(__dirname, 'src/types/schemas');
 const destTypesDir = path.join(sharedTypesDir, 'types');
 const destSchemasDir = path.join(sharedTypesDir, 'schemas');
 

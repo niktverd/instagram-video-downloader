@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {OrderByDirection} from 'objection';
 
-import {Source} from '../models/Source';
+import {Source} from '../types/models/Source';
 
+import {ApiFunctionPrototype} from '#src/types/common';
 import {
     CreateSourceParamsSchema,
     GetAllSourcesParamsSchema,
@@ -10,8 +11,7 @@ import {
     DeleteSourceParamsSchema as _DeleteSourceParamsSchema,
     GetOneSourceParamsSchema as _GetOneSourceParamsSchema,
     GetSourceByIdParamsSchema as _GetSourceByIdParamsSchema,
-} from '#schemas/handlers/source';
-import {ApiFunctionPrototype} from '#src/types/common';
+} from '#src/types/schemas/handlers/source';
 import {
     CreateSourceParams,
     CreateSourceResponse,

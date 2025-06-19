@@ -19,7 +19,7 @@ import {
     HasPreparedVideoBeenCreatedParamsSchema,
     PreparedVideosStatisticsParamsSchema,
     UpdatePreparedVideoParamsSchema,
-} from '#schemas/handlers/preparedVideo';
+} from '#src/types/schemas/handlers/preparedVideo';
 import {
     CreatePreparedVideoParams,
     CreatePreparedVideoResponse,

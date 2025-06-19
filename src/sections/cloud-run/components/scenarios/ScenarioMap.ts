@@ -10,6 +10,7 @@ import {coverWithGreenScenarioOptimized} from './CoverWithGreenOptimized';
 import {shortifyUnique} from './ShortifyUnique';
 import {ScenarioFunction} from './types';
 
+import {ScenarioType} from '#src/types/enums';
 import {
     // ScenarioType,
     // scenarioAddBannerAtTheEndSchema,
@@ -19,8 +20,7 @@ import {
     // scenarioLongVideoWithInjectionsSchema,
     // scenarioShortifySchema,
     scenarioShortifyUniqueSchema,
-} from '#src/schemas/scenario';
-import {ScenarioType} from '#src/types/enums';
+} from '#src/types/schemas/scenario';
 
 export const ScenarioMap: Record<ScenarioType, {scenario: ScenarioFunction; schema: z.ZodSchema}> =
     {

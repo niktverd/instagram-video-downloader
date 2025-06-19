@@ -7,8 +7,8 @@ import {
     GetUserByEmailParamsSchema,
     GetUserByIdParamsSchema,
     UpdateUserParamsSchema,
-} from '#schemas/handlers/user';
-import {UserSchema} from '#schemas/models';
+} from '#src/types/schemas/handlers/user';
+import {UserSchema} from '#src/types/schemas/models';
 
 export type IUser = z.infer<typeof UserSchema>;
 

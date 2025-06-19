@@ -15,7 +15,7 @@ import {
     GetOneSourceParamsSchema,
     SourceStatisticsParamsSchema,
     UpdateSourceParamsSchema,
-} from '#schemas/handlers/source';
+} from '#src/types/schemas/handlers/source';
 import {
     CreateSourceParams,
     CreateSourceResponse,

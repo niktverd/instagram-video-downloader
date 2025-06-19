@@ -5,13 +5,13 @@ import {
     testGreenScreen,
 } from '../components/mediaPosts';
 
+import {wrapper} from '#src/db/utils';
 import {
     ConvertImageToVideoParamsSchema,
     GetAllMediaPostsParamsSchema,
     SplitVideoInTheMiddleParamsSchema,
     TestGreenScreenParamsSchema,
-} from '#schemas/handlers/uiCommon';
-import {wrapper} from '#src/db/utils';
+} from '#src/types/schemas/handlers/uiCommon';
 import {
     ConvertImageToVideoParams,
     ConvertImageToVideoResponse,

@@ -1,0 +1,187 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Rule: Project Exploration for PRD Preparation
+
+## Goal
+
+To guide the AI assistant in exploring a codebase to gather all necessary technical knowledge required for creating a Product Requirements Document (PRD). The assistant will interact with the codebase using terminal commands, analyze source code, read imports and package dependencies, and output a structured exploration report in Markdown format.
+
+## Trigger
+
+Use this rule when the user describes a task like:
+- "Explore the codebase for feature X"
+- "I want to gather technical details before writing a PRD"
+- "Help understand how the project is built related to feature Y"
+
+## Required Input from User
+
+Before starting, ask the user to describe the objective. Begin with:
+
+> To start exploration, please describe the feature or problem you'd like to investigate for the PRD. What’s the high-level goal and expected functionality?
+
+Ask follow-up clarifying questions if scope is unclear:
+
+- What keywords, functions, or names should I grep or search for?
+- Should I focus on frontend, backend or both?
+- Is there a known module, API, or folder related to this feature?
+
+## Output
+
+A Markdown file named explore-[feature-name].md, saved inside /tasks/, containing labeled exploratory findings.
+
+Example path: /tasks/explore-user-authentication.md
+
+Output must include:
+- What was found (source snippet, filename, or terminal output)
+- How it was found (command or path)
+- Why it matters (justification related to goal of feature/PRD)
+
+## Process Overview
+
+1. Clarify the user’s investigation goal.
+2. Create output file: /tasks/explore-[feature-name].md
+3. Use terminal/search tools to explore relevant aspects of the codebase.
+4. Trace relevant import chains.
+5. Identify and analyze installed libraries.
+6. Summarize findings and suggest next steps.
+
+## Exploration Procedure
+
+### 1. Project Structure Overview
+
+- Run:
+  ```bash
+  ls -laR src
+  ```
+- Capture and summarize layout of key folders (e.g., components, api, services, routes).
+
+Markdown section:
+
+## 1. Project Structure Overview
+
+[Relevant folders and filepath patterns]
+
+How: ls -laR src  
+Why: Identified main areas involved in the feature.
+
+### 2. Code Search (Keyword Based)
+
+- Use:
+  ```bash
+  grep -rnw '.' -e 'SEARCH_TERM' --include='*.{js,ts,jsx,tsx}'
+  ```
+- For each substantial result:
+  - Copy code block with context
+  - Determine intent (e.g., component rendering, data fetching, route logic)
+
+Markdown section:
+
+## 2. Code Snippet: [filename: function/component name]
+
+[Relevant code excerpt here]
+
+How: grep -rnw '.' -e '[SEARCH_TERM]'  
+Why: This logic appears to drive/passwords the behavior mentioned in the PRD description.
+
+### 3. Import Chain Tracing
+
+- For every file found above:
+  - Read and analyze import/require/include statements at the top
+  - Evaluate relevance of each dependency/module
+  - Recursively follow critical imports (up to 3 levels)
+
+Include this inside Section 2 for each file:
+
+### Relevant Imports
+
+- `import { apiClient } from '../utils/api';`  
+  Actionable: May handle server communication – worth investigating how data flows.
+- `import { formatMoney } from '../../helpers/format';`  
+  Actionable: Could impact UI rendering – check if flexible for the proposed PRD.
+
+### 4. Dependency Analysis
+
+- Analyze dependencies via:
+  ```bash
+  cat package.json | grep -E '"(dependencies|devDependencies)"' -A 50
+  ```
+- Or use:
+  ```bash
+  jq .dependencies package.json | sort
+  ```
+
+Focus on libraries related to:
+- API requests (axios, swr, graphql)
+- State management (redux, zustand)
+- UI (material-ui, tailwind)
+- Feature-specific libs (auth, charts, etc.)
+
+Markdown section:
+
+## 3. Dependency Analysis
+
+[Relevant libs: name + version]
+
+How: grep/jq from package.json  
+Why: These packages may affect capability, constraints, or synergy with the feature.
+
+### 5. Summary & Next Steps
+
+After all exploration steps:
+
+- Point out systems/modules most crucial to the PRD
+- Recommend specific files/modules to explore more
+- Flag ambiguities or tech limitations to clarify with stakeholder
+
+Markdown:
+
+## 4. Summary and Next Steps
+
+Key findings:
+- [Module/file] appears to contain most core logic
+- [Utility/dependency] supports feature formatting
+
+Open questions:
+- Should [X behavior] include [Y edge case]?
+- Need confirmation on using [library or service]
+
+Suggested Next Steps:
+1. Review file [path/to/component.tsx]
+2. Validate assumptions with product owner
+
+## Execution Principles
+
+- Minimum input, maximum insight: ask only for what's critical
+- Filter noise: ignore test/config/docs unless explicitly required
+- Avoid duplication in analysis
+- Max depth for import graphs: 3 unless behavior dictates more
+- Do not start PRD generation yet — this is a data-gathering step
+- Save .md file and alert user when finished
+
+
+## Sample Command Set
+
+```bash
+# Explore keywords
+grep -rnw '.' -e 'allAccounts' --include='*.{ts,tsx}'
+
+# Check dependencies
+cat package.json | grep dependencies -A 20
+
+# Explore folder structure
+ls -laR src
+
+# Trace imports
+grep -rnw '.' -e 'import.*apiClient' --include='*.ts'
+```
+
+## End of Rule
+
+💡 Как использовать:
+
+Сохраните это правило как .cursor-rules.md в корневой директории проекта. Cursor автоматически активирует его при соответствующем пользовательском запросе, например "проведи исследование кода для подготовки к PRD".
+
+Если вам нужно, я могу также сразу сгенерировать шаблон Markdown-отчета по конкретной фиче, просто скажите название.

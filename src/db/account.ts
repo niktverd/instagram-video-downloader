@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {omit} from 'lodash';
 
-import {Account} from '../models/Account';
+import {Account} from '../types/models/Account';
 
 import {
     CreateAccountParams,

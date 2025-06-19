@@ -15,7 +15,7 @@ import {
     GetInstagramMediaContainerByIdParamsSchema,
     InstagramMediaContainersStatisticsParamsSchema,
     UpdateInstagramMediaContainerParamsSchema,
-} from '#schemas/handlers/instagramMediaContainer';
+} from '#src/types/schemas/handlers/instagramMediaContainer';
 import {
     CreateInstagramMediaContainerParams,
     CreateInstagramMediaContainerResponse,

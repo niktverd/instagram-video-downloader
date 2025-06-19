@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {ScenarioSchema} from '#schemas/models';
+import {ScenarioSchema} from '#src/types/schemas/models';
 
 export const CreateScenarioParamsSchema = ScenarioSchema.omit({id: true});
 

@@ -6,8 +6,8 @@ import {
     GetAllInstagramLocationsParamsSchema,
     GetInstagramLocationByIdParamsSchema,
     UpdateInstagramLocationParamsSchema,
-} from '#schemas/handlers/instagramLocation';
-import {InstagramLocationSchema} from '#schemas/models/instagram-location';
+} from '#src/types/schemas/handlers/instagramLocation';
+import {InstagramLocationSchema} from '#src/types/schemas/models/instagram-location';
 
 export type IInstagramLocation = z.infer<typeof InstagramLocationSchema>;
 

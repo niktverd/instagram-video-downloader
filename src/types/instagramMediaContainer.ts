@@ -8,8 +8,8 @@ import {
     GetLimitedInstagramMediaContainersParamsSchema,
     InstagramMediaContainersStatisticsParamsSchema,
     UpdateInstagramMediaContainerParamsSchema,
-} from '#schemas/handlers/instagramMediaContainer';
-import {InstagramMediaContainerSchema} from '#schemas/models/instagramMediaContainer';
+} from '#src/types/schemas/handlers/instagramMediaContainer';
+import {InstagramMediaContainerSchema} from '#src/types/schemas/models/instagramMediaContainer';
 
 export type IInstagramMediaContainer = z.infer<typeof InstagramMediaContainerSchema>;
 

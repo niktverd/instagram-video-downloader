@@ -5,7 +5,7 @@ import {
     PublishBulkRunScenarioMessagesByIdsResponseSchema,
     PushPubSubTestParamsSchema,
     PushPubSubTestResponseSchema,
-} from '#schemas/handlers/pubsub';
+} from '#src/types/schemas/handlers/pubsub';
 
 export type PushPubSubTestParams = z.infer<typeof PushPubSubTestParamsSchema>;
 export type PushPubSubTestResponse = z.infer<typeof PushPubSubTestResponseSchema>;

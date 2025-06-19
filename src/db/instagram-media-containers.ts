@@ -1,4 +1,4 @@
-import {InstagramMediaContainer} from '../models/InstagramMediaContainer';
+import {InstagramMediaContainer} from '../types/models/InstagramMediaContainer';
 
 import {ApiFunctionPrototype} from '#src/types/common';
 import {ThrownError} from '#src/utils/error';

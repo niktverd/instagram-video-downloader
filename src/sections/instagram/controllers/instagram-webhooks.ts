@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import {Request, Response} from 'express';
 
-import {MessageWebhookV3Schema} from '#schemas/handlers';
 import {createSource, wrapper} from '#src/db';
 import {ApiFunctionPrototype} from '#src/types/common';
 import {MessageWebhookV3Params, MessageWebhookV3Response} from '#src/types/instagramApi';
+import {MessageWebhookV3Schema} from '#src/types/schemas/handlers';
 import {ThrownError} from '#src/utils/error';
 import {initiateRecordV3, log} from '#utils';
 

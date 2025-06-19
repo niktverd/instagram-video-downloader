@@ -7,7 +7,7 @@ import {
     UiGetInsightsInstagramReportResponseSchema,
     UiGetInsightsInstagramScheduleParamsSchema,
     UiGetInsightsInstagramScheduleResponseSchema,
-} from '#schemas/handlers/instagramAPI';
+} from '#src/types/schemas/handlers/instagramAPI';
 
 export type MessageWebhookV3Params = z.infer<typeof MessageWebhookV3Schema>;
 export type MessageWebhookV3Response = z.infer<typeof MessageWebhookV3ResponseSchema>;

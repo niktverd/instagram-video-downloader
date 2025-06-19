@@ -2,15 +2,15 @@ import {wrapper} from '../../../db';
 import {publishBulkRunScenarioMessagesByIds, pushPubSubTest} from '../components';
 
 import {
-    PublishBulkRunScenarioMessagesByIdsParamsSchema,
-    PushPubSubTestParamsSchema,
-} from '#schemas/handlers/pubsub';
-import {
     PublishBulkRunScenarioMessagesByIdsParams,
     PublishBulkRunScenarioMessagesByIdsResponse,
     PushPubSubTestParams,
     PushPubSubTestResponse,
 } from '#src/types/pubsub';
+import {
+    PublishBulkRunScenarioMessagesByIdsParamsSchema,
+    PushPubSubTestParamsSchema,
+} from '#src/types/schemas/handlers/pubsub';
 
 export const pushPubSubTestPost = wrapper<PushPubSubTestParams, PushPubSubTestResponse>(
     pushPubSubTest,

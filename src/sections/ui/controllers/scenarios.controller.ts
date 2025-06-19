@@ -15,7 +15,7 @@ import {
     GetAllScenariosParamsSchema,
     GetScenarioByIdParamsSchema,
     UpdateScenarioParamsSchema,
-} from '#schemas/handlers/scenario';
+} from '#src/types/schemas/handlers/scenario';
 import {
     CreateScenarioParams,
     CreateScenarioResponse,

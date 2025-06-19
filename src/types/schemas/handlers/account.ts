@@ -2,7 +2,7 @@ import {z} from 'zod';
 
 import {zodOptionalBoolean} from './utils';
 
-import {AccountSchema} from '#schemas/models';
+import {AccountSchema} from '#src/types/schemas/models';
 
 export const CreateAccountParamsSchema = AccountSchema.omit({id: true});
 export const GetAccountByIdParamsSchema = z

@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {InstagramMediaContainerSchema} from '#schemas/models';
+import {InstagramMediaContainerSchema} from '#src/types/schemas/models';
 
 export const CreateInstagramMediaContainerParamsSchema = InstagramMediaContainerSchema.omit({
     id: true,

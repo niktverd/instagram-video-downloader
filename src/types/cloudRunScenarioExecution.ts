@@ -1,7 +1,7 @@
 import {z} from 'zod';
 
-import {GetAllCloudRunScenarioExecutionsParamsSchema} from '#schemas/handlers/cloudRunScenarioExecution';
-import {CloudRunScenarioExecutionSchema} from '#src/schemas/models/cloudRunScenarioExecution';
+import {GetAllCloudRunScenarioExecutionsParamsSchema} from '#src/types/schemas/handlers/cloudRunScenarioExecution';
+import {CloudRunScenarioExecutionSchema} from '#src/types/schemas/models/cloudRunScenarioExecution';
 
 export const CloudRunScenarioExecutionParamsSchema = CloudRunScenarioExecutionSchema.omit({
     id: true,

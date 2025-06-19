@@ -1,7 +1,10 @@
-import {Scenario} from '../models/Scenario';
+import {Scenario} from '../types/models/Scenario';
 
-import {CreateScenarioParamsSchema, UpdateScenarioParamsSchema} from '#schemas/handlers/scenario';
 import {ApiFunctionPrototype} from '#src/types/common';
+import {
+    CreateScenarioParamsSchema,
+    UpdateScenarioParamsSchema,
+} from '#src/types/schemas/handlers/scenario';
 import {ThrownError} from '#src/utils/error';
 import {
     CreateScenarioParams,

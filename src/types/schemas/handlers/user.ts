@@ -1,6 +1,6 @@
 import {z} from 'zod';
 
-import {UserSchema} from '#schemas/models';
+import {UserSchema} from '#src/types/schemas/models';
 
 export const CreateUserParamsSchema = UserSchema.omit({id: true});
 

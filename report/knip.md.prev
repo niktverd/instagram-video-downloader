@@ -42,11 +42,11 @@
 | config          | src/sections/cloud-run/components/reels-creator/create-video.ts:41:14 | error    |
 | logStreamsInfo  | src/sections/cloud-run/components/video/ffprobe.helpers.ts:80:23      | error    |
 | preprocessVideo | src/sections/chore/components/preprocess-video.ts:55:14               | error    |
-| default         | src/models/InstagramMediaContainer.ts:49:8                            | error    |
-| default         | src/models/InstagramLocation.ts:24:8                                  | error    |
+| default         | src/types/models/InstagramMediaContainer.ts:49:8                      | error    |
+| default         | src/types/models/InstagramLocation.ts:24:8                            | error    |
 | fetchDelete     | src/utils/fetchHelpers.ts:81:14                                       | error    |
 | usaText         | src/config/places/usa.ts:55:14                                        | error    |
-| default         | src/models/User.ts:59:8                                               | error    |
+| default         | src/types/models/User.ts:25:8                                         | error    |
 | default         | src/routes.ts:20:8                                                    | error    |
 
 ## Unused exported types (3)
@@ -72,11 +72,11 @@
 
 ## Duplicate exports (5)
 
-| Name                      | Location                        | Severity |
-| :------------------------ | :------------------------------ | :------- |
-| InstagramLocation|default | src/models/InstagramLocation.ts | error    |
-| PreparedVideo|default     | src/models/PreparedVideo.ts     | error    |
-| Scenario|default          | src/models/Scenario.ts          | error    |
-| Source|default            | src/models/Source.ts            | error    |
-| User|default              | src/models/User.ts              | error    |
+| Name                      | Location                              | Severity |
+| :------------------------ | :------------------------------------ | :------- |
+| InstagramLocation|default | src/types/models/InstagramLocation.ts | error    |
+| PreparedVideo|default     | src/types/models/PreparedVideo.ts     | error    |
+| Scenario|default          | src/types/models/Scenario.ts          | error    |
+| Source|default            | src/types/models/Source.ts            | error    |
+| User|default              | src/types/models/User.ts              | error    |
 

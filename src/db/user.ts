@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {CreateUserParamsSchema, UpdateUserParamsSchema} from '#schemas/handlers/user';
-import {User} from '#src/models';
 import {ApiFunctionPrototype} from '#src/types/common';
+import {User} from '#src/types/models';
+import {CreateUserParamsSchema, UpdateUserParamsSchema} from '#src/types/schemas/handlers/user';
 import {
     CreateUserParams,
     CreateUserResponse,

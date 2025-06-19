@@ -15,7 +15,7 @@ import {
     GetAccountBySlugParamsSchema,
     GetAllAccountsParamsSchema,
     UpdateAccountParamsSchema,
-} from '#schemas/handlers/account';
+} from '#src/types/schemas/handlers/account';
 import {
     CreateAccountParams,
     CreateAccountResponse,

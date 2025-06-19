@@ -7,8 +7,8 @@ import {
     GetScenarioByIdParamsSchema,
     GetScenarioBySlugParamsSchema,
     UpdateScenarioParamsSchema,
-} from '#schemas/handlers/scenario';
-import {ScenarioSchema} from '#schemas/models/scenario';
+} from '#src/types/schemas/handlers/scenario';
+import {ScenarioSchema} from '#src/types/schemas/models/scenario';
 import {
     // scenarioAddBannerAtTheEndSchema,
     scenarioAddBannerAtTheEndUniqueSchema,
@@ -18,7 +18,7 @@ import {
     // scenarioLongVideoWithInjectionsSchema,
     // scenarioShortifySchema,
     scenarioShortifyUniqueSchema,
-} from '#src/schemas/scenario';
+} from '#src/types/schemas/scenario';
 
 export type IScenario = z.infer<typeof ScenarioSchema>;
 

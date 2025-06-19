@@ -1,4 +1,4 @@
-import {CloudRunScenarioExecution} from '../models/CloudRunScenarioExecution';
+import {CloudRunScenarioExecution} from '../types/models/CloudRunScenarioExecution';
 
 import {
     CloudRunScenarioExecutionParams,

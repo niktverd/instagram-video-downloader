@@ -1,5 +1,5 @@
 /* eslint-disable valid-jsdoc */
-import User from '../../models/User';
+import User from '../../types/models/User';
 
 export class UserService {
     /**

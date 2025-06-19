@@ -13,7 +13,8 @@
       "#tests/*": ["src/tests/*"],
       "#types": ["src/types/index.ts"],
       "#utils": ["src/utils/index.ts"],
-      "#schemas/*": ["src/schemas/*"],
+      "#schemas/*": ["src/types/schemas/*"],
+      "#models/*": ["src/types/models/*"],
       "#src/*": ["src/*"],
       "$/*": ["src/sections/*"]
     }

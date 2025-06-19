@@ -11,7 +11,7 @@ import {
     DeleteInstagramLocationParamsSchema,
     GetAllInstagramLocationsParamsSchema,
     UpdateInstagramLocationParamsSchema,
-} from '#schemas/handlers';
+} from '#src/types/schemas/handlers';
 import {
     CreateInstagramLocationParams,
     CreateInstagramLocationResponse,

@@ -1,12 +1,12 @@
 import {OrderByDirection} from 'objection';
 
-import {PreparedVideo} from '../models/PreparedVideo';
+import {PreparedVideo} from '../types/models/PreparedVideo';
 
+import {ApiFunctionPrototype} from '#src/types/common';
 import {
     CreatePreparedVideoParamsSchema,
     UpdatePreparedVideoParamsSchema,
-} from '#schemas/handlers/preparedVideo';
-import {ApiFunctionPrototype} from '#src/types/common';
+} from '#src/types/schemas/handlers/preparedVideo';
 import {ThrownError} from '#src/utils/error';
 import {
     CreatePreparedVideoParams,

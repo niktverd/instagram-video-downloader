@@ -1,13 +1,5 @@
 import {Request, Response} from 'express';
 
-import {
-    GetAllCommentsForPostsParamsSchema,
-    GetInstagramAccountInsightsParamsSchema,
-    UiGetInsightsParamsSchema,
-    UiGetInstagramMediaParamsSchema,
-    UiGetInstagramUserIdByMediaIdParamsSchema,
-    UiGetUserContentParamsSchema,
-} from '#schemas/handlers';
 import {wrapper} from '#src/db';
 import {
     GetAllCommentsForPostsParams,
@@ -23,6 +15,14 @@ import {
     UiGetUserContentParams,
     UiGetUserContentResponse,
 } from '#src/types/instagramInsights';
+import {
+    GetAllCommentsForPostsParamsSchema,
+    GetInstagramAccountInsightsParamsSchema,
+    UiGetInsightsParamsSchema,
+    UiGetInstagramMediaParamsSchema,
+    UiGetInstagramUserIdByMediaIdParamsSchema,
+    UiGetUserContentParamsSchema,
+} from '#src/types/schemas/handlers';
 import {ThrownError} from '#src/utils/error';
 import {log, logError} from '#utils';
 import {

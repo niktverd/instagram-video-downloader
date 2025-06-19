@@ -2,7 +2,7 @@ import {z} from 'zod';
 
 import {zodOptionalBoolean} from './utils';
 
-import {SourceSchema} from '#schemas/models';
+import {SourceSchema} from '#src/types/schemas/models';
 
 export const CreateSourceParamsSchema = SourceSchema.omit({id: true});
 

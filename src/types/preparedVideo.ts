@@ -11,8 +11,8 @@ import {
     HasPreparedVideoBeenCreatedResponseSchema,
     PreparedVideosStatisticsParamsSchema,
     UpdatePreparedVideoParamsSchema,
-} from '#schemas/handlers/preparedVideo';
-import {PreparedVideoSchema} from '#schemas/models/preparedVideo';
+} from '#src/types/schemas/handlers/preparedVideo';
+import {PreparedVideoSchema} from '#src/types/schemas/models/preparedVideo';
 
 export type IPreparedVideo = z.infer<typeof PreparedVideoSchema>;
 

@@ -2,7 +2,7 @@ import {z} from 'zod';
 
 import {zodOptionalBoolean, zodOptionalNumber, zodOptionalNumberArray} from './utils';
 
-import {PreparedVideoSchema} from '#schemas/models';
+import {PreparedVideoSchema} from '#src/types/schemas/models';
 
 export const CreatePreparedVideoParamsSchema = PreparedVideoSchema.omit({id: true});
 

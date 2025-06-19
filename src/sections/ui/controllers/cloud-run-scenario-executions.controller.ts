@@ -5,11 +5,6 @@ import {
 } from '#src/db/cloudRunScenarioExecutions';
 import {wrapper} from '#src/db/utils';
 import {
-    CloudRunScenarioExecutionParamsSchema,
-    GetAllCloudRunScenarioExecutionsParamsSchema,
-    UpdateCloudRunScenarioExecutionParamsSchema,
-} from '#src/schemas/handlers/cloudRunScenarioExecution';
-import {
     CloudRunScenarioExecutionParams,
     CreateCloudRunScenarioExecutionResponse,
     GetAllCloudRunScenarioExecutionParams,
@@ -17,6 +12,11 @@ import {
     UpdateCloudRunScenarioExecutionParams,
     UpdateCloudRunScenarioExecutionResponse,
 } from '#src/types/cloudRunScenarioExecution';
+import {
+    CloudRunScenarioExecutionParamsSchema,
+    GetAllCloudRunScenarioExecutionsParamsSchema,
+    UpdateCloudRunScenarioExecutionParamsSchema,
+} from '#src/types/schemas/handlers/cloudRunScenarioExecution';
 
 export const createCloudRunScenarioExecutionPost = wrapper<
     CloudRunScenarioExecutionParams,

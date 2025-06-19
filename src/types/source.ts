@@ -8,8 +8,8 @@ import {
     SourceStatisticsParamsSchema,
     UpdateSourceParamsSchema,
     // CreateSourceParamsSchema as _CreateSourceParamsSchema,
-} from '#schemas/handlers/source';
-import {SourceSchema} from '#schemas/models/source';
+} from '#src/types/schemas/handlers/source';
+import {SourceSchema} from '#src/types/schemas/models/source';
 
 export type ISource = z.infer<typeof SourceSchema>;
 

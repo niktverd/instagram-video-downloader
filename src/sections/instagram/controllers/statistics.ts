@@ -1,9 +1,5 @@
 import {collectInsightsForAllAccounts, getInsightsInstagramReport} from '../components/insights';
 
-import {
-    UiGetInsightsInstagramReportParamsSchema,
-    UiGetInsightsInstagramScheduleParamsSchema,
-} from '#schemas/handlers';
 import {wrapper} from '#src/db';
 import {
     UiGetInsightsInstagramReportParams,
@@ -11,6 +7,10 @@ import {
     UiGetInsightsInstagramScheduleParams,
     UiGetInsightsInstagramScheduleResponse,
 } from '#src/types/instagramApi';
+import {
+    UiGetInsightsInstagramReportParamsSchema,
+    UiGetInsightsInstagramScheduleParamsSchema,
+} from '#src/types/schemas/handlers';
 
 export const getInsightsInstagramScheduleGet = wrapper<
     UiGetInsightsInstagramScheduleParams,

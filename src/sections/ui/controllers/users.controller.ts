@@ -15,7 +15,7 @@ import {
     GetUserByEmailParamsSchema,
     GetUserByIdParamsSchema,
     UpdateUserParamsSchema,
-} from '#schemas/handlers/user';
+} from '#src/types/schemas/handlers/user';
 import {
     CreateUserParams,
     CreateUserResponse,

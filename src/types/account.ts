@@ -6,8 +6,8 @@ import {
     GetAccountBySlugParamsSchema,
     GetAllAccountsParamsSchema,
     UpdateAccountParamsSchema,
-} from '#schemas/handlers/account';
-import {AccountSchema} from '#schemas/models/account';
+} from '#src/types/schemas/handlers/account';
+import {AccountSchema} from '#src/types/schemas/models/account';
 
 export type IAccount = z.infer<typeof AccountSchema>;
 

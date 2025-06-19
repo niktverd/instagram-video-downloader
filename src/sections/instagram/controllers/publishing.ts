@@ -8,13 +8,13 @@ import {
     publishRandomInstagramContainerForAccount,
 } from '../components';
 
-import {PublishIntagramV4Schema} from '#schemas/handlers/publishInstagram';
 import {getAllAccounts, wrapper} from '#src/db';
 import {ApiFunctionPrototype} from '#src/types/common';
 import {
     PublishIntagramV4PostParams,
     PublishIntagramV4PostResponse,
 } from '#src/types/publishInstagram';
+import {PublishIntagramV4Schema} from '#src/types/schemas/handlers/publishInstagram';
 import {ThrownError} from '#src/utils/error';
 import {delay, log, logError} from '#utils';
 import {stopHerokuApp} from '$/chore/components/heroku';
